@@ -39,7 +39,7 @@ int main(int argc, char* argv[]){
   socklen_t len = sizeof(struct sockaddr);
 
   //Serveur
-  serveur_addr.sin_addr.s_addr= 130.0.0.1 ; //adresse réseau associée à la socket
+  serveur_addr.sin_addr.s_addr= inet_addr("192.0.0.1"); //adresse réseau associée à la socket
   printf("Adresse serveur =%d\n",serveur_addr.sin_addr.s_addr);
   serveur_addr.sin_family=AF_INET;
   serveur_addr.sin_port=htons(port_public);

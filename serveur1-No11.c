@@ -65,11 +65,11 @@ int main(int argc, char* argv[]){
      //Si on reçoit un SYN
     if(result==0){
       printf("Le message reçu est bien un SYN\n");
-      memset(buffer_write_server,0,sizeof(buffer_write_server));
-      memcpy(buffer_write_server,"SYN",3);
+      memset(bufferUDP_write_server,0,sizeof(bufferUDP_write_server));
+      memcpy(bufferUDP_write_server,"SYN",3);
       //sendto(socket_UDP,bufferUDP_write_server,sizeof(bufferUDP_write_server),0,(struct sockaddr *)&clientUDP_addr,sizeof(struct sockaddr));
       //printf("Hello message sent.\n");
-
+    }
   }
 
 

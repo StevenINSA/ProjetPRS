@@ -69,6 +69,7 @@ int main(int argc, char* argv[]){
       memcpy(bufferUDP_write_server,"SYN",3);
       //sendto(socket_UDP,bufferUDP_write_server,sizeof(bufferUDP_write_server),0,(struct sockaddr *)&clientUDP_addr,sizeof(struct sockaddr));
       //printf("Hello message sent.\n");
+      printf("coucou nono");
     }
   }
 

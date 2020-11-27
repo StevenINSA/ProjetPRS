@@ -47,6 +47,10 @@ int main(int argc, char* argv[]){
 
   //Lien socket-structure
   int bind_UDP = bind(socket_UDP,(struct sockaddr*)&serveur_addr,sizeof(struct sockaddr_in));
+  if(bind_UDP<0){
+    perror("Erreur bind\n");
+    exit(-1);
+  }
   printf("Bind UDP = %d\n",bind_UDP);
 
   char bufferUDP_read_server[100]; //on crée un buffer pour stocker 99 caractères (le dernier étant réservé au \0 pour signaler la fin de la chaîne

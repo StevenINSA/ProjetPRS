@@ -11,6 +11,8 @@
 
 int main(int argc, char* argv[]){
 
+  printf("coucou steven\n");
+
   //On vérifie si le nombre d'arguments est bien le bon puis on attribue le numéro de port
   if(argc!=2) {
     perror("Mauvais nombre d'arguments");

@@ -87,12 +87,12 @@ int main(int argc, char* argv[]){
 
       sendto(socket_UDP, bufferUDP_write_server, strlen(bufferUDP_write_server), 0, (struct sockaddr *)&client1_addr, len);
       printf("msg envoyé au client : %s\n", bufferUDP_write_server);
-    } else
+    } else {
       printf("le message reçu n'est pas un syn\n");
       exit(-1);
     }
 
-
+  }
 
 
   return(0);

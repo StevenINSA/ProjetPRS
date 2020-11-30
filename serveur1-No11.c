@@ -52,6 +52,9 @@ int main(int argc, char* argv[]){
   char bufferUDP_read_server[100]; //on crée un buffer pour stocker 99 caractères (le dernier étant réservé au \0 pour signaler la fin de la chaîne
   char bufferUDP_write_server[100];
   char port_data_string[10];
+  char fichier_a_envoyer[10] = ""; //pour le stockage du nom de fichier
+
+  int descripteur_data = 0; //pour récupérer le descripteur de la nouvelle socket
 
   while(1){
     printf("Boucle while n°1.\n");
@@ -78,6 +81,7 @@ int main(int argc, char* argv[]){
       my_addr_data.sin_family      = AF_INET ;
       my_addr_data.sin_port        = htons(port_data) ;
       my_addr_data.sin_addr.s_addr = INADDR_ANY ;
+      descripteur_data = data_UDP;
 
       int bind_data = bind (data_UDP, (struct sockaddr *)&serveur_addr, sizeof(struct sockaddr_in));
       printf("bind de data : %d\n", bind_data);
@@ -85,8 +89,9 @@ int main(int argc, char* argv[]){
       sprintf(port_data_string,"%d",port_data);
       memcpy(bufferUDP_write_server+7, port_data_string, 4);
 
-      sendto(socket_UDP, bufferUDP_write_server, strlen(bufferUDP_write_server), 0, (struct sockaddr *)&client1_addr, len);
+      sendto(socket_UDP, bufferUDP_write_server, sizeof(bufferUDP_write_server), 0, (struct sockaddr *)&client1_addr, len);
       printf("msg envoyé au client : %s\n", bufferUDP_write_server);
+
     } else {
       printf("le message reçu n'est pas un syn\n");
       exit(-1);
@@ -96,11 +101,41 @@ int main(int argc, char* argv[]){
     memset(bufferUDP_read_server,0,sizeof(bufferUDP_read_server));
     int m = recvfrom(socket_UDP, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
     bufferUDP_read_server[m]='\0';
-    printf("message de l'UDP : %s\n", bufferUDP_read_server);
+    printf("message du client doit etre un ack : %s\n", bufferUDP_read_server);
+    printf("Fermeture socket_udp principale\n");
+    close(socket_UDP);
+
+    /*
+     *  Phase envoi de donnée
+     */
+
+    //le client envoie le nom du fichier qu'il veut recevoir
+    memset(bufferUDP_read_server,0,sizeof(bufferUDP_read_server));
+    int o = recvfrom(descripteur_data, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
+    bufferUDP_read_server[o]='\0';
+    printf("le client veut : %s\n", bufferUDP_read_server);
+
+    //il faut stocker le nom du fichier pour pouvoir le passer dans fopen
+    snprintf(fichier_a_envoyer, sizeof(fichier_a_envoyer), "%s", bufferUDP_read_server);
+    printf("fichier a envoyer : %s\n", fichier_a_envoyer);
+
+    printf("envoi du fichier pdf\n");
+    FILE *fichier = fopen(fichier, "rb"); //rb : ouvre le pdf au format binaire car on échange des bits sur les sockets
+    if (fichier == 0){
+     perror("ERREUR OUVERTURE DU FICHIER");
+     exit(-1);
+    }
+
+    //on calcule ensuite la taille du fichier à envoyer
+    fseek(fichier, 0, SEEK_END);          //fseek parcours le fichier et place un curseur à la fin appelée SEEK END
+    int taille_fichier = ftell(fichier);  //ftell donne la taille du chemin parcouru par fseek (valeur de la position du curseur)
+
+    printf("taille du fichier en octet : %d\n", taille_fichier);
+    fseek(fichier, 0, SEEK_SET);          //on replace le curseur au début;
 
 
     printf("*** FIN DU TEST ***\n");
-    close(socket_UDP);
+
     //close(data_UDP); ?? non déclarée
     break;
 

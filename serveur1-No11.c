@@ -71,7 +71,7 @@ int main(int argc, char* argv[]){
       memset(bufferUDP_write_server,0,sizeof(bufferUDP_write_server));
       memcpy(bufferUDP_write_server,"SYN-ACK",7);
 
-      int data_udp = socket(AF_INET, SOCK_DGRAM, 0); //quand on reçoit un syn, on créer un nouvelle socket pour les prochains échanges
+      int data_UDP = socket(AF_INET, SOCK_DGRAM, 0); //quand on reçoit un syn, on créer un nouvelle socket pour les prochains échanges
       struct sockaddr_in my_addr_data;
       memset((char*)&my_addr_data, 0, sizeof(my_addr_data));
       port_data = port_data + 1;
@@ -79,7 +79,7 @@ int main(int argc, char* argv[]){
       my_addr_data.sin_port        = htons(port_data) ;
       my_addr_data.sin_addr.s_addr = INADDR_ANY ;
 
-      int bind_data = bind (data_udp, (struct sockaddr *)&serveur_addr, sizeof(struct sockaddr_in));
+      int bind_data = bind (data_UDP, (struct sockaddr *)&serveur_addr, sizeof(struct sockaddr_in));
       printf("bind de data : %d\n", bind_data);
 
       sprintf(port_data_string,"%d",port_data);
@@ -92,8 +92,19 @@ int main(int argc, char* argv[]){
       exit(-1);
     }
 
-  }
+    // reception du ack final de la phase de connection
+    memset(bufferUDP_read_server,0,sizeof(bufferUDP_read_server));
+    int m = recvfrom(socket_UDP, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
+    bufferUDP_read_server[m]='\0';
+    printf("message de l'UDP : %s\n", bufferUDP_read_server);
 
+
+    printf("*** FIN DU TEST ***\n");
+    close(socket_UDP);
+    //close(data_UDP); ?? non déclarée
+    break;
+
+  }
 
   return(0);
 }

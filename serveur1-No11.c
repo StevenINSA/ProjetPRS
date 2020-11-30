@@ -11,8 +11,6 @@
 
 int main(int argc, char* argv[]){
 
-  printf("coucou steven\n");
-
   //On vérifie si le nombre d'arguments est bien le bon puis on attribue le numéro de port
   if(argc!=2) {
     perror("Mauvais nombre d'arguments");
@@ -68,10 +66,11 @@ int main(int argc, char* argv[]){
     if(result==0){
       printf("Le message reçu est bien un SYN\n");
       memset(bufferUDP_write_server,0,sizeof(bufferUDP_write_server));
-      memcpy(bufferUDP_write_server,"SYN",3);
+      memcpy(bufferUDP_write_server,"SYN-ACK",7);
+      printf("valleur du buffer serveur : %s\n", bufferUDP_write_server);
       //sendto(socket_UDP,bufferUDP_write_server,sizeof(bufferUDP_write_server),0,(struct sockaddr *)&clientUDP_addr,sizeof(struct sockaddr));
       //printf("Hello message sent.\n");
-      printf("coucou nono");
+
     }
   }
 

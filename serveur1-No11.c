@@ -36,6 +36,8 @@ int main(int argc, char* argv[]){
 	memset((char*)&client1_addr, 0, sizeof(client1_addr)) ; //adresse clientUDP
   socklen_t len = sizeof(struct sockaddr);
 
+  int port_data = 1000;
+
   //Serveur
   serveur_addr.sin_addr.s_addr = INADDR_ANY ;
   printf("Adresse serveur =%d\n",serveur_addr.sin_addr.s_addr);
@@ -49,6 +51,7 @@ int main(int argc, char* argv[]){
 
   char bufferUDP_read_server[100]; //on crée un buffer pour stocker 99 caractères (le dernier étant réservé au \0 pour signaler la fin de la chaîne
   char bufferUDP_write_server[100];
+  char port_data_string[10];
 
   while(1){
     printf("Boucle while n°1.\n");
@@ -67,12 +70,28 @@ int main(int argc, char* argv[]){
       printf("Le message reçu est bien un SYN\n");
       memset(bufferUDP_write_server,0,sizeof(bufferUDP_write_server));
       memcpy(bufferUDP_write_server,"SYN-ACK",7);
-      printf("valleur du buffer serveur : %s\n", bufferUDP_write_server);
-      //sendto(socket_UDP,bufferUDP_write_server,sizeof(bufferUDP_write_server),0,(struct sockaddr *)&clientUDP_addr,sizeof(struct sockaddr));
-      //printf("Hello message sent.\n");
 
+      int data_udp = socket(AF_INET, SOCK_DGRAM, 0); //quand on reçoit un syn, on créer un nouvelle socket pour les prochains échanges
+      struct sockaddr_in my_addr_data;
+      memset((char*)&my_addr_data, 0, sizeof(my_addr_data));
+      port_data = port_data + 1;
+      my_addr_data.sin_family      = AF_INET ;
+      my_addr_data.sin_port        = htons(port_data) ;
+      my_addr_data.sin_addr.s_addr = INADDR_ANY ;
+
+      int bind_data = bind (data_udp, (struct sockaddr *)&serveur_addr, sizeof(struct sockaddr_in));
+      printf("bind de data : %d\n", bind_data);
+
+      sprintf(port_data_string,"%d",port_data);
+      memcpy(bufferUDP_write_server+7, port_data_string, 4);
+
+      sendto(socket_UDP, bufferUDP_write_server, strlen(bufferUDP_write_server), 0, (struct sockaddr *)&client1_addr, len);
+      printf("msg envoyé au client : %s\n", bufferUDP_write_server);
+    } else
+      printf("le message reçu n'est pas un syn\n");
+      exit(-1);
     }
-  }
+
 
 
 

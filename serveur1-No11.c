@@ -51,7 +51,7 @@ int main(int argc, char* argv[]){
 
   char bufferUDP_read_server[100]; //on crée un buffer pour stocker 99 caractères (le dernier étant réservé au \0 pour signaler la fin de la chaîne
   char bufferUDP_write_server[100];
-  char port_data_string[4];
+  char port_data_string[16];
   char fichier_a_envoyer[32] = ""; //pour le stockage du nom de fichier
 
   int descripteur_data = 0; //pour récupérer le descripteur de la nouvelle socket
@@ -109,6 +109,7 @@ int main(int argc, char* argv[]){
      *  Phase envoi de donnée WARNING : mettre sur la machine du département le projet.pdf
      */
 
+/*
     //le client envoie le nom du fichier qu'il veut recevoir
     memset(bufferUDP_read_server,0,sizeof(bufferUDP_read_server));
     int o = recvfrom(descripteur_data, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
@@ -132,7 +133,7 @@ int main(int argc, char* argv[]){
 
     printf("taille du fichier en octet : %d\n", taille_fichier);
     fseek(fichier, 0, SEEK_SET);          //on replace le curseur au début;
-
+*/
 
     printf("*** FIN DU TEST ***\n");
 

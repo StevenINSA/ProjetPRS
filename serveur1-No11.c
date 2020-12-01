@@ -75,15 +75,15 @@ int main(int argc, char* argv[]){
       memcpy(bufferUDP_write_server,"SYN-ACK",7);
 
       int data_UDP = socket(AF_INET, SOCK_DGRAM, 0); //quand on reçoit un syn, on créer un nouvelle socket pour les prochains échanges
-      struct sockaddr_in my_addr_data;
-      memset((char*)&my_addr_data, 0, sizeof(my_addr_data));
+      struct sockaddr_in data_addr;
+      memset((char*)&data_addr, 0, sizeof(data_addr));
       port_data = port_data + 1;
-      my_addr_data.sin_family      = AF_INET ;
-      my_addr_data.sin_port        = htons(port_data) ;
-      my_addr_data.sin_addr.s_addr = INADDR_ANY ;
+      data_addr.sin_family      = AF_INET ;
+      data_addr.sin_port        = htons(port_data) ;
+      data_addr.sin_addr.s_addr = INADDR_ANY ;
       descripteur_data = data_UDP;
 
-      int bind_data = bind (data_UDP, (struct sockaddr *)&serveur_addr, sizeof(struct sockaddr_in));
+      int bind_data = bind (data_UDP, (struct sockaddr *)&data_addr, sizeof(struct sockaddr_in));
       printf("bind de data : %d\n", bind_data);
 
       sprintf(port_data_string,"%d",port_data);
@@ -136,7 +136,7 @@ int main(int argc, char* argv[]){
 
     printf("*** FIN DU TEST ***\n");
 
-    //close(data_UDP); ?? non déclarée
+    close(descripteur_data); 
     break;
 
   }

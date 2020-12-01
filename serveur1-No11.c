@@ -31,10 +31,9 @@ int main(int argc, char* argv[]){
   setsockopt(socket_UDP, SOL_SOCKET, SO_REUSEADDR, &reuse_UDP, sizeof(reuse_UDP)) ;
 
   //Initialisation structure réseau _
-  struct sockaddr_in client1_addr, serveur_addr, data_addr ; //on déclare aussi le client et pour la socket data
+  struct sockaddr_in client1_addr, serveur_addr; //on déclare aussi le client et pour la socket data
   memset((char*)&serveur_addr, 0, sizeof(serveur_addr)) ; //adresse serveur
 	memset((char*)&client1_addr, 0, sizeof(client1_addr)) ; //adresse clientUDP
-  memset((char*)&data_addr, 0, sizeof(data_addr));        //pour la nouvelle socket data
   socklen_t len = sizeof(struct sockaddr);
 
   int port_data = 1000;
@@ -77,6 +76,8 @@ int main(int argc, char* argv[]){
 
       int data_UDP = socket(AF_INET, SOCK_DGRAM, 0); //quand on reçoit un syn, on créer un nouvelle socket pour les prochains échanges
       setsockopt(data_UDP, SOL_SOCKET, SO_REUSEADDR, &reuse_UDP, sizeof(reuse_UDP)) ;
+      struct sockaddr_in data_addr;
+      memset((char*)&data_addr, 0, sizeof(data_addr));
       port_data = port_data + 1;
       data_addr.sin_family      = AF_INET ;
       data_addr.sin_port        = htons(port_data) ;

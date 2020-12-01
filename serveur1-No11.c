@@ -75,7 +75,8 @@ int main(int argc, char* argv[]){
       memcpy(bufferUDP_write_server,"SYN-ACK",7);
 
       int data_UDP = socket(AF_INET, SOCK_DGRAM, 0); //quand on reçoit un syn, on créer un nouvelle socket pour les prochains échanges
-      setsockopt(data_UDP, SOL_SOCKET, SO_REUSEADDR, &reuse_UDP, sizeof(reuse_UDP)) ;
+      int reuse_data_UDP = 1 ;
+      setsockopt(data_UDP, SOL_SOCKET, SO_REUSEADDR, &reuse_data_UDP, sizeof(reuse_data_UDP)) ;
       struct sockaddr_in data_addr;
       memset((char*)&data_addr, 0, sizeof(data_addr));
       port_data = port_data + 1;

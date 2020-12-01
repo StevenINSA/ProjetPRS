@@ -85,6 +85,10 @@ int main(int argc, char* argv[]){
       descripteur_data = data_UDP;
 
       int bind_data = bind (data_UDP, (struct sockaddr *)&data_addr, sizeof(struct sockaddr_in));
+      if(bind_data<0){
+        perror("Erreur data :\n");
+        exit(-1);
+      }
       printf("bind de data : %d\n", bind_data);
 
       sprintf(port_data_string,"%d",port_data);

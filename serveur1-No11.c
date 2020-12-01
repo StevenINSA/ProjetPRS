@@ -36,7 +36,7 @@ int main(int argc, char* argv[]){
 	memset((char*)&client1_addr, 0, sizeof(client1_addr)) ; //adresse clientUDP
   socklen_t len = sizeof(struct sockaddr);
 
-  int port_data = 1000;
+  int port_data = 1024;
 
   //Serveur
   serveur_addr.sin_addr.s_addr = INADDR_ANY ;
@@ -87,7 +87,7 @@ int main(int argc, char* argv[]){
 
       int bind_data = bind (data_UDP, (struct sockaddr *)&data_addr, sizeof(struct sockaddr_in));
       if(bind_data<0){
-        perror("Erreur data :\n");
+        perror("Erreur data :");
         exit(-1);
       }
       printf("bind de data : %d\n", bind_data);

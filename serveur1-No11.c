@@ -51,8 +51,8 @@ int main(int argc, char* argv[]){
 
   char bufferUDP_read_server[100]; //on crée un buffer pour stocker 99 caractères (le dernier étant réservé au \0 pour signaler la fin de la chaîne
   char bufferUDP_write_server[100];
-  char port_data_string[10];
-  char fichier_a_envoyer[10] = ""; //pour le stockage du nom de fichier
+  char port_data_string[4];
+  char fichier_a_envoyer[32] = ""; //pour le stockage du nom de fichier
 
   int descripteur_data = 0; //pour récupérer le descripteur de la nouvelle socket
 
@@ -136,7 +136,7 @@ int main(int argc, char* argv[]){
 
     printf("*** FIN DU TEST ***\n");
 
-    close(descripteur_data); 
+    close(descripteur_data);
     break;
 
   }

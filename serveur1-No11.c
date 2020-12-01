@@ -106,7 +106,7 @@ int main(int argc, char* argv[]){
     close(socket_UDP);
 
     /*
-     *  Phase envoi de donnée
+     *  Phase envoi de donnée WARNING : mettre sur la machine du département le projet.pdf
      */
 
     //le client envoie le nom du fichier qu'il veut recevoir
@@ -120,7 +120,7 @@ int main(int argc, char* argv[]){
     printf("fichier a envoyer : %s\n", fichier_a_envoyer);
 
     printf("envoi du fichier pdf\n");
-    FILE *fichier = fopen(fichier, "rb"); //rb : ouvre le pdf au format binaire car on échange des bits sur les sockets
+    FILE *fichier = fopen(fichier_a_envoyer, "rb"); //rb : ouvre le pdf au format binaire car on échange des bits sur les sockets
     if (fichier == 0){
      perror("ERREUR OUVERTURE DU FICHIER");
      exit(-1);

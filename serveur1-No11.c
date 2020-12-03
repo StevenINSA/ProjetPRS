@@ -56,17 +56,17 @@ int main(int argc, char* argv[]){
   char bufferUDP_read_server[100]; //on crée un buffer pour stocker 99 caractères (le dernier étant réservé au \0 pour signaler la fin de la chaîne
   char bufferUDP_write_server[100];
   char port_data_string[16];
-  char fichier_a_envoyer[32] = ""; //pour le stockage du nom de fichier
+  char sent_file[100] = ""; //pour le stockage du nom de fichier
 
-  int descripteur_data = 0; //pour récupérer le descripteur de la nouvelle socket
+  int data_descriptor = 0; //pour récupérer le descripteur de la nouvelle socket
 
   while(1){
     printf("Boucle while n°1.\n");
     //Echange UDP
 
-    int n = recvfrom(socket_UDP,bufferUDP_read_server,sizeof(bufferUDP_read_server),0,(struct sockaddr *)&client1_addr,&len);
-    printf("n : %d\n",n);
-    bufferUDP_read_server[n]='\0';
+    int size_syn = recvfrom(socket_UDP,bufferUDP_read_server,sizeof(bufferUDP_read_server),0,(struct sockaddr *)&client1_addr,&len);
+    printf("size syn : %d\n",size_syn);
+    bufferUDP_read_server[size_syn]='\0';
     printf("Client 1 :%s\n", bufferUDP_read_server);
 
     int result = strcmp("SYN",bufferUDP_read_server);
@@ -87,7 +87,7 @@ int main(int argc, char* argv[]){
       data_addr.sin_family      = AF_INET ;
       data_addr.sin_port        = htons(port_data) ;
       data_addr.sin_addr.s_addr = INADDR_ANY ;
-      descripteur_data = data_UDP;
+      data_descriptor = data_UDP;
 
       int bind_data = bind (data_UDP, (struct sockaddr *)&data_addr, sizeof(struct sockaddr_in));
       if(bind_data<0){
@@ -109,8 +109,8 @@ int main(int argc, char* argv[]){
 
     // reception du ack final de la phase de connection
     memset(bufferUDP_read_server,0,sizeof(bufferUDP_read_server));
-    int m = recvfrom(socket_UDP, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
-    bufferUDP_read_server[m]='\0';
+    int size_ack = recvfrom(socket_UDP, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
+    bufferUDP_read_server[size_ack]='\0';
     printf("message du client doit etre un ack : %s\n", bufferUDP_read_server);
     printf("Fermeture socket_udp principale\n");
     close(socket_UDP);
@@ -122,32 +122,32 @@ int main(int argc, char* argv[]){
 
     //le client envoie le nom du fichier qu'il veut recevoir
     memset(bufferUDP_read_server,0,sizeof(bufferUDP_read_server));
-    int o = recvfrom(descripteur_data, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
-    bufferUDP_read_server[o]='\0';
+    int size_file_name = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
+    bufferUDP_read_server[size_file_name]='\0';
     printf("le client veut : %s\n", bufferUDP_read_server);
 
     //il faut stocker le nom du fichier pour pouvoir le passer dans fopen
-    snprintf(fichier_a_envoyer, sizeof(fichier_a_envoyer), "%s", bufferUDP_read_server);
-    printf("fichier a envoyer : %s\n", fichier_a_envoyer);
+    memcpy(sent_file, bufferUDP_read_server, size_file_name);
+    printf("fichier a envoyer : %s\n", sent_file);
 
     printf("envoi du fichier pdf\n");
-    FILE *fichier = fopen(fichier_a_envoyer, "rb"); //rb : ouvre le pdf au format binaire car on échange des bits sur les sockets
-    if (fichier == 0){
+    FILE *file = fopen(sent_file, "rb"); //rb : ouvre le pdf au format binaire car on échange des bits sur les sockets
+    if (file == 0){
      perror("ERREUR OUVERTURE DU FICHIER");
      exit(-1);
     }
 
     //on calcule ensuite la taille du fichier à envoyer
-    fseek(fichier, 0, SEEK_END);          //fseek parcours le fichier et place un curseur à la fin appelée SEEK END
-    int taille_fichier = ftell(fichier);  //ftell donne la taille du chemin parcouru par fseek (valeur de la position du curseur)
+    fseek(file, 0, SEEK_END);          //fseek parcours le fichier et place un curseur à la fin appelée SEEK END
+    int size_file = ftell(file);  //ftell donne la taille du chemin parcouru par fseek (valeur de la position du curseur)
 
-    printf("taille du fichier en octet : %d\n", taille_fichier);
-    fseek(fichier, 0, SEEK_SET);          //on replace le curseur au début;
+    printf("taille du fichier en octet : %d\n", size_file);
+    fseek(file, 0, SEEK_SET);          //on replace le curseur au début;
 
 
     printf("*** FIN DU TEST ***\n");
 
-    close(descripteur_data);
+    close(data_descriptor);
     break;
 
   }

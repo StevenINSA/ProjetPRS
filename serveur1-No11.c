@@ -157,24 +157,38 @@ int main(int argc, char* argv[]){
     }
     int packets_size = 500;
     int packets_number = size_file/packets_size;
+    int seq = 1;
 
-    for(int i=1;i<=(packets_number+1);i++){
-      printf("For i = %d\n",i);
-      printf("On copie à partir de file_buffer[%d]\n",packets_size*(i-1));
+    //for(int i=1;i<=(packets_number+1);i++)
+    while( seq <= (packets_number+1)){
+      printf("For i = %d\n",seq);
+      printf("On copie à partir de file_buffer[%d]\n",packets_size*(seq-1));
 
       //Remise à zéro des buffers
       memset(buffer_segment,0,sizeof(buffer_segment));
       memset(buffer_sequence,0,sizeof(buffer_sequence));
 
-      sprintf(buffer_sequence,"%d",i);
+      sprintf(buffer_sequence,"%d",seq);
       printf("Sequence number (from buffer_sequence) : %s\n",buffer_sequence);
 
       //Segment auquel on rajoute en-tête
       memcpy(buffer_segment,buffer_sequence,6);
-      memcpy(buffer_segment+6,file_buffer+packets_size*(i-1),packets_size);
+      memcpy(buffer_segment+6,file_buffer+packets_size*(seq-1),packets_size);
 
       int s = sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
       printf("I sent %d bytes\n", s);
+
+      memset(bufferUDP_read_server, 0, sizeof(bufferUDP_read_server));
+      memset(buffer_sequence, 0, sizeof(buffer_sequence));
+      recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
+      memcpy(buffer_sequence, bufferUDP_read_server+3, sizeof(buffer_sequence)); //+3 car les 3 premières valeurs sont pour le mot ACK
+      printf("message reçu : %s \n numéro de seq reçue par le serveur : %s\n", bufferUDP_read_server, buffer_sequence);
+
+      if (atoi(buffer_sequence) == seq){ //si le numéro de séquence reçu est égale au numéro de séquence envoyé
+        seq++;                           //on peut alors envoyer la séquence suivante
+      } else{
+        printf("retransmission du n° de seq : %d \n", seq);
+      }
     }
 
     printf("*** FIN DU TEST ***\n");

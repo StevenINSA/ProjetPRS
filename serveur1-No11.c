@@ -159,7 +159,7 @@ int main(int argc, char* argv[]){
 
     for(int i=1;i<((size_file/500)+1);i++){
       printf("For i = %d\n",i);
-      printf("On copie à partir de file_buffer[%s]\n",file_buffer+500*(i-1));
+      printf("On copie à partir de file_buffer[%d]\n",500*(i-1));
 
       //Remise à zéro des buffers
       memset(buffer_segment,0,sizeof(buffer_segment));

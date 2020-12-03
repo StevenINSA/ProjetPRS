@@ -165,7 +165,7 @@ int main(int argc, char* argv[]){
       memset(buffer_segment,0,sizeof(buffer_segment));
       memset(buffer_sequence,0,sizeof(buffer_sequence));
 
-      sprintf(buffer_sequence,"%d",sequence_number);
+      sprintf(buffer_sequence,"%d",i);
       printf("Sequence number (from buffer_sequence) : %s\n",buffer_sequence);
 
       //Segment auquel on rajoute en-tête

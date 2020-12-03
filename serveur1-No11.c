@@ -119,7 +119,7 @@ int main(int argc, char* argv[]){
      *  Phase envoi de donnée WARNING : mettre sur la machine du département le projet.pdf
      */
 
-/*
+
     //le client envoie le nom du fichier qu'il veut recevoir
     memset(bufferUDP_read_server,0,sizeof(bufferUDP_read_server));
     int o = recvfrom(descripteur_data, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
@@ -143,7 +143,7 @@ int main(int argc, char* argv[]){
 
     printf("taille du fichier en octet : %d\n", taille_fichier);
     fseek(fichier, 0, SEEK_SET);          //on replace le curseur au début;
-*/
+
 
     printf("*** FIN DU TEST ***\n");
 

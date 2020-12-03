@@ -157,7 +157,7 @@ int main(int argc, char* argv[]){
       ferror(file);
     }
 
-    for(int i=1;i<((size_file/500)+1);i++){
+    for(int i=1;i<((size_file/500)+2);i++){
       printf("For i = %d\n",i);
       printf("On copie à partir de file_buffer[%d]\n",500*(i-1));
 

@@ -158,7 +158,7 @@ int main(int argc, char* argv[]){
     int packets_size = 500;
     int packets_number = size_file/packets_size;
 
-    for(int i=5;i<=(packets_number+1);i++){
+    for(int i=1;i<=(packets_number+1);i++){
       printf("For i = %d\n",i);
       printf("On copie à partir de file_buffer[%d]\n",packets_size*(i-1));
 

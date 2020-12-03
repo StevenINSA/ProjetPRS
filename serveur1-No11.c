@@ -180,6 +180,7 @@ int main(int argc, char* argv[]){
 
       memset(bufferUDP_read_server, 0, sizeof(bufferUDP_read_server));
       memset(buffer_sequence, 0, sizeof(buffer_sequence));
+      printf("buffer sequence avant réception : %s\n", buffer_sequence);
       recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
       memcpy(buffer_sequence, bufferUDP_read_server+3, sizeof(buffer_sequence)); //+3 car les 3 premières valeurs sont pour le mot ACK
       printf("message reçu : %s \n numéro de seq reçue par le serveur : %s\n", bufferUDP_read_server, buffer_sequence);

@@ -69,7 +69,6 @@ int main(int argc, char* argv[]){
 
     int size_syn = recvfrom(socket_UDP,bufferUDP_read_server,sizeof(bufferUDP_read_server),0,(struct sockaddr *)&client1_addr,&len);
     printf("size syn : %d\n",size_syn);
-    bufferUDP_read_server[size_syn]='\0';
     printf("Client 1 :%s\n", bufferUDP_read_server);
 
     int result = strcmp("SYN",bufferUDP_read_server);
@@ -112,8 +111,7 @@ int main(int argc, char* argv[]){
 
     // reception du ack final de la phase de connection
     memset(bufferUDP_read_server,0,sizeof(bufferUDP_read_server));
-    int size_ack = recvfrom(socket_UDP, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
-    bufferUDP_read_server[size_ack]='\0';
+    recvfrom(socket_UDP, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
     printf("message du client doit etre un ack : %s\n", bufferUDP_read_server);
     printf("Fermeture socket_udp principale\n");
     close(socket_UDP);
@@ -180,12 +178,12 @@ int main(int argc, char* argv[]){
       memset(bufferUDP_read_server, 0, sizeof(bufferUDP_read_server));
       memset(buffer_sequence, 0, sizeof(buffer_sequence));
 
-      char buffer_sequence2[6];
+      //char buffer_sequence2[6];
 
       recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
-      memcpy(buffer_sequence2, bufferUDP_read_server+3, sizeof(buffer_sequence2)); //+3 car les 3 premières valeurs sont pour le mot ACK
+      memcpy(buffer_sequence, bufferUDP_read_server+3, sizeof(buffer_sequence)); //+3 car les 3 premières valeurs sont pour le mot ACK
       printf("message reçu : %s\n", bufferUDP_read_server);
-      printf("numéro de seq reçue par le serveur : %s\n",buffer_sequence2);
+      printf("numéro de seq reçue par le serveur : %s\n",buffer_sequence);
 
       if (atoi(buffer_sequence) == seq){ //si le numéro de séquence reçu est égale au numéro de séquence envoyé
         seq++;                           //on peut alors envoyer la séquence suivante

@@ -60,7 +60,6 @@ int main(int argc, char* argv[]){
   char buffer_sequence[6];
   //char buffer_check_sequence[6];
   char buffer_segment[1000];// à redéfinir en fonction du client
-  int sequence_number=1;
 
   int data_descriptor = 0; //pour récupérer le descripteur de la nouvelle socket
 
@@ -156,10 +155,12 @@ int main(int argc, char* argv[]){
       perror("erreur lecture fichier");
       ferror(file);
     }
+    int packets_size = 500;
+    int packets_number = size_file/packets_size;
 
-    for(int i=1;i<((size_file/500)+2);i++){
+    for(int i=1;i<=(packets_number+1);i++){
       printf("For i = %d\n",i);
-      printf("On copie à partir de file_buffer[%d]\n",500*(i-1));
+      printf("On copie à partir de file_buffer[%d]\n",packets_size*(i-1));
 
       //Remise à zéro des buffers
       memset(buffer_segment,0,sizeof(buffer_segment));
@@ -170,9 +171,10 @@ int main(int argc, char* argv[]){
 
       //Segment auquel on rajoute en-tête
       memcpy(buffer_segment,buffer_sequence,6);
-      memcpy(buffer_segment+6,file_buffer+500*(i-1),500);
+      memcpy(buffer_segment+6,file_buffer+packets_size*(i-1),packets_size);
 
-      //int s = sendto(sock_client,buffer_segment,nb_blocs_lus+6,0,(struct sockaddr *)&clientUDP_addr,sizeof(struct sockaddr));
+      int s = sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
+      printf("I sent %d bytes\n", s);
     }
 
     printf("*** FIN DU TEST ***\n");

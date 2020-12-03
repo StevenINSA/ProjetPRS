@@ -57,6 +57,10 @@ int main(int argc, char* argv[]){
   char bufferUDP_write_server[100];
   char port_data_string[16];
   char sent_file[100] = ""; //pour le stockage du nom de fichier
+  char buffer_sequence[6];
+  //char buffer_check_sequence[6];
+  char buffer_segment[1000];// à redéfinir en fonction du client
+  int sequence_number=1;
 
   int data_descriptor = 0; //pour récupérer le descripteur de la nouvelle socket
 
@@ -147,12 +151,29 @@ int main(int argc, char* argv[]){
     //les octets lus sont stockés dans buffer_fichier
     //size_t read_blocks = fread(file_buffer,1,500,fichier); //500 blocs de 1 octet
     size_t read_blocks = fread(file_buffer,size_file,1,file); //on lit le fichier en un coup
-    if(read_blocks!=size_file){
+
+    if(read_blocks!=1){
       perror("erreur lecture fichier");
       ferror(file);
     }
-    printf("File buffer %s\n",file_buffer );
 
+    for(int i=1;i<((size_file/500)+1);i++){
+      printf("For i = %d\n",i);
+      printf("On copie à partir de file_buffer[%s]\n",file_buffer+500*(i-1));
+
+      //Remise à zéro des buffers
+      memset(buffer_segment,0,sizeof(buffer_segment));
+      memset(buffer_sequence,0,sizeof(buffer_sequence));
+
+      sprintf(buffer_sequence,"%d",sequence_number);
+      printf("Sequence number (from buffer_sequence) : %s\n",buffer_sequence);
+
+      //Segment auquel on rajoute en-tête
+      memcpy(buffer_segment,buffer_sequence,6);
+      memcpy(buffer_segment+6,file_buffer+500*(i-1),500);
+
+      //int s = sendto(sock_client,buffer_segment,nb_blocs_lus+6,0,(struct sockaddr *)&clientUDP_addr,sizeof(struct sockaddr));
+    }
 
     printf("*** FIN DU TEST ***\n");
 

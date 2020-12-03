@@ -126,7 +126,6 @@ int main(int argc, char* argv[]){
     //le client envoie le nom du fichier qu'il veut recevoir
     memset(bufferUDP_read_server,0,sizeof(bufferUDP_read_server));
     int size_file_name = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
-    bufferUDP_read_server[size_file_name]='\0';
     printf("le client veut : %s\n", bufferUDP_read_server);
 
     //il faut stocker le nom du fichier pour pouvoir le passer dans fopen

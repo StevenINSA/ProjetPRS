@@ -176,6 +176,7 @@ int main(int argc, char* argv[]){
       printf("I sent %d bytes\n", s);
 
       memset(bufferUDP_read_server, 0, sizeof(bufferUDP_read_server));
+      memset(buffer_check_sequence, 0, sizeof(buffer_check_sequence));
 
       recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
       memcpy(buffer_check_sequence, bufferUDP_read_server+3, sizeof(buffer_check_sequence)); //+3 car les 3 premières valeurs sont pour le mot ACK

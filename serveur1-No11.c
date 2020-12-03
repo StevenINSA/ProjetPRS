@@ -58,7 +58,7 @@ int main(int argc, char* argv[]){
   char port_data_string[16];
   char sent_file[100] = ""; //pour le stockage du nom de fichier
   char buffer_sequence[6];
-  char buffer_check_sequence[6];
+  //char buffer_check_sequence[6];
   char buffer_segment[1000];// à redéfinir en fonction du client
 
   int data_descriptor = 0; //pour récupérer le descripteur de la nouvelle socket
@@ -176,15 +176,15 @@ int main(int argc, char* argv[]){
       printf("I sent %d bytes\n", s);
 
       memset(bufferUDP_read_server, 0, sizeof(bufferUDP_read_server));
-      memset(buffer_check_sequence, 0, sizeof(buffer_check_sequence));
+      memset(buffer_sequence, 0, sizeof(buffer_sequence));
 
-      recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
-      memcpy(buffer_check_sequence, bufferUDP_read_server+3, sizeof(buffer_check_sequence)); //+3 car les 3 premières valeurs sont pour le mot ACK
+      int size_seq = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
+      memcpy(buffer_sequence, bufferUDP_read_server+3, size_seq-3); //+3 car les 3 premières valeurs sont pour le mot ACK
       printf("message reçu : %s\n", bufferUDP_read_server);
-      printf("numéro de seq reçue par le serveur (buffer_check_sequence) : %s\n",buffer_check_sequence);
-      printf("atoi de buffer_check_sequence %d\n", atoi(buffer_check_sequence));
+      printf("numéro de seq reçue par le serveur (buffer_check_sequence) : %s\n",buffer_sequence);
+      printf("atoi de buffer_check_sequence %d\n", atoi(buffer_sequence));
 
-      if (atoi(buffer_check_sequence) == seq){ //si le numéro de séquence reçu est égale au numéro de séquence envoyé
+      if (atoi(buffer_sequence) == seq){ //si le numéro de séquence reçu est égale au numéro de séquence envoyé
         seq++;                           //on peut alors envoyer la séquence suivante
       } else{
         printf("retransmission du n° de seq : %d \n", seq);

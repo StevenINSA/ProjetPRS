@@ -143,6 +143,15 @@ int main(int argc, char* argv[]){
 
     printf("taille du fichier en octet : %d\n", size_file);
     fseek(file, 0, SEEK_SET);          //on replace le curseur au début;
+    char file_buffer[size_file];
+    //les octets lus sont stockés dans buffer_fichier
+    //size_t read_blocks = fread(file_buffer,1,500,fichier); //500 blocs de 1 octet
+    size_t read_blocks = fread(file_buffer,size_file,1,file); //on lit le fichier en un coup
+    if(read_blocks!=size_file){
+      perror("erreur lecture fichier");
+      ferror(file);
+    }
+    printf("File buffer %s\n",file_buffer );
 
 
     printf("*** FIN DU TEST ***\n");

@@ -183,7 +183,7 @@ int main(int argc, char* argv[]){
       printf("buffer sequence avant réception : %s\n", buffer_sequence);
       printf("bufferUDP_read_server avant réception : %s\n", bufferUDP_read_server);
       recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
-      memcpy(buffer_sequence, bufferUDP_read_server+3, sizeof(buffer_sequence)); //+3 car les 3 premières valeurs sont pour le mot ACK
+      memcpy(buffer_sequence, bufferUDP_read_server+3, sizeof(buffer_sequence)-3); //+3 car les 3 premières valeurs sont pour le mot ACK
       printf("message reçu : %s \n numéro de seq reçue par le serveur : %s\n", bufferUDP_read_server, buffer_sequence);
 
       if (atoi(buffer_sequence) == seq){ //si le numéro de séquence reçu est égale au numéro de séquence envoyé

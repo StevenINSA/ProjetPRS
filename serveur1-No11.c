@@ -62,6 +62,12 @@ int main(int argc, char* argv[]){
   char buffer_segment[1000];// à redéfinir en fonction du client
 
   int data_descriptor = 0; //pour récupérer le descripteur de la nouvelle socket
+  //pour le timer (retransmission quand perte du ack)
+  fd_set set_descripteur_timer; //pour pouvoir utiliser un timer, il faut utiliser un select, donc un descripteur
+  struct timeval time1, time2;
+  struct timeval timeout, rtt;
+  //timeout.tv_sec, rtt.tv_sec = 0;
+  rtt.tv_usec = 5000;
 
   while(1){
     printf("Boucle while n°1.\n");
@@ -174,21 +180,44 @@ int main(int argc, char* argv[]){
 
       int s = sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
       printf("I sent %d bytes\n", s);
+      gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
 
-      memset(bufferUDP_read_server, 0, sizeof(bufferUDP_read_server));
-      memset(buffer_sequence, 0, sizeof(buffer_sequence));
+      //partie mise en place du timer pour la retransmission
+      FD_ZERO(&set_descripteur_timer);
+      FD_SET(data_descriptor, &set_descripteur_timer);
+      timeout.tv_usec = (rtt.tv_usec);
+      printf("valeur du timeout en ms : %d\n", timeout.tv_usec);
+      //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
 
-      int size_seq = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
-      memcpy(buffer_sequence, bufferUDP_read_server+3, size_seq-3); //+3 car les 3 premières valeurs sont pour le mot ACK
-      printf("message reçu : %s\n", bufferUDP_read_server);
-      printf("numéro de seq reçue par le serveur (buffer_check_sequence) : %s\n",buffer_sequence);
-      printf("atoi de buffer_check_sequence %d\n", atoi(buffer_sequence));
+      select(data_descriptor, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
 
-      if (atoi(buffer_sequence) == seq){ //si le numéro de séquence reçu est égale au numéro de séquence envoyé
-        seq++;                           //on peut alors envoyer la séquence suivante
-      } else{
-        printf("retransmission du n° de seq : %d \n", seq);
+      if (FD_ISSET(data_descriptor, &set_descripteur_timer)){ //si on a une activité sur la socket (i.e on reçoit un ack)
+
+        memset(bufferUDP_read_server, 0, sizeof(bufferUDP_read_server));
+        memset(buffer_sequence, 0, sizeof(buffer_sequence));
+
+        int size_seq = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
+        memcpy(buffer_sequence, bufferUDP_read_server+3, size_seq-3); //+3 car les 3 premières valeurs sont pour le mot ACK
+        gettimeofday(&time2, NULL);                                   //on recalcule une timeofday pour faire la différence avec le premier
+        rtt.tv_usec = time2.tv_usec - time1.tv_usec;                  //on estime ainsi le rtt à chaque échange
+
+        printf("estimation du RTT : %d\n", rtt.tv_usec);
+        printf("message reçu : %s\n", bufferUDP_read_server);
+        printf("numéro de seq reçue par le serveur (buffer_check_sequence) : %s\n",buffer_sequence);
+        printf("atoi de buffer_check_sequence %d\n", atoi(buffer_sequence));
+
+        if (atoi(buffer_sequence) == seq){ //si le numéro de séquence reçu est égale au numéro de séquence envoyé
+          seq++;                           //on peut alors envoyer la séquence suivante
+        } else{
+          printf("retransmission du n° de seq : %d \n", seq);
+        }
       }
+      else {
+        printf("segment perdu - Timeout ! Retransmission\n");
+        rtt.tv_usec = 5000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission
+      }
+
+
     }
 
     printf("*** FIN DU TEST ***\n");

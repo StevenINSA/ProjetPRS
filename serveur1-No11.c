@@ -64,10 +64,10 @@ int main(int argc, char* argv[]){
   int data_descriptor = 0; //pour récupérer le descripteur de la nouvelle socket
 
   //pour le timer (retransmission quand perte du ack)
-  fd_set set_descripteur_timer; //pour pouvoir utiliser un timer, il faut utiliser un select, donc un descripteur
+  fd_set set_descripteur_timer;  //pour pouvoir utiliser un timer, il faut utiliser un select, donc un descripteur
   struct timeval time1, time2, timeout, rtt;
-  //timeout.tv_sec, rtt.tv_sec = 0;
-  rtt.tv_usec = 5000;           //on fixe au début un rtt de 5sec
+  timeout.tv_sec, rtt.tv_sec = 0;//on fixe ces valeurs à 0 pour supprimer des potentiels résidus 
+  rtt.tv_usec = 5000;            //on fixe au début un rtt de 5sec
 
   while(1){
     printf("Boucle while n°1.\n");

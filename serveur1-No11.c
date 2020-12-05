@@ -66,7 +66,7 @@ int main(int argc, char* argv[]){
   //pour le timer (retransmission quand perte du ack)
   fd_set set_descripteur_timer;  //pour pouvoir utiliser un timer, il faut utiliser un select, donc un descripteur
   struct timeval time1, time2, timeout, rtt;
-  timeout.tv_sec, rtt.tv_sec = 0;//on fixe ces valeurs à 0 pour supprimer des potentiels résidus 
+  timeout.tv_sec, rtt.tv_sec = 0;//on fixe ces valeurs à 0 pour supprimer des potentiels résidus
   rtt.tv_usec = 5000;            //on fixe au début un rtt de 5sec
 
   while(1){
@@ -189,9 +189,9 @@ int main(int argc, char* argv[]){
       printf("valeur du timeout en ms : %d\n", timeout.tv_usec);
       //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
 
-      select(data_descriptor, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
+      select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
 
-      if (FD_ISSET(data_descriptor+1, &set_descripteur_timer)){ //si on a une activité sur la socket (i.e on reçoit un ack)
+      if (FD_ISSET(data_descriptor, &set_descripteur_timer)){ //si on a une activité sur la socket (i.e on reçoit un ack)
 
         memset(bufferUDP_read_server, 0, sizeof(bufferUDP_read_server));
         memset(buffer_sequence, 0, sizeof(buffer_sequence));

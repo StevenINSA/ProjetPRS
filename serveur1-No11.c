@@ -8,6 +8,7 @@
 #include <arpa/inet.h> //pour traduire au format réseau/machine
 #include <sys/select.h> //fonction select
 #include <sys/time.h> //pour les timers
+#include <math.h> //pour la puissance
 
 int main(int argc, char* argv[]){
 
@@ -67,7 +68,7 @@ int main(int argc, char* argv[]){
   fd_set set_descripteur_timer;  //pour pouvoir utiliser un timer, il faut utiliser un select, donc un descripteur
   struct timeval time1, time2, timeout, rtt;
   timeout.tv_sec, rtt.tv_sec = 0;//on fixe ces valeurs à 0 pour supprimer des potentiels résidus
-  rtt.tv_usec = 5000;            //on fixe au début un rtt de 5sec
+  rtt.tv_usec = 5000;            //on fixe au début un rtt de 5ms
 
   while(1){
     printf("Boucle while n°1.\n");
@@ -163,7 +164,7 @@ int main(int argc, char* argv[]){
     int seq = 1;
 
     //for(int i=1;i<=(packets_number+1);i++)
-    while( seq <= (packets_number+1)){
+    while (seq <= (packets_number+1)){
       printf("For i = %d\n",seq);
       printf("On copie à partir de file_buffer[%d]\n",packets_size*(seq-1));
 
@@ -199,7 +200,7 @@ int main(int argc, char* argv[]){
         int size_seq = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
         memcpy(buffer_sequence, bufferUDP_read_server+3, size_seq-3); //+3 car les 3 premières valeurs sont pour le mot ACK
         gettimeofday(&time2, NULL);                                   //on recalcule une timeofday pour faire la différence avec le premier
-        rtt.tv_usec = time2.tv_usec - time1.tv_usec;                  //on estime ainsi le rtt à chaque échange
+        rtt.tv_usec = (time2.tv_sec-time1.tv_sec)*pow(10,6) + (time2.tv_usec - time1.tv_usec);         //on estime ainsi le rtt à chaque échange, on rajoute les secondes au cas où
 
         printf("estimation du RTT : %d\n", rtt.tv_usec);
         printf("message reçu : %s\n", bufferUDP_read_server);

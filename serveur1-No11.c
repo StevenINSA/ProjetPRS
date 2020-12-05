@@ -7,7 +7,7 @@
 #include <unistd.h> //pour les fonctions read() et write()
 #include <arpa/inet.h> //pour traduire au format réseau/machine
 #include <sys/select.h> //fonction select
-#include <sys/time.h> //fonction select
+#include <sys/time.h> //pour les timers
 
 int main(int argc, char* argv[]){
 
@@ -62,12 +62,12 @@ int main(int argc, char* argv[]){
   char buffer_segment[1000];// à redéfinir en fonction du client
 
   int data_descriptor = 0; //pour récupérer le descripteur de la nouvelle socket
+
   //pour le timer (retransmission quand perte du ack)
   fd_set set_descripteur_timer; //pour pouvoir utiliser un timer, il faut utiliser un select, donc un descripteur
-  struct timeval time1, time2;
-  struct timeval timeout, rtt;
+  struct timeval time1, time2, timeout, rtt;
   //timeout.tv_sec, rtt.tv_sec = 0;
-  rtt.tv_usec = 5000;
+  rtt.tv_usec = 5000;           //on fixe au début un rtt de 5sec
 
   while(1){
     printf("Boucle while n°1.\n");
@@ -123,7 +123,7 @@ int main(int argc, char* argv[]){
     close(socket_UDP);
 
     /*
-     *  Phase envoi de donnée WARNING : mettre sur la machine du département le projet.pdf
+     *  Phase envoi de donnée
      */
 
 
@@ -191,7 +191,7 @@ int main(int argc, char* argv[]){
 
       select(data_descriptor, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
 
-      if (FD_ISSET(data_descriptor, &set_descripteur_timer)){ //si on a une activité sur la socket (i.e on reçoit un ack)
+      if (FD_ISSET(data_descriptor+1, &set_descripteur_timer)){ //si on a une activité sur la socket (i.e on reçoit un ack)
 
         memset(bufferUDP_read_server, 0, sizeof(bufferUDP_read_server));
         memset(buffer_sequence, 0, sizeof(buffer_sequence));

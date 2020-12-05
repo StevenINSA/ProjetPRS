@@ -190,9 +190,12 @@ int main(int argc, char* argv[]){
       printf("valeur du timeout en µs : %d\n", timeout.tv_usec);
       //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
 
-      select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
+      int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
 
-      if (FD_ISSET(data_descriptor, &set_descripteur_timer)){ //si on a une activité sur la socket (i.e on reçoit un ack)
+      if (select_value == -1)
+        perror("select error\n");
+
+      else if (select_value){ //si on a une activité sur la socket (i.e on reçoit un ack)
 
         memset(bufferUDP_read_server, 0, sizeof(bufferUDP_read_server));
         memset(buffer_sequence, 0, sizeof(buffer_sequence));

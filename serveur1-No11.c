@@ -57,9 +57,8 @@ int main(int argc, char* argv[]){
   char bufferUDP_read_server[100]; //on crée un buffer pour stocker 99 caractères (le dernier étant réservé au \0 pour signaler la fin de la chaîne
   char bufferUDP_write_server[100];
   char port_data_string[16];
-  char sent_file[100] = ""; //pour le stockage du nom de fichier
+  char sent_file[100]; //pour le stockage du nom de fichier
   char buffer_sequence[6];
-  //char buffer_check_sequence[6];
   char buffer_segment[1000];// à redéfinir en fonction du client
 
   int data_descriptor = 0; //pour récupérer le descripteur de la nouvelle socket
@@ -68,8 +67,7 @@ int main(int argc, char* argv[]){
   fd_set set_descripteur_timer;  //pour pouvoir utiliser un timer, il faut utiliser un select, donc un descripteur
   struct timeval time1, time2, timeout, rtt;
   timeout.tv_sec, rtt.tv_sec = 0;//on fixe ces valeurs à 0 pour supprimer des potentiels résidus
-  rtt.tv_usec = 500000;            //on fixe au début un rtt de 0,5s
-
+  rtt.tv_usec = 50000;           //on fixe au début un rtt de 50ms
 
   while(1){
     printf("Boucle while n°1.\n");
@@ -188,10 +186,8 @@ int main(int argc, char* argv[]){
       FD_ZERO(&set_descripteur_timer);
       FD_SET(data_descriptor, &set_descripteur_timer);
       timeout.tv_usec = 3 * rtt.tv_usec;
-      timeout.tv_sec = 0;
+      timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
       printf("valeur du timeout en µs : %d\n", timeout.tv_usec);
-      printf("valeur du timeout en s : %ld\n", timeout.tv_sec);
-      printf("valeur du rtt en s : %ld\n", rtt.tv_sec);
       //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
 
       int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
@@ -222,7 +218,7 @@ int main(int argc, char* argv[]){
       }
       else {
         printf("segment perdu - Timeout ! Retransmission\n");
-        rtt.tv_usec = 500000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission
+        rtt.tv_usec = 50000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission
       }
 
     }

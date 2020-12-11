@@ -278,7 +278,7 @@ int main(int argc, char* argv[]){
 
           sendto(data_descriptor,bufferUDP_write_server,sizeof(bufferUDP_write_server),0,(struct sockaddr *)&client1_addr,len);
 
-          close(data_descriptor);
+          //close(data_descriptor);
         } //if FDISSET
       } //if socket existe
     } //for

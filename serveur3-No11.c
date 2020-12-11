@@ -94,8 +94,8 @@ int main(int argc, char* argv[]){
     }
     printf("Max = %d\n",max);
     int max_set=max(socket_UDP,max);
-    printf("Max set : %d",max_set);
-    
+    printf("Max set : %d\n",max_set);
+
     //SELECT pour accueillir les clients
     int activity=select(max_set+1,&set_descripteurs,NULL,NULL,NULL);
 		printf("Activity : %d\n",activity);
@@ -279,7 +279,6 @@ int main(int argc, char* argv[]){
           sendto(data_descriptor,bufferUDP_write_server,sizeof(bufferUDP_write_server),0,(struct sockaddr *)&client1_addr,len);
 
           close(data_descriptor);
-          break;
         } //if FDISSET
       } //if socket existe
     } //for

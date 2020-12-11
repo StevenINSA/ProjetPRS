@@ -74,12 +74,14 @@ int main(int argc, char* argv[]){
   fd_set set_descripteurs;
   int set_sockets_clients[10]={0,0,0,0,0,0,0,0,0,0};
 
+  FD_ZERO(&set_descripteurs);
+  FD_SET(socket_UDP,&set_descripteurs);
 
   while(1){
     printf("Boucle while n°1.\n");
 
-    FD_ZERO(&set_descripteurs);
-    FD_SET(socket_UDP,&set_descripteurs);
+    //FD_ZERO(&set_descripteurs);
+    //FD_SET(socket_UDP,&set_descripteurs);
     for(int i=0;i<10;i++){
       if(set_sockets_clients[i]!=0){
         FD_SET(set_sockets_clients[i],&set_descripteurs);

@@ -94,7 +94,8 @@ int main(int argc, char* argv[]){
     }
     printf("Max = %d\n",max);
     int max_set=max(socket_UDP,max);
-
+    printf("Max set : %d",max_set);
+    
     //SELECT pour accueillir les clients
     int activity=select(max_set+1,&set_descripteurs,NULL,NULL,NULL);
 		printf("Activity : %d\n",activity);

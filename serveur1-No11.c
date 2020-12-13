@@ -224,7 +224,7 @@ int main(int argc, char* argv[]){
     }
     gettimeofday(&time_debit_end, NULL);
 
-    printf("coucou\n");
+    printf("taille du fichier envoyé : %d\n", size_file);
 
     printf("*** FIN DE TRANSMISSION ***\n");
     memset(bufferUDP_write_server,0,sizeof(bufferUDP_write_server));
@@ -234,6 +234,7 @@ int main(int argc, char* argv[]){
 
     time_debit.tv_usec = (time_debit_start.tv_sec-time_debit_end.tv_sec)*pow(10,6) + (time_debit_start.tv_usec - time_debit_end.tv_usec);
     float debit = size_file / time_debit.tv_usec;
+    printf("temps débit en micro sec : %d\n", time_debit.tv_usec);
     printf("débit lors de la transmission : %f Mo/s\n", debit);
 
     close(data_descriptor);

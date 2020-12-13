@@ -65,8 +65,7 @@ int main(int argc, char* argv[]){
 
   //pour le timer (retransmission quand perte du ack)
   fd_set set_descripteur_timer;  //pour pouvoir utiliser un timer, il faut utiliser un select, donc un descripteur
-  struct timeval time1, time2, timeout, rtt;
-  timeout.tv_sec, rtt.tv_sec = 0;//on fixe ces valeurs à 0 pour supprimer des potentiels résidus
+  struct timeval time1, time2, timeout, rtt, time_debit, time_debit_start, time_debit_end;
   rtt.tv_usec = 50000;           //on fixe au début un rtt de 50ms
 
   while(1){
@@ -162,7 +161,8 @@ int main(int argc, char* argv[]){
     int packets_number = size_file/packets_size;
     int seq = 1;
 
-    //for(int i=1;i<=(packets_number+1);i++)
+    gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
+
     while (seq <= (packets_number+1)){
       printf("For i = %d\n",seq);
       printf("On copie à partir de file_buffer[%d]\n",packets_size*(seq-1));
@@ -178,8 +178,8 @@ int main(int argc, char* argv[]){
       memcpy(buffer_segment,buffer_sequence,6);
       memcpy(buffer_segment+6,file_buffer+packets_size*(seq-1),packets_size);
 
-      int s = sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
-      printf("I sent %d bytes\n", s);
+      sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
+
       gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
 
       //partie mise en place du timer pour la retransmission
@@ -222,12 +222,17 @@ int main(int argc, char* argv[]){
       }
 
     }
-
+    gettimeofday(&time_debit_end, NULL);
+    
     printf("*** FIN DE TRANSMISSION ***\n");
     memset(bufferUDP_write_server,0,sizeof(bufferUDP_write_server));
     memcpy(bufferUDP_write_server,"FIN",3);
 
     sendto(data_descriptor,bufferUDP_write_server,sizeof(bufferUDP_write_server),0,(struct sockaddr *)&client1_addr,len);
+
+    time_debit.tv_usec = (time_debit_start.tv_sec-time_debit_end.tv_sec)*pow(10,6) + (time_debit_start.tv_usec - time_debit_end.tv_usec);
+    float debit = size_file / time_debit.tv_usec;
+    printf("débit lors de la transmission : %f Mo/s\n", debit);
 
     close(data_descriptor);
     break;

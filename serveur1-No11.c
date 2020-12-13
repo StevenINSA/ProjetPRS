@@ -157,7 +157,7 @@ int main(int argc, char* argv[]){
       perror("erreur lecture fichier");
       ferror(file);
     }
-    int packets_size = 10000;
+    int packets_size = 2000;
     int packets_number = size_file/packets_size;
     int seq = 1;
 

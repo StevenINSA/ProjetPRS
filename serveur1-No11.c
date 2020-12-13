@@ -59,7 +59,7 @@ int main(int argc, char* argv[]){
   char port_data_string[16];
   char sent_file[100]; //pour le stockage du nom de fichier
   char buffer_sequence[6];
-  char buffer_segment[1000];// à redéfinir en fonction du client
+  char buffer_segment[2000];// à redéfinir en fonction du client
 
   int data_descriptor = 0; //pour récupérer le descripteur de la nouvelle socket
 
@@ -157,7 +157,7 @@ int main(int argc, char* argv[]){
       perror("erreur lecture fichier");
       ferror(file);
     }
-    int packets_size = 1494;
+    int packets_size = 1500;
     int packets_number = size_file/packets_size;
     int seq = 1;
 

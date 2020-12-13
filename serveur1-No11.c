@@ -223,7 +223,9 @@ int main(int argc, char* argv[]){
 
     }
     gettimeofday(&time_debit_end, NULL);
-    
+
+    printf("coucou\n");
+
     printf("*** FIN DE TRANSMISSION ***\n");
     memset(bufferUDP_write_server,0,sizeof(bufferUDP_write_server));
     memcpy(bufferUDP_write_server,"FIN",3);

@@ -227,14 +227,10 @@ int main(int argc, char* argv[]){
         //} else{
         //  printf("retransmission du n° de seq : %d \n", seq);
         //}
-        if (atoi(buffer_sequence) == seq){ //si le numéro de séquence reçu est égale au max de la fenêtre
-          seq++;                         //on peut alors envoyer la séquence suivante
-          window=window+40;
-          printf("Nouvelle fenêtre : %d\n",window);
-        }
 
-        //seq = atoi(buffer_sequence) + 1; //on fait glisser la fenêtre, on va transmettre à partir de la valeur du ACK
-        //window = seq + window_size;
+
+        seq = atoi(buffer_sequence) + 1; //on fait glisser la fenêtre, on va transmettre à partir de la valeur du ACK
+        window = seq + window_size;
         ack_fin = atoi(buffer_sequence); //sert à comparer si le ack reçu vaut le dernier ack qu'on attend
         //printf("on transmet à partir du n° : %d\n", seq);
       }

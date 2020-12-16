@@ -160,7 +160,7 @@ int main(int argc, char* argv[]){
     int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 du n° de séquence
     int packets_number = size_file/packets_size;
     int seq = 1;
-    int window_size = 50; //on fixe une fenêtre de 50 segments à envoyer sans attendre de ack (en sachant que le client 1 drop à partir de 100)
+    int window_size = 20; //on fixe une fenêtre de 50 segments à envoyer sans attendre de ack (en sachant que le client 1 drop à partir de 100)
     int window = window_size; //cette valeur va servir de seuil pour fixer le nombre de segment qu'on envoit
 
     gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
@@ -192,7 +192,7 @@ int main(int argc, char* argv[]){
       //partie mise en place du timer pour la retransmission
       FD_ZERO(&set_descripteur_timer);
       FD_SET(data_descriptor, &set_descripteur_timer);
-      timeout.tv_usec = 5 * rtt.tv_usec; //on sécurise le temps d'attente de retransmission
+      timeout.tv_usec = 10 * rtt.tv_usec; //on sécurise le temps d'attente de retransmission
       timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
       printf("valeur du timeout en µs : %d\n", timeout.tv_usec);
       //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt

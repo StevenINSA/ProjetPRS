@@ -162,6 +162,7 @@ int main(int argc, char* argv[]){
     int seq = 1;
     int window_size = 20; //on fixe une fenêtre de 50 segments à envoyer sans attendre de ack (en sachant que le client 1 drop à partir de 100)
     int window = window_size; //cette valeur va servir de seuil pour fixer le nombre de segment qu'on envoit
+    int ack_fin = 0;
 
     gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
 
@@ -226,6 +227,7 @@ int main(int argc, char* argv[]){
         //}
         seq = atoi(buffer_sequence) + 1; //on fait glisser la fenêtre, on va transmettre à partir de la valeur du ACK
         window = seq + window_size;
+        ack_fin = atoi(buffer_sequence); //sert à comparer si le ack reçu vaut le dernier ack qu'on attend
         printf("on transmet à partir du n° : %d\n", seq);
       }
       else {

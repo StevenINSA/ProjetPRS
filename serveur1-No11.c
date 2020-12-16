@@ -181,7 +181,8 @@ int main(int argc, char* argv[]){
         memcpy(buffer_segment+6,file_buffer+packets_size*(seq-1),packets_size);
 
         sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
-
+        seq++;
+        
         if (seq == (seq+window)) { //c'est le dernier segment qu'on envoit => on lance le timer
           gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
         }

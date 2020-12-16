@@ -230,9 +230,11 @@ int main(int argc, char* argv[]){
         //  printf("retransmission du n° de seq : %d \n", seq);
         //}
 
+        if (atoi(buffer_sequence)==window){
+          seq = window+1; //on fait glisser la fenêtre, on va transmettre à partir de la valeur du ACK
+          window=window+40;
+        }
 
-        seq = atoi(buffer_sequence) + window; //on fait glisser la fenêtre, on va transmettre à partir de la valeur du ACK
-        window++;
         ack_fin = atoi(buffer_sequence); //sert à comparer si le ack reçu vaut le dernier ack qu'on attend
         //printf("on transmet à partir du n° : %d\n", seq);
       }

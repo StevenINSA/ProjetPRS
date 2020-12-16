@@ -186,7 +186,6 @@ int main(int argc, char* argv[]){
         sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
         seq++;
 
-
       }
       //on lance le timer une fois qu'on a envoyé notre salve
       gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
@@ -195,14 +194,12 @@ int main(int argc, char* argv[]){
       //partie mise en place du timer pour la retransmission
       FD_ZERO(&set_descripteur_timer);
       FD_SET(data_descriptor, &set_descripteur_timer);
-      timeout.tv_usec = 10* rtt.tv_usec; //on sécurise le temps d'attente de retransmission
+      timeout.tv_usec = 5* rtt.tv_usec; //on sécurise le temps d'attente de retransmission
       timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
       printf("valeur du timeout en µs : %d\n", timeout.tv_usec);
       //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
 
-      printf("SLEEP\n");
-      sleep(timeout.tv_usec*pow(10,-6)); //le temps de recevoir les derniers acks envoyés par le client
-
+      sleep(window_size*rtt.tv_usec*pow(10,-6)); //le temps de recevoir les derniers acks envoyés par le client
 
       int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
 
@@ -230,11 +227,9 @@ int main(int argc, char* argv[]){
         //  printf("retransmission du n° de seq : %d \n", seq);
         //}
 
-        if (atoi(buffer_sequence)==window){
-          seq = window+1; //on fait glisser la fenêtre, on va transmettre à partir de la valeur du ACK
-          window=window+40;
-        }
 
+        seq = atoi(buffer_sequence) + 1; //on fait glisser la fenêtre, on va transmettre à partir de la valeur du ACK
+        window = seq + window_size;
         ack_fin = atoi(buffer_sequence); //sert à comparer si le ack reçu vaut le dernier ack qu'on attend
         //printf("on transmet à partir du n° : %d\n", seq);
       }

@@ -227,18 +227,20 @@ int main(int argc, char* argv[]){
           //} else{
           //  printf("retransmission du n° de seq : %d \n", seq);
           //}
-
-
-          seq = atoi(buffer_sequence) + 1; //on fait glisser la fenêtre, on va transmettre à partir de la valeur du ACK
-          window = seq + window_size;
           ack_fin = atoi(buffer_sequence); //sert à comparer si le ack reçu vaut le dernier ack qu'on attend
+          }
+          else {
+            printf("segment perdu - Timeout ! Retransmission\n");
+            rtt.tv_usec = 50000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission
+          }
+        }
+
           //printf("on transmet à partir du n° : %d\n", seq);
-        }
-        else {
-          printf("segment perdu - Timeout ! Retransmission\n");
-          rtt.tv_usec = 50000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission
-        }
-      }
+
+
+        seq = atoi(buffer_sequence) + 1; //on fait glisser la fenêtre, on va transmettre à partir de la valeur du ACK
+        window = seq + window_size;
+
 
 
     } //fin while

@@ -185,7 +185,7 @@ int main(int argc, char* argv[]){
 
         sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
         seq++;
-        window++;
+        
 
       }
       //on lance le timer une fois qu'on a envoyé notre salve

@@ -159,9 +159,10 @@ int main(int argc, char* argv[]){
     }
     int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 du n° de séquence
     int packets_number = size_file/packets_size;
+    printf("Nombre de paquets à envoyer au total : %d",packets_number+1);
     int seq = 1;
     int window_size = 40; //on fixe une fenêtre de 50 segments à envoyer sans attendre de ack (en sachant que le client 1 drop à partir de 100)
-    int window = window_size; //cette valeur va servir de seuil pour fixer le nombre de segment qu'on envoit
+    int window=40; //cette valeur va servir de seuil pour fixer le nombre de segment qu'on envoit
     int ack_fin = 0;
 
     gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
@@ -184,6 +185,7 @@ int main(int argc, char* argv[]){
 
         sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
         seq++;
+        window++;
 
       }
       //on lance le timer une fois qu'on a envoyé notre salve
@@ -225,9 +227,14 @@ int main(int argc, char* argv[]){
         //} else{
         //  printf("retransmission du n° de seq : %d \n", seq);
         //}
-        seq = atoi(buffer_sequence) + 1; //on fait glisser la fenêtre, on va transmettre à partir de la valeur du ACK
-        window = seq + window_size;
-        ack_fin = atoi(buffer_sequence); //sert à comparer si le ack reçu vaut le dernier ack qu'on attend
+        printf("Valeur du ACK reçu : %d",atoi(buffer_sequence));
+        if(atoi(buffer_sequence)==window){
+          window=window+window_size;
+          printf("Nouvelle fenêtre : %d",window);
+        }
+        //seq = atoi(buffer_sequence) + 1; //on fait glisser la fenêtre, on va transmettre à partir de la valeur du ACK
+        //window = seq + window_size;
+        //ack_fin = atoi(buffer_sequence); //sert à comparer si le ack reçu vaut le dernier ack qu'on attend
         printf("on transmet à partir du n° : %d\n", seq);
       }
       else {

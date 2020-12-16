@@ -200,9 +200,9 @@ int main(int argc, char* argv[]){
       printf("valeur du timeout en µs : %d\n", timeout.tv_usec);
       //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
 
-      //sleep(timeout.tv_usec*pow(10,-6)); //le temps de recevoir les derniers acks envoyés par le client
-      printf("SLEEP %d\n",2);
-      sleep(2);
+      printf("SLEEP\n");
+      sleep(timeout.tv_usec*pow(10,-4)); //le temps de recevoir les derniers acks envoyés par le client
+
 
       int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
 

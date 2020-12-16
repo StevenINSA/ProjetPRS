@@ -169,7 +169,7 @@ int main(int argc, char* argv[]){
       //printf("For i = %d\n",seq);
       //printf("On copie à partir de file_buffer[%d]\n",packets_size*(seq-1));
 
-      while (seq <= window || seq <= packets_number+1) { //si le n° de seq est inférieur à la taille de la fenêtre (ou inférieur au nombre de ack à recevoir), on envoit
+      while (seq <= window && seq <= packets_number+1) { //si le n° de seq est inférieur à la taille de la fenêtre (ou inférieur au nombre de ack à recevoir), on envoit
         //Remise à zéro des buffers
         memset(buffer_segment,0,sizeof(buffer_segment));
         memset(buffer_sequence,0,sizeof(buffer_sequence));
@@ -197,7 +197,7 @@ int main(int argc, char* argv[]){
       printf("valeur du timeout en µs : %d\n", timeout.tv_usec);
       //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
 
-      sleep(timeout.tv_usec); //le temps de recevoir les derniers acks envoyés par le client
+      sleep(timeout.tv_usec*pow(10,-6)); //le temps de recevoir les derniers acks envoyés par le client
 
       int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
 

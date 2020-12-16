@@ -234,7 +234,7 @@ int main(int argc, char* argv[]){
         printf("segment perdu - Timeout ! Retransmission\n");
         rtt.tv_usec = 50000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission
       }
-    if (atoi(buffer_sequence) == packets_number+1) //si le client ack le dernier segment à envoyer, on sort de la boucle
+    if (ack_fin == packets_number+1) //si le client ack le dernier segment à envoyer, on sort de la boucle
       break;
     } //fin while
     gettimeofday(&time_debit_end, NULL);

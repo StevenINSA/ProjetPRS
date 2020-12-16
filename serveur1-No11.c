@@ -165,11 +165,11 @@ int main(int argc, char* argv[]){
 
     gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
 
-    while (seq <= (packets_number+1)){
+    while (1){ //phase envoie de segments
       //printf("For i = %d\n",seq);
       //printf("On copie à partir de file_buffer[%d]\n",packets_size*(seq-1));
 
-      while (seq <= window || seq <= packets_number) { //si le n° de seq est inférieur à la taille de la fenêtre (ou inférieur au nombre de ack à recevoir), on envoit
+      while (seq <= window || seq <= packets_number+1) { //si le n° de seq est inférieur à la taille de la fenêtre (ou inférieur au nombre de ack à recevoir), on envoit
         //Remise à zéro des buffers
         memset(buffer_segment,0,sizeof(buffer_segment));
         memset(buffer_sequence,0,sizeof(buffer_sequence));
@@ -187,17 +187,17 @@ int main(int argc, char* argv[]){
       }
       //on lance le timer une fois qu'on a envoyé notre salve
       gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
-
       //on a fini d'envoyer toute les données, on attend le ack
-      sleep(timeout.tv_usec); //le temps de recevoir les derniers acks envoyés par le client
 
       //partie mise en place du timer pour la retransmission
       FD_ZERO(&set_descripteur_timer);
       FD_SET(data_descriptor, &set_descripteur_timer);
-      timeout.tv_usec = 10 * rtt.tv_usec; //on sécurise le temps d'attente de retransmission
+      timeout.tv_usec = 5 * rtt.tv_usec; //on sécurise le temps d'attente de retransmission
       timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
       printf("valeur du timeout en µs : %d\n", timeout.tv_usec);
       //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
+
+      sleep(timeout.tv_usec); //le temps de recevoir les derniers acks envoyés par le client
 
       int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
 
@@ -232,7 +232,8 @@ int main(int argc, char* argv[]){
         printf("segment perdu - Timeout ! Retransmission\n");
         rtt.tv_usec = 50000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission
       }
-
+    if (atoi(buffer_sequence) == packets_number+1) //si le client ack le dernier segment à envoyer, on sort de la boucle
+      break;
     } //fin while
     gettimeofday(&time_debit_end, NULL);
 

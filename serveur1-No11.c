@@ -185,7 +185,7 @@ int main(int argc, char* argv[]){
 
         sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
         seq++;
-        
+
 
       }
       //on lance le timer une fois qu'on a envoyé notre salve
@@ -227,14 +227,10 @@ int main(int argc, char* argv[]){
         //} else{
         //  printf("retransmission du n° de seq : %d \n", seq);
         //}
-        printf("Valeur du ACK reçu : %d\n",atoi(buffer_sequence));
-        if(atoi(buffer_sequence)==window){
-          window=window+window_size;
-          printf("Nouvelle fenêtre : %d\n",window);
-        }
-        //seq = atoi(buffer_sequence) + 1; //on fait glisser la fenêtre, on va transmettre à partir de la valeur du ACK
-        //window = seq + window_size;
-        //ack_fin = atoi(buffer_sequence); //sert à comparer si le ack reçu vaut le dernier ack qu'on attend
+
+        seq = atoi(buffer_sequence) + 1; //on fait glisser la fenêtre, on va transmettre à partir de la valeur du ACK
+        window = seq + window_size;
+        ack_fin = atoi(buffer_sequence); //sert à comparer si le ack reçu vaut le dernier ack qu'on attend
         printf("on transmet à partir du n° : %d\n", seq);
       }
       else {

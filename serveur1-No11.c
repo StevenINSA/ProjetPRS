@@ -215,7 +215,7 @@ int main(int argc, char* argv[]){
           int size_seq = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
           memcpy(buffer_sequence, bufferUDP_read_server+3, size_seq-3); //+3 car les 3 premières valeurs sont pour le mot ACK
           gettimeofday(&time2, NULL);                                   //on recalcule une timeofday pour faire la différence avec le premier
-          rtt.tv_usec = (time2.tv_sec-time1.tv_sec)*pow(10,6) + (time2.tv_usec - time1.tv_usec) - (window_size/5*timeout.tv_usec*pow(10,-6));         //on estime ainsi le rtt à chaque échange, on rajoute les secondes au cas où
+          rtt.tv_usec = (time2.tv_sec-time1.tv_sec)*pow(10,6) + (time2.tv_usec - time1.tv_usec);         //on estime ainsi le rtt à chaque échange, on rajoute les secondes au cas où
 
           printf("estimation du RTT : %d\n", rtt.tv_usec);
           printf("message reçu : %s\n", bufferUDP_read_server);

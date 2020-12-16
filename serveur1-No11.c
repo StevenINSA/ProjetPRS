@@ -227,10 +227,10 @@ int main(int argc, char* argv[]){
         //} else{
         //  printf("retransmission du n° de seq : %d \n", seq);
         //}
-        printf("Valeur du ACK reçu : %d",atoi(buffer_sequence));
+        printf("Valeur du ACK reçu : %d\n",atoi(buffer_sequence));
         if(atoi(buffer_sequence)==window){
           window=window+window_size;
-          printf("Nouvelle fenêtre : %d",window);
+          printf("Nouvelle fenêtre : %d\n",window);
         }
         //seq = atoi(buffer_sequence) + 1; //on fait glisser la fenêtre, on va transmettre à partir de la valeur du ACK
         //window = seq + window_size;

@@ -160,7 +160,7 @@ int main(int argc, char* argv[]){
     int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 du n° de séquence
     int packets_number = size_file/packets_size;
     int seq = 1;
-    int window_size = 20; //on fixe une fenêtre de 50 segments à envoyer sans attendre de ack (en sachant que le client 1 drop à partir de 100)
+    int window_size = 40; //on fixe une fenêtre de 50 segments à envoyer sans attendre de ack (en sachant que le client 1 drop à partir de 100)
     int window = window_size; //cette valeur va servir de seuil pour fixer le nombre de segment qu'on envoit
     int ack_fin = 0;
 

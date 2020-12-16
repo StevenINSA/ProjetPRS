@@ -167,7 +167,7 @@ int main(int argc, char* argv[]){
 
     gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
 
-    while (1){ //phase envoie de segments
+    while (ack_fin != packets_number+1){ //phase envoie de segments
       //printf("For i = %d\n",seq);
       //printf("On copie à partir de file_buffer[%d]\n",packets_size*(seq-1));
 
@@ -227,18 +227,21 @@ int main(int argc, char* argv[]){
         //} else{
         //  printf("retransmission du n° de seq : %d \n", seq);
         //}
+        if (atoi(buffer_sequence) == seq){ //si le numéro de séquence reçu est égale au max de la fenêtre
+          seq++;                         //on peut alors envoyer la séquence suivante
+          window=window+40;
+        }
 
-        seq = atoi(buffer_sequence) + 1; //on fait glisser la fenêtre, on va transmettre à partir de la valeur du ACK
-        window = seq + window_size;
+        //seq = atoi(buffer_sequence) + 1; //on fait glisser la fenêtre, on va transmettre à partir de la valeur du ACK
+        //window = seq + window_size;
         ack_fin = atoi(buffer_sequence); //sert à comparer si le ack reçu vaut le dernier ack qu'on attend
-        printf("on transmet à partir du n° : %d\n", seq);
+        //printf("on transmet à partir du n° : %d\n", seq);
       }
       else {
         printf("segment perdu - Timeout ! Retransmission\n");
         rtt.tv_usec = 50000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission
       }
-    if (ack_fin == packets_number+1) //si le client ack le dernier segment à envoyer, on sort de la boucle
-      break;
+
     } //fin while
     gettimeofday(&time_debit_end, NULL);
 

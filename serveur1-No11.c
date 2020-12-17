@@ -217,9 +217,9 @@ int main(int argc, char* argv[]){
           gettimeofday(&time2, NULL);                                   //on recalcule une timeofday pour faire la différence avec le premier
           rtt.tv_usec = (time2.tv_sec-time1.tv_sec)*pow(10,6) + (time2.tv_usec - time1.tv_usec);         //on estime ainsi le rtt à chaque échange, on rajoute les secondes au cas où
 
-          printf("estimation du RTT : %d\n", rtt.tv_usec);
-          printf("message reçu : %s\n", bufferUDP_read_server);
-          printf("numéro de seq reçue par le serveur (buffer_check_sequence) : %s\n",buffer_sequence);
+          //printf("estimation du RTT : %d\n", rtt.tv_usec);
+          //printf("message reçu : %s\n", bufferUDP_read_server);
+          //printf("numéro de seq reçue par le serveur (buffer_check_sequence) : %s\n",buffer_sequence);
 
           ack_fin = atoi(buffer_sequence); //sert à comparer si le ack reçu vaut le dernier ack qu'on attend
           }

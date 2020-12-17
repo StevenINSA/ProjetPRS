@@ -163,12 +163,12 @@ int main(int argc, char* argv[]){
     int seq = 1;
     int window_size = 100; //on fixe une fenêtre de 50 segments à envoyer sans attendre de ack (en sachant que le client 1 drop à partir de 100)
     int window=window_size; //cette valeur va servir de seuil pour fixer le nombre de segment qu'on envoit
-    int ack_fin = 0;
     //int tableau_ack[100]={0};
+    int ack = 0;
 
     gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
 
-    while (ack_fin != packets_number+1){ //phase envoie de segments, tant qu'on a pas reçu le dernier ack on continue
+    while (ack != packets_number+1){ //phase envoie de segments, tant qu'on a pas reçu le dernier ack on continue
       //printf("For i = %d\n",seq);
       //printf("On copie à partir de file_buffer[%d]\n",packets_size*(seq-1));
 
@@ -199,7 +199,7 @@ int main(int argc, char* argv[]){
       timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
       printf("valeur du timeout en µs : %d\n", timeout.tv_usec);
       //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
-
+      int ack_fin = 0;
       while (ack_fin != (window && packets_number+1)){ //tant que le ack reçu n'est pas égal au dernier n° de seq envoyé (et différent du dernier ack à recevoir), on reçoit
 
         int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
@@ -232,6 +232,7 @@ int main(int argc, char* argv[]){
           //printf("on transmet à partir du n° : %d\n", seq);
         seq = atoi(buffer_sequence) + 1; //on va transmettre à partir de la valeur du ACK (+1 pour pas renvoyer un paquet déjà ack)
         window = seq + window_size; //on fait glisser la fenêtre
+        ack = atoi(buffer_sequence);
 
     } //fin while
     gettimeofday(&time_debit_end, NULL);

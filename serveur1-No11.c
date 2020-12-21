@@ -257,7 +257,7 @@ int main(int argc, char* argv[]){
 
 
       printf("J'ai reçu le dernier ACK : ACK%d\n",ack_max);
-      fils=0; //sort de la boucle for
+
 
 
         //printf("on transmet à partir du n° : %d\n", seq);
@@ -267,6 +267,7 @@ int main(int argc, char* argv[]){
       printf("Fin du fils : on ferme le fils\n");
       exit(0);
     } //fin fils
+    fils=0; //sort de la boucle for
     gettimeofday(&time_debit_end, NULL);
 
     printf("taille du fichier envoyé : %d\n", size_file);

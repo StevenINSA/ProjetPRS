@@ -198,7 +198,7 @@ int main(int argc, char* argv[]){
       FD_SET(data_descriptor, &set_descripteur_timer);
       timeout.tv_usec = 5* rtt.tv_usec; //on sécurise le temps d'attente de retransmission
       timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
-      printf("valeur du timeout en µs : %d\n", timeout.tv_usec);
+      printf("valeur du timeout en µs : %ld\n", timeout.tv_usec);
       //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
 
 
@@ -257,7 +257,7 @@ int main(int argc, char* argv[]){
     time_debit.tv_usec = (time_debit_end.tv_sec-time_debit_start.tv_sec)*pow(10,6) + (time_debit_end.tv_usec - time_debit_start.tv_usec);
     float debit = (float)size_file / time_debit.tv_usec;
     printf("débit lors de la transmission : %f Mo/s\n", debit);
-    printf("temps débit en micro sec : %d\n", time_debit.tv_usec);
+    printf("temps débit en micro sec : %ld\n", time_debit.tv_usec);
 
     close(data_descriptor);
     break;

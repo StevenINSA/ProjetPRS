@@ -9,6 +9,8 @@
 #include <sys/select.h> //fonction select
 #include <sys/time.h> //pour les timers
 #include <math.h> //pour la puissance
+#include <sys/mman.h>
+#define PAGESIZE 4096
 
 int main(int argc, char* argv[]){
 
@@ -165,7 +167,11 @@ int main(int argc, char* argv[]){
     int window=window_size; //cette valeur va servir de seuil pour fixer le nombre de segment qu'on envoit
     //int tableau_ack[100]={0};
     int ack = 0;
-    int fils= 1;
+
+    uint8_t *shared_memory_fils = mmap(NULL, PAGESIZE,
+                                    PROT_READ | PROT_WRITE,
+                                    MAP_SHARED | MAP_ANONYMOUS, -1,0);
+    *shared_memory_fils = 1;
 
 
     /*** FORK ***/
@@ -179,7 +185,7 @@ int main(int argc, char* argv[]){
 
     /***SALVES DE PAQUETS***/
       gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
-      //while (fils==1) {
+      while (*shared_memory_fils==1) {
         //printf("voici la valeur du fils :%d\n",fils);
         while (seq<window && seq <= packets_number+1 ) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
           //Remise à zéro des buffers
@@ -197,8 +203,8 @@ int main(int argc, char* argv[]){
           sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
           seq++;
         }
-      //} //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
-      printf("On est sorti du while du père :%d\n",fils);
+      } //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
+      printf("On est sorti du while du père :%d\n",*shared_memory_fils);
     } else if(idfork==0) { //si on est le processus fils
 
       //partie mise en place du timer pour la retransmission
@@ -257,7 +263,7 @@ int main(int argc, char* argv[]){
 
 
       printf("J'ai reçu le dernier ACK : ACK%d\n",ack_max);
-
+      *shared_memory_fils=0;
 
 
         //printf("on transmet à partir du n° : %d\n", seq);
@@ -267,7 +273,7 @@ int main(int argc, char* argv[]){
       printf("Fin du fils : on ferme le fils\n");
       exit(0);
     } //fin fils
-    fils=0; //sort de la boucle for
+
     gettimeofday(&time_debit_end, NULL);
 
     printf("taille du fichier envoyé : %d\n", size_file);

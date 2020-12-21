@@ -172,7 +172,7 @@ int main(int argc, char* argv[]){
       //printf("For i = %d\n",seq);
       //printf("On copie à partir de file_buffer[%d]\n",packets_size*(seq-1));
 
-      while (seq <= window && seq <= packets_number+1) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
+      while (seq <= packets_number+1) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
         //Remise à zéro des buffers
         memset(buffer_segment,0,sizeof(buffer_segment));
         memset(buffer_sequence,0,sizeof(buffer_sequence));
@@ -203,7 +203,7 @@ int main(int argc, char* argv[]){
 
       int ack_max = 0;
       //while (ack_fin != (window && packets_number+1)){ //tant que le ack reçu n'est pas égal au dernier n° de seq envoyé (et différent du dernier ack à recevoir), on reçoit
-      for (int i=0;i<window;i++){
+      for (int i=0;i<packets_number+1;i++){
       //for (i allant de 0 à window)
       // select (30)
       //max = 2

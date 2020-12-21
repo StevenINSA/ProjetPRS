@@ -161,7 +161,7 @@ int main(int argc, char* argv[]){
     int packets_number = size_file/packets_size;
     printf("Nombre de paquets à envoyer au total : %d",packets_number+1);
     int seq = 1;
-    int window_size = 100; //on fixe une fenêtre de 50 segments à envoyer sans attendre de ack (en sachant que le client 1 drop à partir de 100)
+    int window_size = 30; //on fixe une fenêtre de 50 segments à envoyer sans attendre de ack (en sachant que le client 1 drop à partir de 100)
     int window=window_size; //cette valeur va servir de seuil pour fixer le nombre de segment qu'on envoit
     //int tableau_ack[100]={0};
     int ack = 0;

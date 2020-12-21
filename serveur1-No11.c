@@ -274,6 +274,7 @@ int main(int argc, char* argv[]){
       printf("Fin du fils : on ferme le fils\n");
 
       //kill(0, SIGKILL);
+      exit(0);
 
     } //fin fils
 

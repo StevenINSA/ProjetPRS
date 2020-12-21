@@ -165,7 +165,8 @@ int main(int argc, char* argv[]){
     int window=window_size; //cette valeur va servir de seuil pour fixer le nombre de segment qu'on envoit
     //int tableau_ack[100]={0};
     int ack = 0;
-    int fils=1;
+    int* fils;
+    *fils = 1;
 
 
     /*** FORK ***/
@@ -179,7 +180,8 @@ int main(int argc, char* argv[]){
 
     /***SALVES DE PAQUETS***/
       gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
-      while (fils==1) {
+      while (*fils==1) {
+        printf("voici la valeur du fils :%d\n",fils);
         while (seq<window && seq <= packets_number+1 ) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
           //Remise à zéro des buffers
           memset(buffer_segment,0,sizeof(buffer_segment));
@@ -244,7 +246,7 @@ int main(int argc, char* argv[]){
 
           if (ack_max==packets_number+1){
             printf("J'ai reçu le dernier ACK : ACK%d\n",ack_max);
-            fils=0;
+            *fils=0;
             break; //sort de la boucle for
           }
         } //FDISSET

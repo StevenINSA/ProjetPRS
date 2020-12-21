@@ -196,7 +196,7 @@ int main(int argc, char* argv[]){
       FD_ZERO(&set_descripteur_timer);
       FD_SET(data_descriptor, &set_descripteur_timer);
       //timeout.tv_usec = 5* rtt.tv_usec; //on sécurise le temps d'attente de retransmission
-      timeout.tv_usec = 50000;
+      timeout.tv_usec = 5000;
       timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
       printf("valeur du timeout en µs : %d\n", timeout.tv_usec);
       //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
@@ -226,7 +226,7 @@ int main(int argc, char* argv[]){
           }
           else {
             printf("segment perdu - Timeout ! Retransmission\n");
-            rtt.tv_usec = 50000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission
+            rtt.tv_usec = 5000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission
           }
         }
 

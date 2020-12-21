@@ -244,14 +244,15 @@ int main(int argc, char* argv[]){
             //rtt.tv_usec = 50000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission
           //}
 
-          if (ack_max==packets_number+1){
-            printf("J'ai reçu le dernier ACK : ACK%d\n",ack_max);
-            fils=0;
-            break; //sort de la boucle for
-          }
+
         } //FDISSET
 
       }//fin while
+
+      if (ack_max==packets_number+1){
+        printf("J'ai reçu le dernier ACK : ACK%d\n",ack_max);
+        fils=0; //sort de la boucle for
+      }
 
         //printf("on transmet à partir du n° : %d\n", seq);
         /*seq = ack_max + 1; //on va transmettre à partir de la valeur du ACK (+1 pour pas renvoyer un paquet déjà ack)

@@ -168,7 +168,7 @@ int main(int argc, char* argv[]){
 
     gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
 
-    while (ack != packets_number+1){ //phase envoie de segments, tant qu'on a pas reçu le dernier ack on continue
+    //while (ack != packets_number+1){ //phase envoie de segments, tant qu'on a pas reçu le dernier ack on continue
       //printf("For i = %d\n",seq);
       //printf("On copie à partir de file_buffer[%d]\n",packets_size*(seq-1));
 
@@ -195,7 +195,8 @@ int main(int argc, char* argv[]){
       //partie mise en place du timer pour la retransmission
       FD_ZERO(&set_descripteur_timer);
       FD_SET(data_descriptor, &set_descripteur_timer);
-      timeout.tv_usec = 5* rtt.tv_usec; //on sécurise le temps d'attente de retransmission
+      //timeout.tv_usec = 5* rtt.tv_usec; //on sécurise le temps d'attente de retransmission
+      timeout.tv_usec = 50000;
       timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
       printf("valeur du timeout en µs : %d\n", timeout.tv_usec);
       //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
@@ -232,9 +233,9 @@ int main(int argc, char* argv[]){
           //printf("on transmet à partir du n° : %d\n", seq);
         seq = atoi(buffer_sequence) + 1; //on va transmettre à partir de la valeur du ACK (+1 pour pas renvoyer un paquet déjà ack)
         window = seq + window_size; //on fait glisser la fenêtre
-        ack = atoi(buffer_sequence);
+        //ack = atoi(buffer_sequence);
 
-    } //fin while
+    //} //fin while
     gettimeofday(&time_debit_end, NULL);
 
     printf("taille du fichier envoyé : %d\n", size_file);

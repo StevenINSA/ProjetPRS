@@ -197,63 +197,64 @@ int main(int argc, char* argv[]){
         }
       //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
 
-      } else if(idfork==0) { //si on est le processus fils
+    } else if(idfork==0) { //si on est le processus fils
 
-        //partie mise en place du timer pour la retransmission
-        FD_ZERO(&set_descripteur_timer);
-        FD_SET(data_descriptor, &set_descripteur_timer);
-        timeout.tv_usec = 5* rtt.tv_usec; //on sécurise le temps d'attente de retransmission
-        timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
-        printf("valeur du timeout en µs : %ld\n", timeout.tv_usec);
-        //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
+      //partie mise en place du timer pour la retransmission
+      FD_ZERO(&set_descripteur_timer);
+      FD_SET(data_descriptor, &set_descripteur_timer);
+      timeout.tv_usec = 5* rtt.tv_usec; //on sécurise le temps d'attente de retransmission
+      timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
+      printf("valeur du timeout en µs : %ld\n", timeout.tv_usec);
+      //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
 
-        int ack_max = 0;
+      int ack_max = 0;
 
-        /***RECEPTION DES ACKs***/
-        //for (int i=0;i<packets_number+1;i++){
-        while (ack_max != packets_number+1){
+      /***RECEPTION DES ACKs***/
+      //for (int i=0;i<packets_number+1;i++){
+      while (ack_max != packets_number+1){
 
-          int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, NULL); //on écoute sur la socket pendant une durée timeout
+        int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, NULL); //on écoute sur la socket pendant une durée timeout
 
-          if (select_value == -1)
-            perror("select error\n");
+        if (select_value == -1)
+          perror("select error\n");
 
-          else if (FD_ISSET(data_descriptor, &set_descripteur_timer)){ //si on a une activité sur la socket (i.e on reçoit un ack)
+        else if (FD_ISSET(data_descriptor, &set_descripteur_timer)){ //si on a une activité sur la socket (i.e on reçoit un ack)
 
-            memset(bufferUDP_read_server, 0, sizeof(bufferUDP_read_server));
-            memset(buffer_sequence, 0, sizeof(buffer_sequence));
+          memset(bufferUDP_read_server, 0, sizeof(bufferUDP_read_server));
+          memset(buffer_sequence, 0, sizeof(buffer_sequence));
 
-            int size_seq = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
-            memcpy(buffer_sequence, bufferUDP_read_server+3, size_seq-3); //+3 car les 3 premières valeurs sont pour le mot ACK
-            gettimeofday(&time2, NULL);                                   //on recalcule une timeofday pour faire la différence avec le premier
-            rtt.tv_usec = (time2.tv_sec-time1.tv_sec)*pow(10,6) + (time2.tv_usec - time1.tv_usec);         //on estime ainsi le rtt à chaque échange, on rajoute les secondes au cas où
+          int size_seq = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
+          memcpy(buffer_sequence, bufferUDP_read_server+3, size_seq-3); //+3 car les 3 premières valeurs sont pour le mot ACK
+          gettimeofday(&time2, NULL);                                   //on recalcule une timeofday pour faire la différence avec le premier
+          rtt.tv_usec = (time2.tv_sec-time1.tv_sec)*pow(10,6) + (time2.tv_usec - time1.tv_usec);         //on estime ainsi le rtt à chaque échange, on rajoute les secondes au cas où
 
-            //printf("estimation du RTT : %d\n", rtt.tv_usec);
-            //printf("message reçu : %s\n", bufferUDP_read_server);
-            //printf("numéro de seq reçue par le serveur (buffer_check_sequence) : %s\n",buffer_sequence);
+          //printf("estimation du RTT : %d\n", rtt.tv_usec);
+          //printf("message reçu : %s\n", bufferUDP_read_server);
+          //printf("numéro de seq reçue par le serveur (buffer_check_sequence) : %s\n",buffer_sequence);
 
-            if (ack_max < atoi(buffer_sequence)){
-              ack_max = atoi(buffer_sequence);
-              printf("ACK max devient : %d\n",ack_max);
-            }
-
-            //} else {
-              //printf("ACK pas reçu pendant RTT : nouveau rtt n\n");
-              //rtt.tv_usec = 50000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission
-            //}
-
-            if (ack_max==packets_number+1){
-              break; //sort de la boucle for
-            }
+          if (ack_max < atoi(buffer_sequence)){
+            ack_max = atoi(buffer_sequence);
+            printf("ACK max devient : %d\n",ack_max);
           }
-        }//fin for
 
-            //printf("on transmet à partir du n° : %d\n", seq);
-          /*seq = ack_max + 1; //on va transmettre à partir de la valeur du ACK (+1 pour pas renvoyer un paquet déjà ack)
-          window = seq + window_size; //on fait glisser la fenêtre
-          ack = atoi(buffer_sequence);*/
-      printf("Fin du fils : on ferme le fils\n");
-      exit(0);
+          //} else {
+            //printf("ACK pas reçu pendant RTT : nouveau rtt n\n");
+            //rtt.tv_usec = 50000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission
+          //}
+
+          if (ack_max==packets_number+1){
+            break; //sort de la boucle for
+          }
+        } //FDISSET
+
+      }//fin while
+
+        //printf("on transmet à partir du n° : %d\n", seq);
+        /*seq = ack_max + 1; //on va transmettre à partir de la valeur du ACK (+1 pour pas renvoyer un paquet déjà ack)
+        window = seq + window_size; //on fait glisser la fenêtre
+        ack = atoi(buffer_sequence);*/
+        printf("Fin du fils : on ferme le fils\n");
+        exit(0);
     } //fin fils
     gettimeofday(&time_debit_end, NULL);
 

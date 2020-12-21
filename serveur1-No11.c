@@ -199,8 +199,17 @@ int main(int argc, char* argv[]){
       timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
       printf("valeur du timeout en µs : %d\n", timeout.tv_usec);
       //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
-      int ack_fin = 0;
-      while (ack_fin != (window && packets_number+1)){ //tant que le ack reçu n'est pas égal au dernier n° de seq envoyé (et différent du dernier ack à recevoir), on reçoit
+
+
+      int ack_max = 0;
+      //while (ack_fin != (window && packets_number+1)){ //tant que le ack reçu n'est pas égal au dernier n° de seq envoyé (et différent du dernier ack à recevoir), on reçoit
+      for (int i=0;i<window;i++){
+      //for (i allant de 0 à window)
+      // select (30)
+      //max = 2
+      //if max=30 break
+      //seq=31
+
 
         int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
 
@@ -221,16 +230,19 @@ int main(int argc, char* argv[]){
           //printf("message reçu : %s\n", bufferUDP_read_server);
           //printf("numéro de seq reçue par le serveur (buffer_check_sequence) : %s\n",buffer_sequence);
 
-          ack_fin = atoi(buffer_sequence); //sert à comparer si le ack reçu vaut le dernier ack qu'on attend
+          if (ack_max < atoi(buffer_sequence)){
+            ack_max = atoi(buffer_sequence);
+            printf("ACK max devient : %d\n",ack_max);
           }
-          else {
+
+          } else {
             printf("segment perdu - Timeout ! Retransmission\n");
             rtt.tv_usec = 50000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission
           }
-        }
+        }//fin for
 
           //printf("on transmet à partir du n° : %d\n", seq);
-        seq = atoi(buffer_sequence) + 1; //on va transmettre à partir de la valeur du ACK (+1 pour pas renvoyer un paquet déjà ack)
+        seq = ack_max + 1; //on va transmettre à partir de la valeur du ACK (+1 pour pas renvoyer un paquet déjà ack)
         window = seq + window_size; //on fait glisser la fenêtre
         ack = atoi(buffer_sequence);
 

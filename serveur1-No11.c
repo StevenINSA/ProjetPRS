@@ -263,7 +263,7 @@ int main(int argc, char* argv[]){
     memcpy(bufferUDP_write_server,"FIN",3);
 
     sendto(data_descriptor,bufferUDP_write_server,sizeof(bufferUDP_write_server),0,(struct sockaddr *)&client1_addr,len);
-    exit(0);
+    //exit(0);
     time_debit.tv_usec = (time_debit_end.tv_sec-time_debit_start.tv_sec)*pow(10,6) + (time_debit_end.tv_usec - time_debit_start.tv_usec);
     float debit = (float)size_file / time_debit.tv_usec;
     printf("débit lors de la transmission : %f Mo/s\n", debit);

@@ -252,6 +252,7 @@ int main(int argc, char* argv[]){
           /*seq = ack_max + 1; //on va transmettre à partir de la valeur du ACK (+1 pour pas renvoyer un paquet déjà ack)
           window = seq + window_size; //on fait glisser la fenêtre
           ack = atoi(buffer_sequence);*/
+      printf("Fin du fils : on ferme le fils\n");
       exit(0);
     } //fin fils
     gettimeofday(&time_debit_end, NULL);

@@ -151,7 +151,7 @@ int main(int argc, char* argv[]){
     char file_buffer[size_file];
     //les octets lus sont stockés dans buffer_fichier
     //size_t read_blocks = fread(file_buffer,1,500,fichier); //500 blocs de 1 octet
-    size_t read_blocks = fread(file_buffer,size_file,1,file); //on lit le fichier en un coup
+    size_t read_blocks = fread(file_buffer,size_file,1,file); //on lit le fichier en un coup (1 bloc de taille_fichier octets)
 
     if(read_blocks!=1){
       perror("erreur lecture fichier");
@@ -161,18 +161,19 @@ int main(int argc, char* argv[]){
     int packets_number = size_file/packets_size;
     printf("Nombre de paquets à envoyer au total : %d",packets_number+1);
     int seq = 1;
-    int window_size = 30; //on fixe une fenêtre de 50 segments à envoyer sans attendre de ack (en sachant que le client 1 drop à partir de 100)
+    int window_size = 100; //on fixe une fenêtre de 50 segments à envoyer sans attendre de ack (en sachant que le client 1 drop à partir de 100)
     int window=window_size; //cette valeur va servir de seuil pour fixer le nombre de segment qu'on envoit
     //int tableau_ack[100]={0};
     int ack = 0;
 
     gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
 
+    /***SALVES DE PAQUETS***/
     while (ack != packets_number+1){ //phase envoie de segments, tant qu'on a pas reçu le dernier ack on continue
       //printf("For i = %d\n",seq);
       //printf("On copie à partir de file_buffer[%d]\n",packets_size*(seq-1));
 
-      while (seq <= packets_number+1) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
+      while (seq<window && seq <= packets_number+1) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
         //Remise à zéro des buffers
         memset(buffer_segment,0,sizeof(buffer_segment));
         memset(buffer_sequence,0,sizeof(buffer_sequence));
@@ -203,13 +204,9 @@ int main(int argc, char* argv[]){
 
       int ack_max = 0;
       //while (ack_fin != (window && packets_number+1)){ //tant que le ack reçu n'est pas égal au dernier n° de seq envoyé (et différent du dernier ack à recevoir), on reçoit
-      for (int i=0;i<packets_number+1;i++){
-      //for (i allant de 0 à window)
-      // select (30)
-      //max = 2
-      //if max=30 break
-      //seq=31
 
+      /***RECEPTION DES ACKs***/
+      for (int i=0;i<packets_number+1;i++){
 
         int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
 

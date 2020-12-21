@@ -206,7 +206,7 @@ int main(int argc, char* argv[]){
 
           /*ENVOI PAQUET*/
           sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
-          *shared_memory_seq++;
+          *shared_memory_seq = *shared_memory_seq+1;
         }
       } //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
       printf("On est sorti du while du père :%d\n",*shared_memory_fils);

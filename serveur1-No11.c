@@ -180,7 +180,7 @@ int main(int argc, char* argv[]){
     /***SALVES DE PAQUETS***/
       gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
       while (fils==1) {
-        printf("voici la valeur du fils :%d\n",fils);
+        //printf("voici la valeur du fils :%d\n",fils);
         while (seq<window && seq <= packets_number+1 ) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
           //Remise à zéro des buffers
           memset(buffer_segment,0,sizeof(buffer_segment));
@@ -249,17 +249,17 @@ int main(int argc, char* argv[]){
 
       }//fin while
 
-      if (ack_max==packets_number+1){
-        printf("J'ai reçu le dernier ACK : ACK%d\n",ack_max);
-        fils=0; //sort de la boucle for
-      }
+
+      printf("J'ai reçu le dernier ACK : ACK%d\n",ack_max);
+      fils=0; //sort de la boucle for
+
 
         //printf("on transmet à partir du n° : %d\n", seq);
         /*seq = ack_max + 1; //on va transmettre à partir de la valeur du ACK (+1 pour pas renvoyer un paquet déjà ack)
         window = seq + window_size; //on fait glisser la fenêtre
         ack = atoi(buffer_sequence);*/
-        printf("Fin du fils : on ferme le fils\n");
-        exit(0);
+      printf("Fin du fils : on ferme le fils\n");
+      exit(0);
     } //fin fils
     gettimeofday(&time_debit_end, NULL);
 

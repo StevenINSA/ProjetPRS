@@ -210,7 +210,8 @@ int main(int argc, char* argv[]){
         int ack_max = 0;
 
         /***RECEPTION DES ACKs***/
-        for (int i=0;i<packets_number+1;i++){
+        //for (int i=0;i<packets_number+1;i++){
+        while (ack_max != packets_number+1){
 
           int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, NULL); //on écoute sur la socket pendant une durée timeout
 

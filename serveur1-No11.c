@@ -162,7 +162,7 @@ int main(int argc, char* argv[]){
     int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 du n° de séquence
     int packets_number = size_file/packets_size;
     printf("Nombre de paquets à envoyer au total : %d\n",packets_number+1);
-    int seq = 1;
+    //int seq = 1;
     int window_size = 100; //on fixe une fenêtre de 50 segments à envoyer sans attendre de ack (en sachant que le client 1 drop à partir de 100)
     int window=window_size; //cette valeur va servir de seuil pour fixer le nombre de segment qu'on envoit
     //int tableau_ack[100]={0};
@@ -172,6 +172,11 @@ int main(int argc, char* argv[]){
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
     *shared_memory_fils = 1;
+
+    uint8_t *shared_memory_seq = mmap(NULL, PAGESIZE,
+                                    PROT_READ | PROT_WRITE,
+                                    MAP_SHARED | MAP_ANONYMOUS, -1,0);
+    *shared_memory_seq = 1;
 
 
     /*** FORK ***/
@@ -185,23 +190,23 @@ int main(int argc, char* argv[]){
 
     /***SALVES DE PAQUETS***/
       gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
-      while (*shared_memory_fils==1) {
+      while (*shared_memory_fils==1) { //quand fils s'arrête
         //printf("voici la valeur du fils :%d\n",fils);
-        while (seq<window && seq <= packets_number+1 ) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
+        while (*shared_memory_seq<window && *shared_memory_seq <= packets_number+1 ) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
           //Remise à zéro des buffers
           memset(buffer_segment,0,sizeof(buffer_segment));
           memset(buffer_sequence,0,sizeof(buffer_sequence));
 
-          sprintf(buffer_sequence,"%d",seq);
+          sprintf(buffer_sequence,"%d",*shared_memory_seq);
           printf("Sequence number (from buffer_sequence) : %s\n",buffer_sequence);
 
           //Segment auquel on rajoute en-tête
           memcpy(buffer_segment,buffer_sequence,6);
-          memcpy(buffer_segment+6,file_buffer+packets_size*(seq-1),packets_size);
+          memcpy(buffer_segment+6,file_buffer+packets_size*(*shared_memory_seq-1),packets_size);
 
           /*ENVOI PAQUET*/
           sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
-          seq++;
+          *shared_memory_seq++;
         }
       } //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
       printf("On est sorti du while du père :%d\n",*shared_memory_fils);
@@ -247,7 +252,7 @@ int main(int argc, char* argv[]){
           }
 
           if(atoi(buffer_sequence)==ack_precedent){
-            seq=ack_precedent+1;
+            *shared_memory_seq=ack_precedent+1;
           }
 
           ack_precedent=atoi(buffer_sequence);

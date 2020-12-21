@@ -10,6 +10,8 @@
 #include <sys/time.h> //pour les timers
 #include <math.h> //pour la puissance
 #include <sys/mman.h>
+#include <sys/types.h>
+#include <signal.h>
 #define PAGESIZE 4096
 
 int main(int argc, char* argv[]){
@@ -269,14 +271,10 @@ int main(int argc, char* argv[]){
 
       printf("J'ai reçu le dernier ACK : ACK%d\n",ack_max);
       *shared_memory_fils=0;
-
-
-        //printf("on transmet à partir du n° : %d\n", seq);
-        /*seq = ack_max + 1; //on va transmettre à partir de la valeur du ACK (+1 pour pas renvoyer un paquet déjà ack)
-        window = seq + window_size; //on fait glisser la fenêtre
-        ack = atoi(buffer_sequence);*/
       printf("Fin du fils : on ferme le fils\n");
-      exit(0);
+
+      kill(idfork, SIGKILL);
+
     } //fin fils
 
     gettimeofday(&time_debit_end, NULL);

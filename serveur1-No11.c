@@ -210,6 +210,7 @@ int main(int argc, char* argv[]){
       //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
 
       int ack_max = 0;
+      int ack_precedent=0;
 
       /***RECEPTION DES ACKs***/
       //for (int i=0;i<packets_number+1;i++){
@@ -239,6 +240,11 @@ int main(int argc, char* argv[]){
             printf("ACK max devient : %d\n",ack_max);
           }
 
+          if(atoi(buffer_sequence)==ack_precedent){
+            seq=ack_precedent+1;
+          }
+
+          ack_precedent=atoi(buffer_sequence);
           //} else {
             //printf("ACK pas reçu pendant RTT : nouveau rtt n\n");
             //rtt.tv_usec = 50000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission

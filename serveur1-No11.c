@@ -159,14 +159,13 @@ int main(int argc, char* argv[]){
     }
     int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 du n° de séquence
     int packets_number = size_file/packets_size;
-    printf("Nombre de paquets à envoyer au total : %d",packets_number+1);
+    printf("Nombre de paquets à envoyer au total : %d\n",packets_number+1);
     int seq = 1;
     int window_size = 100; //on fixe une fenêtre de 50 segments à envoyer sans attendre de ack (en sachant que le client 1 drop à partir de 100)
     int window=window_size; //cette valeur va servir de seuil pour fixer le nombre de segment qu'on envoit
     //int tableau_ack[100]={0};
     int ack = 0;
-    int* fils;
-    *fils = 1;
+    int fils= 1;
 
 
     /*** FORK ***/
@@ -180,7 +179,7 @@ int main(int argc, char* argv[]){
 
     /***SALVES DE PAQUETS***/
       gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
-      while (*fils==1) {
+      while (fils==1) {
         printf("voici la valeur du fils :%d\n",fils);
         while (seq<window && seq <= packets_number+1 ) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
           //Remise à zéro des buffers
@@ -198,7 +197,8 @@ int main(int argc, char* argv[]){
           sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
           seq++;
         }
-      }//gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
+      } //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
+      printf("On est sorti du while du père :%d\n",fils);
     } else if(idfork==0) { //si on est le processus fils
 
       //partie mise en place du timer pour la retransmission
@@ -246,7 +246,7 @@ int main(int argc, char* argv[]){
 
           if (ack_max==packets_number+1){
             printf("J'ai reçu le dernier ACK : ACK%d\n",ack_max);
-            *fils=0;
+            fils=0;
             break; //sort de la boucle for
           }
         } //FDISSET

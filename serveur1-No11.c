@@ -273,7 +273,7 @@ int main(int argc, char* argv[]){
       *shared_memory_fils=0;
       printf("Fin du fils : on ferme le fils\n");
 
-      kill(0, SIGKILL);
+      //kill(0, SIGKILL);
 
     } //fin fils
 

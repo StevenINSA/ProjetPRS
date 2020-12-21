@@ -271,8 +271,8 @@ int main(int argc, char* argv[]){
 
     close(data_descriptor);
     break;
-
-  }
+    exit(0);
+  } //fin while
 
   return(0);
 }

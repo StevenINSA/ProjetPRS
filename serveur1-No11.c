@@ -70,7 +70,7 @@ int main(int argc, char* argv[]){
   //pour le timer (retransmission quand perte du ack)
   fd_set set_descripteur_timer;  //pour pouvoir utiliser un timer, il faut utiliser un select, donc un descripteur
   struct timeval time1, time2, timeout, rtt, time_debit, time_debit_start, time_debit_end;
-  rtt.tv_usec = 50000;           //on fixe au début un rtt de 50ms
+  rtt.tv_usec = 50000;           //on fixe au début un rtt de 50ms (à definir)
 
   while(1){
     printf("Boucle while n°1.\n");
@@ -105,13 +105,13 @@ int main(int argc, char* argv[]){
         perror("Erreur data :");
         exit(-1);
       }
-      printf("bind de data : %d\n", bind_data);
+      //printf("bind de data : %d\n", bind_data);
 
       sprintf(port_data_string,"%d",port_data);
       memcpy(bufferUDP_write_server+7, port_data_string, 4);
 
       sendto(socket_UDP, bufferUDP_write_server, sizeof(bufferUDP_write_server), 0, (struct sockaddr *)&client1_addr, len);
-      printf("msg envoyé au client : %s\n", bufferUDP_write_server);
+      //printf("msg envoyé au client : %s\n", bufferUDP_write_server);
 
     } else {
       printf("le message reçu n'est pas un syn\n");
@@ -121,8 +121,8 @@ int main(int argc, char* argv[]){
     // reception du ack final de la phase de connection
     memset(bufferUDP_read_server,0,sizeof(bufferUDP_read_server));
     recvfrom(socket_UDP, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
-    printf("message du client doit etre un ack : %s\n", bufferUDP_read_server);
-    printf("Fermeture socket_udp principale\n");
+    //printf("message du client doit etre un ack : %s\n", bufferUDP_read_server);
+    //printf("Fermeture socket_udp principale\n");
     close(socket_UDP);
 
     /*
@@ -133,13 +133,13 @@ int main(int argc, char* argv[]){
     //le client envoie le nom du fichier qu'il veut recevoir
     memset(bufferUDP_read_server,0,sizeof(bufferUDP_read_server));
     int size_file_name = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
-    printf("le client veut : %s\n", bufferUDP_read_server);
+    //printf("le client veut : %s\n", bufferUDP_read_server);
 
     //il faut stocker le nom du fichier pour pouvoir le passer dans fopen
     memcpy(sent_file, bufferUDP_read_server, size_file_name);
-    printf("fichier a envoyer : %s\n", sent_file);
+    //printf("fichier a envoyer : %s\n", sent_file);
 
-    printf("envoi du fichier pdf\n");
+    //printf("envoi du fichier pdf\n");
     FILE *file = fopen(sent_file, "rb"); //rb : ouvre le pdf au format binaire car on échange des bits sur les sockets
     if (file == 0){
      perror("ERREUR OUVERTURE DU FICHIER");
@@ -147,7 +147,7 @@ int main(int argc, char* argv[]){
     }
 
     //on calcule ensuite la taille du fichier à envoyer
-    fseek(file, 0, SEEK_END);          //fseek parcours le fichier et place un curseur à la fin appelée SEEK END
+    fseek(file, 0, SEEK_END);     //fseek parcours le fichier et place un curseur à la fin appelée SEEK END
     int size_file = ftell(file);  //ftell donne la taille du chemin parcouru par fseek (valeur de la position du curseur)
 
     printf("taille du fichier en octet : %d\n", size_file);
@@ -165,17 +165,17 @@ int main(int argc, char* argv[]){
     int packets_number = size_file/packets_size;
     printf("Nombre de paquets à envoyer au total : %d\n",packets_number+1);
     //int seq = 1;
-    int window_size = 100; //on fixe une fenêtre de 50 segments à envoyer sans attendre de ack (en sachant que le client 1 drop à partir de 100)
-    int window=window_size; //cette valeur va servir de seuil pour fixer le nombre de segment qu'on envoit
+    int window_size = 100; //on fixe une fenêtre de 100 segments à envoyer sans attendre de ack (en sachant que le client 1 drop à partir de 100)
+    int window=window_size; //window sera amener à glisser lors de la transmission du fichier (si le fichier contient plus de 100 octets à envoyer)
     //int tableau_ack[100]={0};
     int ack = 0;
 
-    uint8_t *shared_memory_fils = mmap(NULL, PAGESIZE,
+    uint8_t *shared_memory_fils = mmap(NULL, PAGESIZE,          //pour que le parent envoie les fichiers tant que le fils écoute les acks
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
     *shared_memory_fils = 1;
 
-    uint8_t *shared_memory_seq = mmap(NULL, PAGESIZE,
+    uint8_t *shared_memory_seq = mmap(NULL, PAGESIZE,           //pour que le fils mette à jour le n° de seq que le parent envoie
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
     *shared_memory_seq = 1;
@@ -194,7 +194,8 @@ int main(int argc, char* argv[]){
       gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
       while (*shared_memory_fils==1) { //quand fils s'arrête
         //printf("voici la valeur du fils :%d\n",fils);
-        while (*shared_memory_seq<window && *shared_memory_seq <= packets_number+1 ) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
+        while (*shared_memory_seq <= window && *shared_memory_seq <= packets_number+1) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
+
           //Remise à zéro des buffers
           memset(buffer_segment,0,sizeof(buffer_segment));
           memset(buffer_sequence,0,sizeof(buffer_sequence));
@@ -212,6 +213,7 @@ int main(int argc, char* argv[]){
         }
       } //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
       printf("On est sorti du while du père :%d\n",*shared_memory_fils);
+
     } else if(idfork==0) { //si on est le processus fils
 
       //partie mise en place du timer pour la retransmission
@@ -242,7 +244,7 @@ int main(int argc, char* argv[]){
           int size_seq = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
           memcpy(buffer_sequence, bufferUDP_read_server+3, size_seq-3); //+3 car les 3 premières valeurs sont pour le mot ACK
           gettimeofday(&time2, NULL);                                   //on recalcule une timeofday pour faire la différence avec le premier
-          rtt.tv_usec = (time2.tv_sec-time1.tv_sec)*pow(10,6) + (time2.tv_usec - time1.tv_usec);         //on estime ainsi le rtt à chaque échange, on rajoute les secondes au cas où
+          rtt.tv_usec = (time2.tv_sec-time1.tv_sec)*pow(10,6) + (time2.tv_usec - time1.tv_usec);         //on estime ainsi le rtt à chaque échange, on rajoute les secondes au cas où le rtt est plus grand
 
           //printf("estimation du RTT : %d\n", rtt.tv_usec);
           //printf("message reçu : %s\n", bufferUDP_read_server);
@@ -254,7 +256,8 @@ int main(int argc, char* argv[]){
           }
 
           if(atoi(buffer_sequence)==ack_precedent){
-            *shared_memory_seq=ack_precedent+1;
+            *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
+                                                //
           }
 
           ack_precedent=atoi(buffer_sequence);

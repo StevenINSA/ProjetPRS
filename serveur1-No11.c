@@ -271,6 +271,7 @@ int main(int argc, char* argv[]){
         else { //si Timeout
           *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
           printf("Timeout : retransmission à partir de %d\n",ack_max+1);
+          rtt.tv_usec = 100000; //lors d'un timeout, on augmente le rtt car congestion
         }
       }//fin while
 

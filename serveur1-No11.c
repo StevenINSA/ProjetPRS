@@ -165,8 +165,8 @@ int main(int argc, char* argv[]){
     int packets_number = size_file/packets_size;
     printf("Nombre de paquets à envoyer au total : %d\n",packets_number+1);
     //int seq = 1;
-    int window_size = 100; //on fixe une fenêtre de 100 segments à envoyer sans attendre de ack (en sachant que le client 1 drop à partir de 100)
-    int window=window_size; //window sera amener à glisser lors de la transmission du fichier (si le fichier contient plus de 100 octets à envoyer)
+    //int window_size = 100; //on fixe une fenêtre de 100 segments à envoyer sans attendre de ack (en sachant que le client 1 drop à partir de 100)
+    //int window=window_size; //window sera amener à glisser lors de la transmission du fichier (si le fichier contient plus de 100 octets à envoyer)
     //int tableau_ack[100]={0};
     //int ack = 0;
 
@@ -179,6 +179,11 @@ int main(int argc, char* argv[]){
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
     *shared_memory_seq = 1;
+
+    uint8_t *shared_memory_window = mmap(NULL, PAGESIZE,           //pour que le fils mette à jour le n° de seq que le parent envoie
+                                    PROT_READ | PROT_WRITE,
+                                    MAP_SHARED | MAP_ANONYMOUS, -1,0);
+    *shared_memory_window = 100;
 
 
     /*** FORK ***/
@@ -194,7 +199,7 @@ int main(int argc, char* argv[]){
       gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
       while (*shared_memory_fils==1) { //quand fils s'arrête
         //printf("voici la valeur du fils :%d\n",fils);
-        while (*shared_memory_seq <= window && *shared_memory_seq <= packets_number+1) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
+        while (*shared_memory_seq <= *shared_memory_window && *shared_memory_seq <= packets_number+1) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
 
           //Remise à zéro des buffers
           memset(buffer_segment,0,sizeof(buffer_segment));
@@ -253,8 +258,8 @@ int main(int argc, char* argv[]){
           if (ack_max < atoi(buffer_sequence)){
             ack_max = atoi(buffer_sequence);
             printf("ACK max devient : %d\n",ack_max);
-            window=window+ack_max;
-            printf("Window : %d\n",window);
+            *shared_memory_window=*shared_memory_window+ack_max;
+            printf("Window : %d\n",*shared_memory_window);
           }
 
           if(atoi(buffer_sequence)==ack_precedent){

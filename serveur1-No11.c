@@ -183,7 +183,7 @@ int main(int argc, char* argv[]){
     uint8_t *shared_memory_window = mmap(NULL, PAGESIZE,
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
-    //*shared_memory_window = 100;
+    *shared_memory_window = 100;
 
 
     /*** FORK ***/
@@ -196,7 +196,7 @@ int main(int argc, char* argv[]){
     } else if(idfork!=0){ //si on est le processus père
 
     /***SALVES DE PAQUETS***/
-      *shared_memory_window = 100;
+
       gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
       while (*shared_memory_fils==1) { //quand fils s'arrête
         //printf("voici la valeur du fils :%d\n",fils);
@@ -259,8 +259,9 @@ int main(int argc, char* argv[]){
           if (ack_max < atoi(buffer_sequence)){
             ack_max = atoi(buffer_sequence);
             printf("ACK max devient : %d\n",ack_max);
+            printf("Window avant incr : %d\n",*shared_memory_window);
             *shared_memory_window+=ack_max;
-            printf("Window : %d\n",*shared_memory_window);
+            printf("Window après incr: %d\n",*shared_memory_window);
           }
 
           if(atoi(buffer_sequence)==ack_precedent){
@@ -280,7 +281,7 @@ int main(int argc, char* argv[]){
         else { //si Timeout
           *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
           printf("Timeout : retransmission à partir de %d\n",ack_max+1);
-          timeout.tv_usec = 1000000; //on sécurise le temps d'attente de retransmission
+          timeout.tv_usec = 100000; //on sécurise le temps d'attente de retransmission
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
         }
       }//fin while

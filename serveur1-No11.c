@@ -254,7 +254,7 @@ int main(int argc, char* argv[]){
           //rtt.tv_usec = (time2.tv_sec-time1.tv_sec)*pow(10,6) + (time2.tv_usec - time1.tv_usec);         //on estime ainsi le rtt à chaque échange, on rajoute les secondes au cas où le rtt est plus grand
 
           //printf("estimation du RTT : %d\n", rtt.tv_usec);
-          //printf("message reçu : %s\n", bufferUDP_read_server);
+          printf("Message reçu : %s\n", bufferUDP_read_server);
           //printf("numéro de seq reçue par le serveur (buffer_check_sequence) : %s\n",buffer_sequence);
 
           if (ack_max < atoi(buffer_sequence)){

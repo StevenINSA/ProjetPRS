@@ -231,7 +231,7 @@ int main(int argc, char* argv[]){
       //for (int i=0;i<packets_number+1;i++){
       while (ack_max != packets_number+1){
 
-        int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, NULL); //on écoute sur la socket pendant une durée timeout
+        int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
 
         if (select_value == -1)
           perror("select error\n");
@@ -244,7 +244,7 @@ int main(int argc, char* argv[]){
           int size_seq = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
           memcpy(buffer_sequence, bufferUDP_read_server+3, size_seq-3); //+3 car les 3 premières valeurs sont pour le mot ACK
           gettimeofday(&time2, NULL);                                   //on recalcule une timeofday pour faire la différence avec le premier
-          rtt.tv_usec = (time2.tv_sec-time1.tv_sec)*pow(10,6) + (time2.tv_usec - time1.tv_usec);         //on estime ainsi le rtt à chaque échange, on rajoute les secondes au cas où le rtt est plus grand
+          //rtt.tv_usec = (time2.tv_sec-time1.tv_sec)*pow(10,6) + (time2.tv_usec - time1.tv_usec);         //on estime ainsi le rtt à chaque échange, on rajoute les secondes au cas où le rtt est plus grand
 
           //printf("estimation du RTT : %d\n", rtt.tv_usec);
           //printf("message reçu : %s\n", bufferUDP_read_server);

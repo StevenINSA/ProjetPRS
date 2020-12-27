@@ -183,7 +183,7 @@ int main(int argc, char* argv[]){
     uint8_t *shared_memory_window = mmap(NULL, PAGESIZE,
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
-    *shared_memory_window = 100;
+    *shared_memory_window = 90;
 
 
     /*** FORK ***/
@@ -261,7 +261,7 @@ int main(int argc, char* argv[]){
             ack_max = atoi(buffer_sequence);
             printf("ACK max devient : %d\n",ack_max);
             printf("Window avant incr : %d\n",*shared_memory_window);
-            *shared_memory_window=100+ack_max;
+            *shared_memory_window=90+ack_max;
             printf("Window après incr: %d\n",*shared_memory_window);
           }
 
@@ -292,7 +292,7 @@ int main(int argc, char* argv[]){
 
         } //FDISSET
         else { //si Timeout
-          //*shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
+          *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
           printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           timeout.tv_usec = 500000; //on sécurise le temps d'attente de retransmission
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion

@@ -180,7 +180,7 @@ int main(int argc, char* argv[]){
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
     *shared_memory_seq = 1;
 
-    uint8_t *shared_memory_window = mmap(NULL, size_file,          
+    uint8_t *shared_memory_window = mmap(NULL, size_file,
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
     *shared_memory_window = 100;
@@ -258,7 +258,7 @@ int main(int argc, char* argv[]){
           if (ack_max < atoi(buffer_sequence)){
             ack_max = atoi(buffer_sequence);
             printf("ACK max devient : %d\n",ack_max);
-            *shared_memory_window=*shared_memory_window+ack_max;
+            *shared_memory_window+=ack_max;
             printf("Window : %d\n",*shared_memory_window);
           }
 

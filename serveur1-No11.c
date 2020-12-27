@@ -253,6 +253,8 @@ int main(int argc, char* argv[]){
           if (ack_max < atoi(buffer_sequence)){
             ack_max = atoi(buffer_sequence);
             printf("ACK max devient : %d\n",ack_max);
+            window=window+ack_max;
+            printf("Window : %d\n",window);
           }
 
           if(atoi(buffer_sequence)==ack_precedent){

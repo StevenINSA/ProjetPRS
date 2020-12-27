@@ -279,15 +279,15 @@ int main(int argc, char* argv[]){
             timeout.tv_sec = 0;                                  //
           }
 
-          skip:
-            continue;
+
 
           ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);
           printf("ack_precedent =%d\n",ack_precedent);
           printf("ack_precedent_2 =%d\n",ack_precedent_2);
 
-
+          skip:
+            continue;
           //} else {
             //printf("ACK pas reçu pendant RTT : nouveau rtt n\n");
             //rtt.tv_usec = 50000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission

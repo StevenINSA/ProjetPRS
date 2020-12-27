@@ -259,7 +259,7 @@ int main(int argc, char* argv[]){
           }
 
           if (atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){ //si le ack reçu est égale au 2 ack précédents
-            break;
+            continue;
           }
 
           if(atoi(buffer_sequence)==ack_precedent){

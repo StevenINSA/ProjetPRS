@@ -232,6 +232,7 @@ int main(int argc, char* argv[]){
 
       int ack_max = 0;
       int ack_precedent=0;
+      int ack_precedent_2=0;
 
       /***RECEPTION DES ACKs***/
       //for (int i=0;i<packets_number+1;i++){
@@ -264,6 +265,11 @@ int main(int argc, char* argv[]){
             printf("Window après incr: %d\n",*shared_memory_window);
           }
 
+          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
+            printf("Arrêt retransmission\n");
+            goto skip;                               
+          }
+
           if(atoi(buffer_sequence)==ack_precedent){
             printf("RETRANSMISSION\n");
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
@@ -271,7 +277,11 @@ int main(int argc, char* argv[]){
             timeout.tv_sec = 0;                                  //
           }
 
+          ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);
+
+          skip:
+            continue;
           //} else {
             //printf("ACK pas reçu pendant RTT : nouveau rtt n\n");
             //rtt.tv_usec = 50000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission

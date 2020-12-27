@@ -180,7 +180,7 @@ int main(int argc, char* argv[]){
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
     *shared_memory_seq = 1;
 
-    uint8_t *shared_memory_window = mmap(NULL, PAGESIZE,           //pour que le fils mette à jour le n° de seq que le parent envoie
+    uint8_t *shared_memory_window = mmap(NULL, size_file,          
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
     *shared_memory_window = 100;

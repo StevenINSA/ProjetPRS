@@ -180,10 +180,10 @@ int main(int argc, char* argv[]){
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
     *shared_memory_seq = 1;
 
-    uint8_t *shared_memory_window = mmap(NULL, size_file,
+    uint8_t *shared_memory_window = mmap(NULL, PAGESIZE,
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
-    *shared_memory_window = 100;
+    //*shared_memory_window = 100;
 
 
     /*** FORK ***/
@@ -196,6 +196,7 @@ int main(int argc, char* argv[]){
     } else if(idfork!=0){ //si on est le processus père
 
     /***SALVES DE PAQUETS***/
+      *shared_memory_window = 100;
       gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
       while (*shared_memory_fils==1) { //quand fils s'arrête
         //printf("voici la valeur du fils :%d\n",fils);

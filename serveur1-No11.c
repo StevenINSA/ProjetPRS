@@ -265,6 +265,7 @@ int main(int argc, char* argv[]){
           }
 
           if(atoi(buffer_sequence)==ack_precedent){
+            printf("RETRANSMISSION\n");
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
             timeout.tv_usec = 100000; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;                                  //

@@ -238,7 +238,7 @@ int main(int argc, char* argv[]){
       //for (int i=0;i<packets_number+1;i++){
       while (ack_max != packets_number+1){
 
-        int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, NULL); //on écoute sur la socket pendant une durée timeout
+        int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
 
         if (select_value == -1)
           perror("select error\n");

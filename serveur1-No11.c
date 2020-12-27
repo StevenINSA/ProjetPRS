@@ -12,7 +12,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <signal.h>
-#define PAGESIZE 4096
+#define PAGESIZE 10000
 
 int main(int argc, char* argv[]){
 

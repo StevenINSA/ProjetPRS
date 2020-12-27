@@ -261,8 +261,7 @@ int main(int argc, char* argv[]){
             ack_max = atoi(buffer_sequence);
             printf("ACK max devient : %d\n",ack_max);
             printf("Window avant incr : %d\n",*shared_memory_window);
-            int incr=90+ack_max;
-            *shared_memory_window=incr;
+            *shared_memory_window=ack_max+90;
             printf("Window après incr: %d\n",*shared_memory_window);
             printf("ack_precedent =%d\n",ack_precedent);
             printf("ack_precedent_2 =%d\n",ack_precedent_2);

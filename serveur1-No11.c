@@ -223,8 +223,7 @@ int main(int argc, char* argv[]){
     } else if(idfork==0) { //si on est le processus fils
 
       //partie mise en place du timer pour la retransmission
-      FD_ZERO(&set_descripteur_timer);
-      FD_SET(data_descriptor, &set_descripteur_timer);
+
       timeout.tv_usec = 5*rtt.tv_usec; //on sécurise le temps d'attente de retransmission
       timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
       printf("valeur du timeout en µs : %ld\n", timeout.tv_usec);
@@ -237,6 +236,8 @@ int main(int argc, char* argv[]){
       /***RECEPTION DES ACKs***/
       //for (int i=0;i<packets_number+1;i++){
       while (ack_max != packets_number+1){
+        FD_ZERO(&set_descripteur_timer);
+        FD_SET(data_descriptor, &set_descripteur_timer);
 
         int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
 
@@ -247,7 +248,7 @@ int main(int argc, char* argv[]){
 
           memset(bufferUDP_read_server, 0, sizeof(bufferUDP_read_server));
           memset(buffer_sequence, 0, sizeof(buffer_sequence));
-
+          printf("J'écoute\n");
           int size_seq = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
           memcpy(buffer_sequence, bufferUDP_read_server+3, size_seq-3); //+3 car les 3 premières valeurs sont pour le mot ACK
           gettimeofday(&time2, NULL);                                   //on recalcule une timeofday pour faire la différence avec le premier

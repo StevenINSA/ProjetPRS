@@ -295,7 +295,8 @@ int main(int argc, char* argv[]){
 
     int s = sendto(data_descriptor,bufferUDP_write_server,sizeof(bufferUDP_write_server),0,(struct sockaddr *)&client1_addr,len);
     printf("On a envoyé %d octets \n",s);
-
+    int s = sendto(data_descriptor,bufferUDP_write_server,sizeof(bufferUDP_write_server),0,(struct sockaddr *)&client1_addr,len);
+    printf("2ème SEND TO \n",s);
     /***TEST DEBUG***/
     /*
     if(recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len)){

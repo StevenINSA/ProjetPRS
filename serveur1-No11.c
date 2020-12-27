@@ -12,7 +12,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <signal.h>
-#define PAGESIZE 10000
+#define PAGESIZE 4096
 
 int main(int argc, char* argv[]){
 
@@ -207,7 +207,7 @@ int main(int argc, char* argv[]){
           memset(buffer_sequence,0,sizeof(buffer_sequence));
 
           sprintf(buffer_sequence,"%d",*shared_memory_seq);
-          printf("Sequence number (from buffer_sequence) : %s\n",buffer_sequence);
+          //printf("Sequence number (from buffer_sequence) : %s\n",buffer_sequence);
 
           //Segment auquel on rajoute en-tête
           memcpy(buffer_segment,buffer_sequence,6);

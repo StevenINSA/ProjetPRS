@@ -175,7 +175,7 @@ int main(int argc, char* argv[]){
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
     *shared_memory_fils = 1;
 
-    uint8_t *shared_memory_seq = mmap(NULL, PAGESIZE,           //pour que le fils mette à jour le n° de seq que le parent envoie
+    uint16_t *shared_memory_seq = mmap(NULL, PAGESIZE,           //pour que le fils mette à jour le n° de seq que le parent envoie
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
     *shared_memory_seq = 1;

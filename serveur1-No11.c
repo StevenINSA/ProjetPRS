@@ -259,7 +259,7 @@ int main(int argc, char* argv[]){
           }
 
           if (atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){ //si le ack reçu est égale au 2 ack précédents
-            break;
+            goto skip;
           }
 
           if(atoi(buffer_sequence)==ack_precedent){
@@ -270,6 +270,10 @@ int main(int argc, char* argv[]){
 
           ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);
+
+          skip :
+            printf("arrêt de retransmission");
+            continue;
 
           //} else {
             //printf("ACK pas reçu pendant RTT : nouveau rtt n\n");

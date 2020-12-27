@@ -273,7 +273,7 @@ int main(int argc, char* argv[]){
           if(atoi(buffer_sequence)==ack_precedent){
             //printf("RETRANSMISSION à partir de %d\n",ack_precedent+1);
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
-            timeout.tv_usec = 1000000; //on sécurise le temps d'attente de retransmission
+            timeout.tv_usec = 100000; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;                                  //
           }
 
@@ -296,7 +296,7 @@ int main(int argc, char* argv[]){
         else { //si Timeout
           *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
           printf("Timeout : retransmission à partir de %d\n",ack_max+1);
-          timeout.tv_usec = 1000000; //on sécurise le temps d'attente de retransmission
+          timeout.tv_usec = 100000; //on sécurise le temps d'attente de retransmission
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
         }
       }//fin while
@@ -321,16 +321,7 @@ int main(int argc, char* argv[]){
 
     int s = sendto(data_descriptor,bufferUDP_write_server,sizeof(bufferUDP_write_server),0,(struct sockaddr *)&client1_addr,len);
     printf("On a envoyé %d octets \n",s);
-    sendto(data_descriptor,bufferUDP_write_server,sizeof(bufferUDP_write_server),0,(struct sockaddr *)&client1_addr,len);
-    printf("2ème SEND TO \n");
-    /***TEST DEBUG***/
-    /*
-    if(recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len)){
-      printf("On a reçu après avoir envoyé FIN :%d\n",atoi(buffer_sequence));
-      int s = sendto(data_descriptor,bufferUDP_write_server,sizeof(bufferUDP_write_server),0,(struct sockaddr *)&client1_addr,len);
-    }
-    */
-    //exit(0);
+
     time_debit.tv_usec = (time_debit_end.tv_sec-time_debit_start.tv_sec)*pow(10,6) + (time_debit_end.tv_usec - time_debit_start.tv_usec);
     float debit = ((float)size_file+6*(packets_number+1)) / time_debit.tv_usec;
     printf("débit lors de la transmission : %f Mo/s\n", debit);

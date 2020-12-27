@@ -226,6 +226,7 @@ int main(int argc, char* argv[]){
 
       int ack_max = 0;
       int ack_precedent=0;
+      int ack_precedent_2 = 0;
 
       /***RECEPTION DES ACKs***/
       //for (int i=0;i<packets_number+1;i++){
@@ -263,7 +264,13 @@ int main(int argc, char* argv[]){
             timeout.tv_sec = 0;                                  //
           }
 
+          ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);
+
+          if (atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){ //si le ack reçu est égale au 2 ack précédents
+            ack_precedent_2 = 0;
+            ack_precedent = 0; //on remet à 0 les deux ack pour ne pas retransmettre plein de fois inutilement
+          }
           //} else {
             //printf("ACK pas reçu pendant RTT : nouveau rtt n\n");
             //rtt.tv_usec = 50000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission

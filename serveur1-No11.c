@@ -259,6 +259,7 @@ int main(int argc, char* argv[]){
           }
 
           if (atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){ //si le ack reçu est égale au 2 ack précédents
+            printf("arrêt de retransmission\n");
             goto skip;
           }
 
@@ -272,7 +273,6 @@ int main(int argc, char* argv[]){
           ack_precedent=atoi(buffer_sequence);
 
           skip :
-            printf("arrêt de retransmission\n");
             continue;
 
           //} else {

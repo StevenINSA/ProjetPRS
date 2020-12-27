@@ -263,6 +263,8 @@ int main(int argc, char* argv[]){
             printf("Window avant incr : %d\n",*shared_memory_window);
             *shared_memory_window=90+ack_max;
             printf("Window après incr: %d\n",*shared_memory_window);
+            printf("ack_precedent =%d\n",ack_precedent);
+            printf("ack_precedent_2 =%d\n",ack_precedent_2);
           }
 
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
@@ -282,6 +284,8 @@ int main(int argc, char* argv[]){
 
           ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);
+          printf("ack_precedent =%d\n",ack_precedent);
+          printf("ack_precedent_2 =%d\n",ack_precedent_2);
 
 
           //} else {

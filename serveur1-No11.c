@@ -163,12 +163,9 @@ int main(int argc, char* argv[]){
     }
     int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 du n° de séquence
     int packets_number = size_file/packets_size;
+    int size_window=100;
     printf("Nombre de paquets à envoyer au total : %d\n",packets_number+1);
-    //int seq = 1;
-    //int window_size = 100; //on fixe une fenêtre de 100 segments à envoyer sans attendre de ack (en sachant que le client 1 drop à partir de 100)
-    //int window=window_size; //window sera amener à glisser lors de la transmission du fichier (si le fichier contient plus de 100 octets à envoyer)
-    //int tableau_ack[100]={0};
-    //int ack = 0;
+
 
     uint8_t *shared_memory_fils = mmap(NULL, PAGESIZE,          //pour que le parent envoie les fichiers tant que le fils écoute les acks
                                     PROT_READ | PROT_WRITE,
@@ -183,7 +180,8 @@ int main(int argc, char* argv[]){
     uint16_t *shared_memory_window = mmap(NULL, PAGESIZE,
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
-    *shared_memory_window = 90;
+
+    *shared_memory_window = size_window;
 
 
     /*** FORK ***/
@@ -223,7 +221,6 @@ int main(int argc, char* argv[]){
     } else if(idfork==0) { //si on est le processus fils
 
       //partie mise en place du timer pour la retransmission
-
       timeout.tv_usec = 5*rtt.tv_usec; //on sécurise le temps d'attente de retransmission
       timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
       printf("valeur du timeout en µs : %ld\n", timeout.tv_usec);
@@ -234,7 +231,6 @@ int main(int argc, char* argv[]){
       int ack_precedent_2=0;
 
       /***RECEPTION DES ACKs***/
-      //for (int i=0;i<packets_number+1;i++){
       while (ack_max != packets_number+1){
         FD_ZERO(&set_descripteur_timer);
         FD_SET(data_descriptor, &set_descripteur_timer);
@@ -248,33 +244,34 @@ int main(int argc, char* argv[]){
 
           memset(bufferUDP_read_server, 0, sizeof(bufferUDP_read_server));
           memset(buffer_sequence, 0, sizeof(buffer_sequence));
-          printf("J'écoute\n");
+
+          /*RECEPTION DES ACKS*/
           int size_seq = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
           memcpy(buffer_sequence, bufferUDP_read_server+3, size_seq-3); //+3 car les 3 premières valeurs sont pour le mot ACK
           gettimeofday(&time2, NULL);                                   //on recalcule une timeofday pour faire la différence avec le premier
           //rtt.tv_usec = (time2.tv_sec-time1.tv_sec)*pow(10,6) + (time2.tv_usec - time1.tv_usec);         //on estime ainsi le rtt à chaque échange, on rajoute les secondes au cas où le rtt est plus grand
 
           //printf("estimation du RTT : %d\n", rtt.tv_usec);
-          printf("Message reçu : %s\n", bufferUDP_read_server);
+          //printf("Message reçu : %s\n", bufferUDP_read_server);
           //printf("numéro de seq reçue par le serveur (buffer_check_sequence) : %s\n",buffer_sequence);
 
           if (ack_max < atoi(buffer_sequence)){
             ack_max = atoi(buffer_sequence);
-            printf("ACK max devient : %d\n",ack_max);
-            printf("Window avant incr : %d\n",*shared_memory_window);
-            *shared_memory_window=ack_max+90;
-            printf("Window après incr: %d\n",*shared_memory_window);
-            printf("ack_precedent =%d\n",ack_precedent);
-            printf("ack_precedent_2 =%d\n",ack_precedent_2);
+            //printf("ACK max devient : %d\n",ack_max);
+            //printf("Window avant incr : %d\n",*shared_memory_window);
+            *shared_memory_window=ack_max+size_window;
+            //printf("Window après incr: %d\n",*shared_memory_window);
+            //printf("ack_precedent =%d\n",ack_precedent);
+            //printf("ack_precedent_2 =%d\n",ack_precedent_2);
           }
 
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
-            printf("Arrêt retransmission\n");
+            //printf("Arrêt retransmission\n");
             goto skip;
           }
 
           if(atoi(buffer_sequence)==ack_precedent){
-            printf("RETRANSMISSION à partir de %d\n",ack_precedent+1);
+            //printf("RETRANSMISSION à partir de %d\n",ack_precedent+1);
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
             timeout.tv_usec = 1000000; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;                                  //
@@ -284,8 +281,8 @@ int main(int argc, char* argv[]){
 
           ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);
-          printf("ack_precedent =%d\n",ack_precedent);
-          printf("ack_precedent_2 =%d\n",ack_precedent_2);
+          //printf("ack_precedent =%d\n",ack_precedent);
+          //printf("ack_precedent_2 =%d\n",ack_precedent_2);
 
           skip:
             continue;

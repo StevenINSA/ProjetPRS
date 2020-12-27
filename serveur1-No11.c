@@ -168,7 +168,7 @@ int main(int argc, char* argv[]){
     int window_size = 100; //on fixe une fenêtre de 100 segments à envoyer sans attendre de ack (en sachant que le client 1 drop à partir de 100)
     int window=window_size; //window sera amener à glisser lors de la transmission du fichier (si le fichier contient plus de 100 octets à envoyer)
     //int tableau_ack[100]={0};
-    int ack = 0;
+    //int ack = 0;
 
     uint8_t *shared_memory_fils = mmap(NULL, PAGESIZE,          //pour que le parent envoie les fichiers tant que le fils écoute les acks
                                     PROT_READ | PROT_WRITE,
@@ -268,7 +268,10 @@ int main(int argc, char* argv[]){
 
 
         } //FDISSET
-
+        else { //si Timeout
+          *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
+          printf("Timeout : retransmission à partir de %d\n",ack_max+1);
+        }
       }//fin while
 
 

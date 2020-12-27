@@ -272,7 +272,7 @@ int main(int argc, char* argv[]){
           ack_precedent=atoi(buffer_sequence);
 
           skip :
-            printf("arrêt de retransmission");
+            printf("arrêt de retransmission\n");
             continue;
 
           //} else {

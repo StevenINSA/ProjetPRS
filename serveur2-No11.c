@@ -227,7 +227,6 @@ int main(int argc, char* argv[]){
           array_pere[*shared_memory_seq] = time1.tv_usec + time1.tv_sec*pow(10,6);
 
           *shared_memory_seq = *shared_memory_seq+1;
-          printf("envoie de : %d\n", *shared_memory_seq);
         }
       } //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
       printf("On est sorti du while du père :%d\n",*shared_memory_fils);
@@ -277,8 +276,8 @@ int main(int argc, char* argv[]){
           if (ack_max < atoi(buffer_sequence)){ //si le ack que l'on reçoie est supérieur au ack max stocké, ack max devient ce ack
 
             ack_max = atoi(buffer_sequence);
-            size_window += 1; //quand on reçoit bien un ack, on augmente la taille de la fenêtre
             *shared_memory_window=ack_max+size_window;
+            size_window += 1; //quand on reçoit bien un ack, on augmente la taille de la fenêtre
 
           }
 

@@ -242,6 +242,8 @@ int main(int argc, char* argv[]){
       int ack_max = 0;
       int ack_precedent=0;
       int ack_precedent_2=0;
+      int last_ack_max = 0;
+      int last2_ack_max = 0;
 
       /***RECEPTION DES ACKs***/
       while (ack_max != packets_number+1){

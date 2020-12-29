@@ -291,13 +291,11 @@ int main(int argc, char* argv[]){
           }
 
           if(atoi(buffer_sequence)==ack_precedent){
-            printf("RETRANSMISSION à partir de %d\n",ack_precedent+1);
+            printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
             timeout.tv_usec = 3*timeout.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;                                  //
           }
-
-
 
           ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);
@@ -326,7 +324,6 @@ int main(int argc, char* argv[]){
 
         }
       }//fin while
-
 
       printf("J'ai reçu le dernier ACK : ACK%d\n",ack_max);
       *shared_memory_fils=0;

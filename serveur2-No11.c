@@ -242,8 +242,6 @@ int main(int argc, char* argv[]){
       int ack_max = 0;
       int ack_precedent=0;
       int ack_precedent_2=0;
-      int last_ack_max = 0;
-      int last2_ack_max = 0;
 
       /***RECEPTION DES ACKs***/
       while (ack_max != packets_number+1){
@@ -307,10 +305,8 @@ int main(int argc, char* argv[]){
 
         } //FDISSET
         else { //si Timeout
-
-          if(last_ack_max == ack_max && last_ack_max == last2_ack_max){ //si le timeout a lieu sur le même ack que précédemment, on ne retransmet pas tout
-            goto skip2;                                                 //sécurité sur 2 ack car des bugs ont lieu lorsqu'on a un timeout et un ack dupliqué sur la même séquence
-          }
+          //dans le serveur 2 on laisse toutes les retransmission des timeout car il y a des cas où des paquets sont droppés 3 fois d'affiler
+          //on ne retransmet donc plus et plus rien ne se passe
 
           *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
           printf("Timeout : retransmission à partir de %d\n",ack_max+1);
@@ -318,11 +314,6 @@ int main(int argc, char* argv[]){
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 
           size_window = 1; //quand timeout, il y a congestion donc on remet la fenêtre à 1
-          last2_ack_max = last_ack_max;
-          last_ack_max = ack_max;
-
-          skip2:
-            continue;
 
         }
       }//fin while

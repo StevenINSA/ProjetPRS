@@ -298,7 +298,7 @@ int main(int argc, char* argv[]){
 
           ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);
-          printf("taille de la fenêtre : %d", size_window);
+          printf("taille de la fenêtre : %d\n", size_window);
 
           skip:
             continue;

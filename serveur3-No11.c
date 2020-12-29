@@ -217,13 +217,13 @@ int main(int argc, char* argv[]){
                                                 MAP_SHARED | MAP_ANONYMOUS, -1,0);
 
                 /*** FORK ***/
-                int idfork=fork();
+                int pid=fork();
                 printf("Fork renvoie la valeur :%d\n",idfork);
-                if(idfork==-1){
+                if(pid==-1){
                   perror("Erreur fork");
                   exit(EXIT_FAILURE);
 
-                } else if(idfork!=0){ //si on est le processus père
+                } else if(pid!=0){ //si on est le processus père
 
                 /***SALVES DE PAQUETS***/
 
@@ -254,7 +254,7 @@ int main(int argc, char* argv[]){
                   } //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
                   printf("On est sorti du while du père :%d\n",*shared_memory_fils);
 
-                } else if(idfork==0) { //si on est le processus fils
+                } else if(pid==0) { //si on est le processus fils
 
                   //partie mise en place du timer pour la retransmission
                   timeout.tv_usec = 3*srtt.tv_usec; //on sécurise le temps d'attente de retransmission

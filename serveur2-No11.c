@@ -73,7 +73,7 @@ int main(int argc, char* argv[]){
   rtt.tv_usec = 50000;           //on fixe au début un rtt de 50ms (à definir)
   srtt.tv_usec = rtt.tv_usec;
   srtt.tv_sec = 0;
-  float alpha = 0.6;
+  float alpha = 0.8;
 
   while(1){
     printf("Boucle while n°1.\n");

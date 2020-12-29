@@ -166,7 +166,7 @@ int main(int argc, char* argv[]){
     }
     int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 du n° de séquence
     int packets_number = size_file/packets_size;
-    int size_window=100;
+    int size_window=1; //fenêtre ici initalisé à 1 pour l'augmenter petit à petit
     printf("Nombre de paquets à envoyer au total : %d\n",packets_number+1);
 
 
@@ -184,7 +184,7 @@ int main(int argc, char* argv[]){
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
 
-    *shared_memory_window = size_window;
+    *shared_memory_window = size_window; //on initialise la taille de la fenêtre à 1
 
     long *array_pere = (long *)mmap(NULL, packets_number*sizeof(long)+sizeof(long), //pour la calcul du RTT
                                     PROT_READ | PROT_WRITE,
@@ -227,7 +227,7 @@ int main(int argc, char* argv[]){
           array_pere[*shared_memory_seq] = time1.tv_usec + time1.tv_sec*pow(10,6);
 
           *shared_memory_seq = *shared_memory_seq+1;
-
+          printf("valeur de la fenêtre dynamique : %d\n", *shared_memory_window);
         }
       } //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
       printf("On est sorti du while du père :%d\n",*shared_memory_fils);
@@ -265,27 +265,26 @@ int main(int argc, char* argv[]){
           memcpy(buffer_sequence, bufferUDP_read_server+3, size_seq-3); //+3 car les 3 premières valeurs sont pour le mot ACK
 
           gettimeofday(&time2, NULL);                                   //on recalcule une timeofday pour faire la différence avec le premier
-          array_fils[atoi(buffer_sequence)] = time2.tv_usec + time2.tv_sec*pow(10,6);
-          rtt.tv_usec = array_fils[atoi(buffer_sequence)] - array_pere[atoi(buffer_sequence)];
-          srtt.tv_usec = alpha*srtt.tv_usec + (1-alpha)*rtt.tv_usec;
+          array_fils[atoi(buffer_sequence)] = time2.tv_usec + time2.tv_sec*pow(10,6); //on stocke le time2 dans le tableau du fils
+          rtt.tv_usec = array_fils[atoi(buffer_sequence)] - array_pere[atoi(buffer_sequence)]; // calcul du rtt
+          srtt.tv_usec = alpha*srtt.tv_usec + (1-alpha)*rtt.tv_usec; //calcul du SRTT
 
           timeout.tv_usec = 3*srtt.tv_usec; //on attend 3 fois l'estimation avant de déclarer l'ACK comme perdu
           timeout.tv_sec = 0;
 
           //printf("estimation du SRTT : %ld\n", srtt.tv_usec);
 
-          if (ack_max < atoi(buffer_sequence)){
+          if (ack_max < atoi(buffer_sequence)){ //si le ack que l'on reçoie est supérieur au ack max stocké, ack max devient ce ack
+
             ack_max = atoi(buffer_sequence);
-            //printf("ACK max devient : %d\n",ack_max);
-            //printf("Window avant incr : %d\n",*shared_memory_window);
+            size_window += 1; //quand on reçoit bien un ack, on augmente la taille de la fenêtre
             *shared_memory_window=ack_max+size_window;
-            //printf("Window après incr: %d\n",*shared_memory_window);
-            //printf("ack_precedent =%d\n",ack_precedent);
-            //printf("ack_precedent_2 =%d\n",ack_precedent_2);
+
           }
 
-          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
+          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){ //dans le cas où on a  3 ack identiques, on ne retransmet pas
             //printf("Arrêt retransmission\n");
+            size_window = 1; //on oublie pas de remettre la fenêtre à 1 aussi dans ce cas
             goto skip;
           }
 
@@ -293,13 +292,13 @@ int main(int argc, char* argv[]){
             printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
             timeout.tv_usec = 3*timeout.tv_usec; //on sécurise le temps d'attente de retransmission
-            timeout.tv_sec = 0;                                  //
+            timeout.tv_sec = 0;
+
+            size_window = 1; //quand on a une duplication du ack, on remet la taille de la fenêtre à 1.
           }
 
           ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);
-          //printf("ack_precedent =%d\n",ack_precedent);
-          //printf("ack_precedent_2 =%d\n",ack_precedent_2);
 
           skip:
             continue;
@@ -311,6 +310,8 @@ int main(int argc, char* argv[]){
           printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           timeout.tv_usec = 3*timeout.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
+
+          size_window = 1; //quand timeout, il y a congestion donc on remet la fenêtre à 1
 
         }
       }//fin while

@@ -277,7 +277,7 @@ int main(int argc, char* argv[]){
 
             ack_max = atoi(buffer_sequence);
             *shared_memory_window=ack_max+size_window;
-            size_window += 1; //quand on reçoit bien un ack, on augmente la taille de la fenêtre
+            size_window += 2; //quand on reçoit bien un ack, on augmente la taille de la fenêtre
 
           }
 

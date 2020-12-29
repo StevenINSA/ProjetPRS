@@ -10,6 +10,10 @@
 #include <sys/time.h> //pour les timers
 #include <math.h> //pour la puissance
 #define max(a,b) (a>=b?a:b)
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <signal.h>
+#define PAGESIZE 4096
 
 int main(int argc, char* argv[]){
 
@@ -64,10 +68,12 @@ int main(int argc, char* argv[]){
 
   //int data_descriptor = 0; //pour récupérer le descripteur de la nouvelle socket
 
-  //pour le timer (retransmission quand perte du ack)
   fd_set set_descripteur_timer;  //pour pouvoir utiliser un timer, il faut utiliser un select, donc un descripteur
-  struct timeval time1, time2, timeout, rtt;
-  rtt.tv_usec = 50000;           //on fixe au début un rtt de 50ms
+  struct timeval time1, time2, timeout, rtt, srtt, time_debit, time_debit_start, time_debit_end;
+  rtt.tv_usec = 50000;           //on fixe au début un rtt de 50ms (à definir)
+  srtt.tv_usec = rtt.tv_usec;
+  srtt.tv_sec = 0;
+  float alpha = 0.4;
 
 
   // Ensemble des descripteurs : socket UDP + sockets clients

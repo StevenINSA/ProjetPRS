@@ -240,7 +240,7 @@ int main(int argc, char* argv[]){
                   memset(buffer_sequence,0,sizeof(buffer_sequence));
 
                   sprintf(buffer_sequence,"%d",*shared_memory_seq);
-                  printf("Sequence number (from buffer_sequence) : %s\n",buffer_sequence);
+                  //printf("Sequence number (from buffer_sequence) : %s\n",buffer_sequence);
 
                   //Segment auquel on rajoute en-tête
                   memcpy(buffer_segment,buffer_sequence,6);
@@ -248,6 +248,7 @@ int main(int argc, char* argv[]){
 
                   /*ENVOI PAQUET*/
                   sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
+                  printf("Envoi\n");
                   gettimeofday(&time1, NULL);
                   array_pere[*shared_memory_seq] = time1.tv_usec + time1.tv_sec*pow(10,6);
 

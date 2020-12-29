@@ -232,7 +232,7 @@ int main(int argc, char* argv[]){
 
               gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
               while (*shared_memory_fils==1) { //quand fils s'arrête
-                printf("voici la valeur du fils :%d\n",fils);
+                printf("voici la valeur du fils :%d\n",*shared_memory_fils);
                 while (*shared_memory_seq <= *shared_memory_window && *shared_memory_seq <= packets_number+1) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
 
                   //Remise à zéro des buffers

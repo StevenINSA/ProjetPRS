@@ -9,6 +9,7 @@
 #include <sys/select.h> //fonction select
 #include <sys/time.h> //pour les timers
 #include <math.h> //pour la puissance
+#define max(a,b) (a>=b?a:b)
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <signal.h>

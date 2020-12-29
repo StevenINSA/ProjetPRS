@@ -1,4 +1,4 @@
-all:serveur1-No11 serveur3-No11 serveur2-No11
+all:serveur1-No11 serveur3-No11 serveur2-No11 serveur3bis-No11
 
 #-Wall : active tous les warnings
 #$@ = cible = arbre.o
@@ -10,6 +10,12 @@ serveur3-No11: serveur3-No11.o
 
 serveur3-No11.o: serveur3-No11.c
 	gcc -Wall -c $< -o $@
+
+serveur3bis-No11: serveur3-No11.o
+		gcc -Wall $^ -o $@
+
+serveur3bis-No11.o: serveur3-No11.c
+		gcc -Wall -c $< -o $@
 
 
 serveur1-No11: serveur1-No11.o

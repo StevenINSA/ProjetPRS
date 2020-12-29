@@ -276,8 +276,8 @@ int main(int argc, char* argv[]){
           if (ack_max < atoi(buffer_sequence)){ //si le ack que l'on reçoie est supérieur au ack max stocké, ack max devient ce ack
 
             ack_max = atoi(buffer_sequence);
+            size_window += 1; //quand on reçoit bien un ack, on augmente la taille de la fenêtre
             *shared_memory_window=ack_max+size_window;
-            size_window += 2; //quand on reçoit bien un ack, on augmente la taille de la fenêtre
 
           }
 

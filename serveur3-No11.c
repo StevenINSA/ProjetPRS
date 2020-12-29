@@ -9,7 +9,10 @@
 #include <sys/select.h> //fonction select
 #include <sys/time.h> //pour les timers
 #include <math.h> //pour la puissance
-#define max(a,b) (a>=b?a:b)
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <signal.h>
+#define PAGESIZE 4096
 
 int main(int argc, char* argv[]){
 
@@ -66,9 +69,11 @@ int main(int argc, char* argv[]){
 
   //pour le timer (retransmission quand perte du ack)
   fd_set set_descripteur_timer;  //pour pouvoir utiliser un timer, il faut utiliser un select, donc un descripteur
-  struct timeval time1, time2, timeout, rtt;
-  rtt.tv_usec = 50000;           //on fixe au début un rtt de 50ms
-
+  struct timeval time1, time2, timeout, rtt, srtt, time_debit, time_debit_start, time_debit_end;
+  rtt.tv_usec = 50000;           //on fixe au début un rtt de 50ms (à definir)
+  srtt.tv_usec = rtt.tv_usec;
+  srtt.tv_sec = 0;
+  float alpha = 0.4;
 
   // Ensemble des descripteurs : socket UDP + sockets clients
   fd_set set_descripteurs;
@@ -149,114 +154,229 @@ int main(int argc, char* argv[]){
             close(socket_UDP);
             int data_descriptor = data_UDP;
 
-            //le client envoie le nom du fichier qu'il veut recevoir
-            memset(bufferUDP_read_server,0,sizeof(bufferUDP_read_server));
-            int size_file_name = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
-            printf("le client veut : %s\n", bufferUDP_read_server);
 
-            //il faut stocker le nom du fichier pour pouvoir le passer dans fopen
-            memcpy(sent_file, bufferUDP_read_server, size_file_name);
-            printf("fichier a envoyer : %s\n", sent_file);
+                //le client envoie le nom du fichier qu'il veut recevoir
+                memset(bufferUDP_read_server,0,sizeof(bufferUDP_read_server));
+                int size_file_name = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
+                //printf("le client veut : %s\n", bufferUDP_read_server);
 
-            printf("envoi du fichier pdf\n");
-            FILE *file = fopen(sent_file, "rb"); //rb : ouvre le pdf au format binaire car on échange des bits sur les sockets
-            if (file == 0){
-             perror("ERREUR OUVERTURE DU FICHIER");
-             exit(-1);
-            }
+                //il faut stocker le nom du fichier pour pouvoir le passer dans fopen
+                memcpy(sent_file, bufferUDP_read_server, size_file_name);
+                //printf("fichier a envoyer : %s\n", sent_file);
 
-            //on calcule ensuite la taille du fichier à envoyer
-            fseek(file, 0, SEEK_END);          //fseek parcours le fichier et place un curseur à la fin appelée SEEK END
-            int size_file = ftell(file);  //ftell donne la taille du chemin parcouru par fseek (valeur de la position du curseur)
-
-            printf("taille du fichier en octet : %d\n", size_file);
-            fseek(file, 0, SEEK_SET);          //on replace le curseur au début;
-            char file_buffer[size_file];
-            //les octets lus sont stockés dans buffer_fichier
-            //size_t read_blocks = fread(file_buffer,1,500,fichier); //500 blocs de 1 octet
-            size_t read_blocks = fread(file_buffer,size_file,1,file); //on lit le fichier en un coup
-
-            if(read_blocks!=1){
-              perror("erreur lecture fichier");
-              ferror(file);
-            }
-            int packets_size = 500;
-            int packets_number = size_file/packets_size;
-            int seq = 1;
-
-            struct timeval time_debit, time_debit_start, time_debit_end;
-            gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
-
-            while (seq <= (packets_number+1)){
-              printf("SEQ %d sur port %d\n",seq,port_data);
-              //printf("On copie à partir de file_buffer[%d]\n",packets_size*(seq-1));
-
-              //Remise à zéro des buffers
-              memset(buffer_segment,0,sizeof(buffer_segment));
-              memset(buffer_sequence,0,sizeof(buffer_sequence));
-
-              sprintf(buffer_sequence,"%d",seq);
-              //printf("Sequence number (from buffer_sequence) : %s\n",buffer_sequence);
-
-              //Segment auquel on rajoute en-tête
-              memcpy(buffer_segment,buffer_sequence,6);
-              memcpy(buffer_segment+6,file_buffer+packets_size*(seq-1),packets_size);
-
-              sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
-
-              gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
-
-              //partie mise en place du timer pour la retransmission
-              FD_ZERO(&set_descripteur_timer);
-              FD_SET(data_descriptor, &set_descripteur_timer);
-              timeout.tv_usec = 3 * rtt.tv_usec;
-              timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
-              //printf("valeur du timeout en µs : %d\n", timeout.tv_usec);
-              //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
-
-              int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
-
-              if (select_value == -1)
-                perror("select error\n");
-
-              else if (FD_ISSET(data_descriptor, &set_descripteur_timer)){ //si on a une activité sur la socket (i.e on reçoit un ack)
-
-                memset(bufferUDP_read_server, 0, sizeof(bufferUDP_read_server));
-                memset(buffer_sequence, 0, sizeof(buffer_sequence));
-
-                int size_seq = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
-                memcpy(buffer_sequence, bufferUDP_read_server+3, size_seq-3); //+3 car les 3 premières valeurs sont pour le mot ACK
-                gettimeofday(&time2, NULL);                                   //on recalcule une timeofday pour faire la différence avec le premier
-                rtt.tv_usec = (time2.tv_sec-time1.tv_sec)*pow(10,6) + (time2.tv_usec - time1.tv_usec);         //on estime ainsi le rtt à chaque échange, on rajoute les secondes au cas où
-
-                //printf("estimation du RTT : %d\n", rtt.tv_usec);
-                printf("message reçu : %s\n", bufferUDP_read_server);
-                //printf("numéro de seq reçue par le serveur (buffer_check_sequence) : %s\n",buffer_sequence);
-                //printf("atoi de buffer_check_sequence %d\n", atoi(buffer_sequence));
-
-                if (atoi(buffer_sequence) == seq){ //si le numéro de séquence reçu est égale au numéro de séquence envoyé
-                  seq++;                           //on peut alors envoyer la séquence suivante
-                } else{
-                  printf("retransmission du n° de seq : %d \n", seq);
+                //printf("envoi du fichier pdf\n");
+                FILE *file = fopen(sent_file, "rb"); //rb : ouvre le pdf au format binaire car on échange des bits sur les sockets
+                if (file == 0){
+                 perror("ERREUR OUVERTURE DU FICHIER");
+                 exit(-1);
                 }
-              }
-              else {
-                printf("segment perdu - Timeout ! Retransmission\n");
-                rtt.tv_usec = 50000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission
-              }
 
-            }
-            gettimeofday(&time_debit_end, NULL);
+                //on calcule ensuite la taille du fichier à envoyer
+                fseek(file, 0, SEEK_END);     //fseek parcours le fichier et place un curseur à la fin appelée SEEK END
+                int size_file = ftell(file);  //ftell donne la taille du chemin parcouru par fseek (valeur de la position du curseur)
 
-            printf("*** FIN DE TRANSMISSION ***\n");
-            memset(bufferUDP_write_server,0,sizeof(bufferUDP_write_server));
-            memcpy(bufferUDP_write_server,"FIN",3);
+                printf("taille du fichier en octet : %d\n", size_file);
+                fseek(file, 0, SEEK_SET);          //on replace le curseur au début;
+                char file_buffer[size_file];
+                //les octets lus sont stockés dans buffer_fichier
+                //size_t read_blocks = fread(file_buffer,1,500,fichier); //500 blocs de 1 octet
+                size_t read_blocks = fread(file_buffer,size_file,1,file); //on lit le fichier en un coup (1 bloc de taille_fichier octets)
 
-            sendto(data_descriptor,bufferUDP_write_server,sizeof(bufferUDP_write_server),0,(struct sockaddr *)&client1_addr,len);
+                if(read_blocks!=1){
+                  perror("erreur lecture fichier");
+                  ferror(file);
+                }
+                int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 du n° de séquence
+                int packets_number = size_file/packets_size;
+                int size_window=100;
+                printf("Nombre de paquets à envoyer au total : %d\n",packets_number+1);
 
-            time_debit.tv_usec = (time_debit_end.tv_sec-time_debit_start.tv_sec)*pow(10,6) + (time_debit_end.tv_usec - time_debit_start.tv_usec);
-            float debit = (float)size_file / time_debit.tv_usec;
-            printf("débit lors de la transmission : %f Mo/s\n", debit);
+
+                uint8_t *shared_memory_fils = mmap(NULL, PAGESIZE,          //pour que le parent envoie les fichiers tant que le fils écoute les acks
+                                                PROT_READ | PROT_WRITE,
+                                                MAP_SHARED | MAP_ANONYMOUS, -1,0);
+                *shared_memory_fils = 1;
+
+                uint16_t *shared_memory_seq = mmap(NULL, PAGESIZE,           //pour que le fils mette à jour le n° de seq que le parent envoie
+                                                PROT_READ | PROT_WRITE,
+                                                MAP_SHARED | MAP_ANONYMOUS, -1,0);
+                *shared_memory_seq = 1;
+
+                uint16_t *shared_memory_window = mmap(NULL, PAGESIZE,
+                                                PROT_READ | PROT_WRITE,
+                                                MAP_SHARED | MAP_ANONYMOUS, -1,0);
+
+                *shared_memory_window = size_window;
+
+                long *array_pere = (long *)mmap(NULL, packets_number*sizeof(long)+sizeof(long), //pour la calcul du RTT
+                                                PROT_READ | PROT_WRITE,
+                                                MAP_SHARED | MAP_ANONYMOUS, -1,0);
+
+                long *array_fils = (long *)mmap(NULL, packets_number*sizeof(long)+sizeof(long),
+                                                PROT_READ | PROT_WRITE,
+                                                MAP_SHARED | MAP_ANONYMOUS, -1,0);
+
+                /*** FORK ***/
+                int idfork=fork();
+                printf("Fork renvoie la valeur :%d\n",idfork);
+                if(idfork==-1){
+                  perror("Erreur fork");
+                  exit(EXIT_FAILURE);
+
+                } else if(idfork!=0){ //si on est le processus père
+
+                /***SALVES DE PAQUETS***/
+
+                  gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
+                  while (*shared_memory_fils==1) { //quand fils s'arrête
+                    //printf("voici la valeur du fils :%d\n",fils);
+                    while (*shared_memory_seq <= *shared_memory_window && *shared_memory_seq <= packets_number+1) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
+
+                      //Remise à zéro des buffers
+                      memset(buffer_segment,0,sizeof(buffer_segment));
+                      memset(buffer_sequence,0,sizeof(buffer_sequence));
+
+                      sprintf(buffer_sequence,"%d",*shared_memory_seq);
+                      //printf("Sequence number (from buffer_sequence) : %s\n",buffer_sequence);
+
+                      //Segment auquel on rajoute en-tête
+                      memcpy(buffer_segment,buffer_sequence,6);
+                      memcpy(buffer_segment+6,file_buffer+packets_size*(*shared_memory_seq-1),packets_size);
+
+                      /*ENVOI PAQUET*/
+                      sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
+                      gettimeofday(&time1, NULL);
+                      array_pere[*shared_memory_seq] = time1.tv_usec + time1.tv_sec*pow(10,6);
+
+                      *shared_memory_seq = *shared_memory_seq+1;
+
+                    }
+                  } //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
+                  printf("On est sorti du while du père :%d\n",*shared_memory_fils);
+
+                } else if(idfork==0) { //si on est le processus fils
+
+                  //partie mise en place du timer pour la retransmission
+                  timeout.tv_usec = 3*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
+                  timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
+                  printf("valeur du timeout en µs : %ld\n", timeout.tv_usec);
+                  //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
+
+                  int ack_max = 0;
+                  int ack_precedent=0;
+                  int ack_precedent_2=0;
+                  int last_ack_max = 0;
+                  int last2_ack_max = 0;
+
+                  /***RECEPTION DES ACKs***/
+                  while (ack_max != packets_number+1){
+
+                    FD_ZERO(&set_descripteur_timer);
+                    FD_SET(data_descriptor, &set_descripteur_timer);
+
+                    int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
+
+                    if (select_value == -1)
+                      perror("select error\n");
+
+                    else if (FD_ISSET(data_descriptor, &set_descripteur_timer)){ //si on a une activité sur la socket (i.e on reçoit un ack)
+
+                      memset(bufferUDP_read_server, 0, sizeof(bufferUDP_read_server));
+                      memset(buffer_sequence, 0, sizeof(buffer_sequence));
+
+                      /*RECEPTION DES ACKS*/
+                      int size_seq = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
+                      memcpy(buffer_sequence, bufferUDP_read_server+3, size_seq-3); //+3 car les 3 premières valeurs sont pour le mot ACK
+
+                      gettimeofday(&time2, NULL);                                   //on recalcule une timeofday pour faire la différence avec le premier
+                      array_fils[atoi(buffer_sequence)] = time2.tv_usec + time2.tv_sec*pow(10,6);
+                      rtt.tv_usec = array_fils[atoi(buffer_sequence)] - array_pere[atoi(buffer_sequence)];
+                      srtt.tv_usec = alpha*srtt.tv_usec + (1-alpha)*rtt.tv_usec;
+
+                      timeout.tv_usec = 3*srtt.tv_usec; //on attend 3 fois l'estimation avant de déclarer l'ACK comme perdu
+                      timeout.tv_sec = 0;
+
+                      //printf("estimation du SRTT : %ld\n", srtt.tv_usec);
+
+                      if (ack_max < atoi(buffer_sequence)){
+                        ack_max = atoi(buffer_sequence);
+                        //printf("ACK max devient : %d\n",ack_max);
+                        //printf("Window avant incr : %d\n",*shared_memory_window);
+                        *shared_memory_window=ack_max+size_window;
+                        //printf("Window après incr: %d\n",*shared_memory_window);
+                        //printf("ack_precedent =%d\n",ack_precedent);
+                        //printf("ack_precedent_2 =%d\n",ack_precedent_2);
+                      }
+
+                      if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
+                        //printf("Arrêt retransmission\n");
+                        goto skip;
+                      }
+
+                      if(atoi(buffer_sequence)==ack_precedent){
+                        printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
+                        *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
+                        timeout.tv_usec = 3*timeout.tv_usec; //on sécurise le temps d'attente de retransmission
+                        timeout.tv_sec = 0;                                  //
+                      }
+
+                      ack_precedent_2 = ack_precedent;
+                      ack_precedent=atoi(buffer_sequence);
+                      //printf("ack_precedent =%d\n",ack_precedent);
+                      //printf("ack_precedent_2 =%d\n",ack_precedent_2);
+
+                      skip:
+                        continue;
+
+                    } //FDISSET
+                    else { //si Timeout
+
+                      if(last_ack_max == ack_max && last_ack_max == last2_ack_max){ //si le timeout a lieu sur le même ack que précédemment, on ne retransmet pas tout
+                        goto skip2;
+                      }
+
+                      *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
+                      printf("Timeout : retransmission à partir de %d\n",ack_max+1);
+                      timeout.tv_usec = 10*timeout.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion
+                      timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
+
+                      last2_ack_max = last_ack_max;
+                      last_ack_max = ack_max;
+
+                      skip2:
+                        continue;
+
+                    }
+                  }//fin while
+
+                  printf("J'ai reçu le dernier ACK : ACK%d\n",ack_max);
+                  *shared_memory_fils=0;
+                  printf("Fin du fils : on ferme le fils\n");
+
+                  //kill(0, SIGKILL);
+                  exit(0);
+
+                } //fin fils
+
+                gettimeofday(&time_debit_end, NULL);
+
+                printf("taille du fichier envoyé : %d\n", size_file);
+
+                printf("*** FIN DE TRANSMISSION ***\n");
+                memset(bufferUDP_write_server,0,sizeof(bufferUDP_write_server));
+                memcpy(bufferUDP_write_server,"FIN",3);
+
+                sendto(data_descriptor,bufferUDP_write_server,sizeof(bufferUDP_write_server),0,(struct sockaddr *)&client1_addr,len);
+
+                time_debit.tv_usec = (time_debit_end.tv_sec-time_debit_start.tv_sec)*pow(10,6) + (time_debit_end.tv_usec - time_debit_start.tv_usec);
+                float debit = ((float)size_file+6*(packets_number+1)) / time_debit.tv_usec;
+                printf("débit lors de la transmission : %f Mo/s\n", debit);
+                printf("temps débit en micro sec : %ld\n", time_debit.tv_usec);
+
+                close(data_descriptor);
+                break;
+                exit(0);
+              } //fin while
 
             close(data_descriptor);
             exit(0);

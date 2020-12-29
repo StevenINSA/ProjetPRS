@@ -178,7 +178,7 @@ int main(int argc, char* argv[]){
     uint16_t *shared_memory_seq = mmap(NULL, PAGESIZE,           //pour que le fils mette à jour le n° de seq que le parent envoie
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
-    *shared_memory_seq = 1;
+    *shared_memory_seq = 100;
 
     uint16_t *shared_memory_window = mmap(NULL, PAGESIZE,
                                     PROT_READ | PROT_WRITE,
@@ -276,14 +276,14 @@ int main(int argc, char* argv[]){
           if (ack_max < atoi(buffer_sequence)){ //si le ack que l'on reçoie est supérieur au ack max stocké, ack max devient ce ack
 
             ack_max = atoi(buffer_sequence);
-            size_window += 1; //quand on reçoit bien un ack, on augmente la taille de la fenêtre. Nous avons remarqué que retransmettre à partir de 2 augmentait le débit
+            //size_window += 1; //quand on reçoit bien un ack, on augmente la taille de la fenêtre. Nous avons remarqué que retransmettre à partir de 2 augmentait le débit
             *shared_memory_window=ack_max+size_window;
 
           }
 
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){ //dans le cas où on a  3 ack identiques, on ne retransmet pas
             //printf("Arrêt retransmission\n");
-            size_window = 3; //on oublie pas de remettre la fenêtre à 1 aussi dans ce cas
+            //size_window = 3; //on oublie pas de remettre la fenêtre à 1 aussi dans ce cas
             goto skip;
           }
 
@@ -293,7 +293,7 @@ int main(int argc, char* argv[]){
             timeout.tv_usec = 3*timeout.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;
 
-            size_window = 3; //quand on a une duplication du ack, on remet la taille de la fenêtre à 1.
+            //size_window = 3; //quand on a une duplication du ack, on remet la taille de la fenêtre à 1.
           }
 
           ack_precedent_2 = ack_precedent;
@@ -314,7 +314,7 @@ int main(int argc, char* argv[]){
           timeout.tv_usec = 5*timeout.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 
-          size_window = 3; //quand timeout, il y a congestion donc on remet la fenêtre à 1
+          //size_window = 3; //quand timeout, il y a congestion donc on remet la fenêtre à 1
 
         }
       }//fin while

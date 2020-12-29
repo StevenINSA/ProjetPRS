@@ -227,7 +227,6 @@ int main(int argc, char* argv[]){
           array_pere[*shared_memory_seq] = time1.tv_usec + time1.tv_sec*pow(10,6);
 
           *shared_memory_seq = *shared_memory_seq+1;
-          printf("valeur de la fenêtre dynamique : %d\n", *shared_memory_window);
         }
       } //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
       printf("On est sorti du while du père :%d\n",*shared_memory_fils);
@@ -299,6 +298,7 @@ int main(int argc, char* argv[]){
 
           ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);
+          printf("taille de la fenêtre : %d", size_window);
 
           skip:
             continue;

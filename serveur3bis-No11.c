@@ -220,12 +220,13 @@ int main(int argc, char* argv[]){
 
             /*** FORK ***/
             int fork_2=fork();
-            printf("Fork renvoie la valeur :%d\n",idfork);
+            printf("Fork renvoie la valeur :%d\n",fork_2);
             if(fork_2==-1){
               perror("Erreur fork");
               exit(EXIT_FAILURE);
 
             } else if(fork_2!=0){ //si on est le processus père
+              printf("Père\n");
 
             /***SALVES DE PAQUETS***/
 
@@ -258,6 +259,7 @@ int main(int argc, char* argv[]){
 
             } else if(fork_2==0) { //si on est le processus fils
 
+              printf("Fils\n");
               //partie mise en place du timer pour la retransmission
               timeout.tv_usec = 3*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
               timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout

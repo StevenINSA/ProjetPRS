@@ -218,7 +218,7 @@ int main(int argc, char* argv[]){
 
                 /*** FORK ***/
                 int pid=fork();
-                printf("Fork renvoie la valeur :%d\n",idfork);
+                printf("Fork renvoie la valeur :%d\n",pid);
                 if(pid==-1){
                   perror("Erreur fork");
                   exit(EXIT_FAILURE);

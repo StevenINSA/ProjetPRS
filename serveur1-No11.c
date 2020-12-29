@@ -244,6 +244,7 @@ int main(int argc, char* argv[]){
       int ack_precedent=0;
       int ack_precedent_2=0;
       int last_ack_max = 0;
+      int last2_ack_max = 0;
 
       /***RECEPTION DES ACKs***/
       while (ack_max != packets_number+1){
@@ -308,7 +309,7 @@ int main(int argc, char* argv[]){
         } //FDISSET
         else { //si Timeout
 
-          if(last_ack_max == ack_max){ //si le timeout a lieu sur le même ack que précédemment, on ne retransmet pas tout
+          if(last_ack_max == ack_max && last_ack_max == last2_ack_max){ //si le timeout a lieu sur le même ack que précédemment, on ne retransmet pas tout
             goto skip2;
           }
 
@@ -317,6 +318,7 @@ int main(int argc, char* argv[]){
           timeout.tv_usec = 10*timeout.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 
+          last2_ack_max = last_ack_max;
           last_ack_max = ack_max;
 
           skip2:

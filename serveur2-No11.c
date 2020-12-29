@@ -307,10 +307,11 @@ int main(int argc, char* argv[]){
         else { //si Timeout
           //dans le serveur 2 on laisse toutes les retransmission des timeout car il y a des cas où des paquets sont droppés 3 fois d'affiler
           //on ne retransmet donc plus et plus rien ne se passe
+          //de plus on réduit la duré du timeout dans le cas du serveur 2 pour ne pas trop attendre lors d'un drop du client
 
           *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
           printf("Timeout : retransmission à partir de %d\n",ack_max+1);
-          timeout.tv_usec = 3*timeout.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion
+          timeout.tv_usec = 2*timeout.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 
           size_window = 1; //quand timeout, il y a congestion donc on remet la fenêtre à 1

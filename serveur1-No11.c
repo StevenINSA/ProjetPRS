@@ -291,7 +291,7 @@ int main(int argc, char* argv[]){
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
             timeout.tv_usec = 3*timeout.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;
-            *shared_memory_window = ack_precedent+1; //on a remarqué que le client1 ne perdait qu'un seul paquet. Au lieu d'en retransmettre 100, on n'en retransmet qu'un seul
+            //*shared_memory_window = ack_precedent+1; //on a remarqué que le client1 ne perdait qu'un seul paquet. Au lieu d'en retransmettre 100, on n'en retransmet qu'un seul
           }
 
           ack_precedent_2 = ack_precedent;
@@ -316,7 +316,7 @@ int main(int argc, char* argv[]){
 
           last2_ack_max = last_ack_max;
           last_ack_max = ack_max;
-          *shared_memory_window = ack_precedent+1;
+          //*shared_memory_window = ack_precedent+1;
 
           skip2:
             continue;

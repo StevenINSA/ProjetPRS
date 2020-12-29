@@ -288,7 +288,7 @@ int main(int argc, char* argv[]){
           }
 
           if(atoi(buffer_sequence)==ack_precedent){
-            printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
+            //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
             timeout.tv_usec = 3*timeout.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;
@@ -298,7 +298,7 @@ int main(int argc, char* argv[]){
 
           ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);
-          printf("taille de la fenêtre : %d\n", size_window);
+          //printf("taille de la fenêtre : %d\n", size_window);
 
           skip:
             continue;
@@ -310,7 +310,7 @@ int main(int argc, char* argv[]){
           //de plus on réduit la duré du timeout dans le cas du serveur 2 pour ne pas trop attendre lors d'un drop du client
 
           *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
-          printf("Timeout : retransmission à partir de %d\n",ack_max+1);
+          //printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           timeout.tv_usec = 5*timeout.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 

@@ -286,11 +286,6 @@ int main(int argc, char* argv[]){
 
           skip:
             continue;
-          //} else {
-            //printf("ACK pas reçu pendant RTT : nouveau rtt n\n");
-            //rtt.tv_usec = 50000; //si un timeout a lieu, on remet notre rtt élevé pour pas attendre trop peu longtemps lors de la retransmission
-          //}
-
 
         } //FDISSET
         else { //si Timeout

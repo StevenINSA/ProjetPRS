@@ -235,7 +235,7 @@ int main(int argc, char* argv[]){
     } else if(idfork==0) { //si on est le processus fils
 
       //partie mise en place du timer pour la retransmission
-      timeout.tv_usec = 5*rtt.tv_usec; //on sécurise le temps d'attente de retransmission
+      timeout.tv_usec = 3*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
       timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
       printf("valeur du timeout en µs : %ld\n", timeout.tv_usec);
       //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
@@ -268,7 +268,9 @@ int main(int argc, char* argv[]){
           array_fils[atoi(buffer_sequence)] = time2.tv_usec + time2.tv_sec*pow(10,6);
           rtt.tv_usec = array_fils[atoi(buffer_sequence)] - array_pere[atoi(buffer_sequence)];
           srtt.tv_usec = alpha*srtt.tv_usec + (1-alpha)*rtt.tv_usec;
-          srtt.tv_sec = 0;
+
+          timeout.tv_usec = 3*srtt.tv_usec; //on attend 3 fois l'estimation avant de déclarer l'ACK comme perdu
+          timeout.tv_sec = 0;
 
           printf("estimation du SRTT : %d\n", srtt.tv_usec);
 

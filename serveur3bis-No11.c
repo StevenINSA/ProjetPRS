@@ -137,6 +137,7 @@ int main(int argc, char* argv[]){
   				perror("Erreur fork");
   				exit(EXIT_FAILURE);
 
+        /*SOCKET UDP GESTION CLIENTS*/
   			} else if(idfork!=0){ //si on est le processus père
             close(data_UDP);
 
@@ -151,9 +152,11 @@ int main(int argc, char* argv[]){
 
             continue;
 
+        /*SOCKET DATA*/
         } else if(idfork==0) { //si on est le processus fils
             close(socket_UDP);
             int data_descriptor = data_UDP;
+
             //le client envoie le nom du fichier qu'il veut recevoir
             memset(bufferUDP_read_server,0,sizeof(bufferUDP_read_server));
             int size_file_name = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
@@ -218,7 +221,7 @@ int main(int argc, char* argv[]){
             /*** FORK ***/
             int fork_2=fork();
             printf("Fork renvoie la valeur :%d\n",idfork);
-            if(idfork==-1){
+            if(fork_2==-1){
               perror("Erreur fork");
               exit(EXIT_FAILURE);
 

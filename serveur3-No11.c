@@ -373,14 +373,9 @@ int main(int argc, char* argv[]){
                 printf("débit lors de la transmission : %f Mo/s\n", debit);
                 printf("temps débit en micro sec : %ld\n", time_debit.tv_usec);
 
-                close(data_descriptor);
-                break;
-                exit(0);
-              } //fin while
-
             close(data_descriptor);
             exit(0);
-        }
+        } //fin while
       } else {
         printf("le message reçu n'est pas un syn\n");
         exit(-1);

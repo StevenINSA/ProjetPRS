@@ -321,7 +321,7 @@ int main(int argc, char* argv[]){
 
           last_ack_max = ack_max;
 
-          skip2: 
+          skip2:
             continue;
 
         }
@@ -345,8 +345,7 @@ int main(int argc, char* argv[]){
     memset(bufferUDP_write_server,0,sizeof(bufferUDP_write_server));
     memcpy(bufferUDP_write_server,"FIN",3);
 
-    int s = sendto(data_descriptor,bufferUDP_write_server,sizeof(bufferUDP_write_server),0,(struct sockaddr *)&client1_addr,len);
-    printf("On a envoyé %d octets \n",s);
+    sendto(data_descriptor,bufferUDP_write_server,sizeof(bufferUDP_write_server),0,(struct sockaddr *)&client1_addr,len);
 
     time_debit.tv_usec = (time_debit_end.tv_sec-time_debit_start.tv_sec)*pow(10,6) + (time_debit_end.tv_usec - time_debit_start.tv_usec);
     float debit = ((float)size_file+6*(packets_number+1)) / time_debit.tv_usec;

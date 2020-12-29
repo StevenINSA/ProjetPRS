@@ -69,8 +69,11 @@ int main(int argc, char* argv[]){
 
   //pour le timer (retransmission quand perte du ack)
   fd_set set_descripteur_timer;  //pour pouvoir utiliser un timer, il faut utiliser un select, donc un descripteur
-  struct timeval time1, time2, timeout, rtt, time_debit, time_debit_start, time_debit_end;
+  struct timeval time1, time2, timeout, rtt, srtt, time_debit, time_debit_start, time_debit_end;
   rtt.tv_usec = 50000;           //on fixe au début un rtt de 50ms (à definir)
+  srtt.tv_usec = rtt.tv_usec;
+  srtt.tv_sec = 0;
+  float alpha = 0.6;
 
   while(1){
     printf("Boucle while n°1.\n");
@@ -183,6 +186,13 @@ int main(int argc, char* argv[]){
 
     *shared_memory_window = size_window;
 
+    long *array_pere = (long *)mmap(NULL, packets_number*sizeof(long)+sizeof(long), //pour la calcul du RTT
+                                    PROT_READ | PROT_WRITE,
+                                    MAP_SHARED | MAP_ANONYMOUS, -1,0);
+
+    long *array_fils = (long *)mmap(NULL, packets_number*sizeof(long)+sizeof(long),
+                                    PROT_READ | PROT_WRITE,
+                                    MAP_SHARED | MAP_ANONYMOUS, -1,0);
 
     /*** FORK ***/
     int idfork=fork();
@@ -213,7 +223,11 @@ int main(int argc, char* argv[]){
 
           /*ENVOI PAQUET*/
           sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
+          gettimeofday(&time1, NULL);
+          array_pere[*shared_memory_seq] = time1.tv_usec + time1.tv_sec*pow(10,6);
+
           *shared_memory_seq = *shared_memory_seq+1;
+
         }
       } //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
       printf("On est sorti du while du père :%d\n",*shared_memory_fils);
@@ -232,6 +246,7 @@ int main(int argc, char* argv[]){
 
       /***RECEPTION DES ACKs***/
       while (ack_max != packets_number+1){
+
         FD_ZERO(&set_descripteur_timer);
         FD_SET(data_descriptor, &set_descripteur_timer);
 
@@ -248,12 +263,14 @@ int main(int argc, char* argv[]){
           /*RECEPTION DES ACKS*/
           int size_seq = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
           memcpy(buffer_sequence, bufferUDP_read_server+3, size_seq-3); //+3 car les 3 premières valeurs sont pour le mot ACK
-          gettimeofday(&time2, NULL);                                   //on recalcule une timeofday pour faire la différence avec le premier
-          //rtt.tv_usec = (time2.tv_sec-time1.tv_sec)*pow(10,6) + (time2.tv_usec - time1.tv_usec);         //on estime ainsi le rtt à chaque échange, on rajoute les secondes au cas où le rtt est plus grand
 
-          //printf("estimation du RTT : %d\n", rtt.tv_usec);
-          //printf("Message reçu : %s\n", bufferUDP_read_server);
-          //printf("numéro de seq reçue par le serveur (buffer_check_sequence) : %s\n",buffer_sequence);
+          gettimeofday(&time2, NULL);                                   //on recalcule une timeofday pour faire la différence avec le premier
+          array_fils[atoi(buffer_sequence)] = time2.tv_usec + time2.tv_sec*pow(10,6);
+          rtt.tv_usec = array_fils[atoi(buffer_sequence)] - array_pere[atoi(buffer_sequence)];
+          srtt.tv_usec = alpha*srtt.tv_usec + (1-alpha)*rtt.tv_usec;
+          srtt.tv_sec = 0;
+
+          printf("estimation du SRTT : %d\n", srtt.tv_usec);
 
           if (ack_max < atoi(buffer_sequence)){
             ack_max = atoi(buffer_sequence);

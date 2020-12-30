@@ -156,7 +156,7 @@ int main(int argc, char* argv[]){
     printf("taille du fichier en octet : %d\n", size_file);
     fseek(file, 0, SEEK_SET);          //on replace le curseur au début;
     //char file_buffer[size_file];
-    char **tableau= (char **) mmap(NULL, 1000*1494,
+    char *tableau= (char *) mmap(NULL, 1000*1494,
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);;
 
@@ -227,7 +227,7 @@ int main(int argc, char* argv[]){
           //Segment auquel on rajoute en-tête
           memcpy(buffer_segment,buffer_sequence,6);
           //memcpy(buffer_segment+6,file_buffer+packets_size*(*shared_memory_seq-1),packets_size);
-          memcpy(buffer_segment+6,tableau[*shared_memory_seq%1000],packets_size);
+          memcpy(buffer_segment+6,tableau[(*shared_memory_seq%1000)-1],packets_size);
 
           /*ENVOI PAQUET*/
           sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
@@ -235,6 +235,7 @@ int main(int argc, char* argv[]){
           array_pere[*shared_memory_seq] = time1.tv_usec + time1.tv_sec*pow(10,6);
 
           *shared_memory_seq = *shared_memory_seq+1;
+
 
         }
       } //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
@@ -284,12 +285,12 @@ int main(int argc, char* argv[]){
 
           //printf("estimation du SRTT : %ld\n", srtt.tv_usec);
 
+
           printf("ACK %d reçu, on lit dans le fichier à la position %d\n", atoi(buffer_sequence),atoi(buffer_sequence)%1000);
           printf("Position curseur avant fread :%d\n",ftell(file));
-
-          fread(tableau[atoi(buffer_sequence)%1000],1494,1,file);
-
+          fread(tableau[(atoi(buffer_sequence)%1000)-1],1494,1,file);
           printf("Position curseur après fread :%d\n",ftell(file));
+
 
           if (ack_max < atoi(buffer_sequence)){ //si le ack que l'on reçoie est supérieur au ack max stocké, ack max devient ce ack
             ack_max = atoi(buffer_sequence);

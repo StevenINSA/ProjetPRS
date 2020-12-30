@@ -300,8 +300,8 @@ int main(int argc, char* argv[]){
 
             if(atoi(buffer_sequence)>seuil){
               seuil=seuil+100;
-              printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
-              printf("valeur de incr : %d\n", incr);
+              //printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
+              //printf("valeur de incr : %d\n", incr);
 
               for (int i = 0; i < 100 ; i++){
                 //printf("valeur de incr : %d\n", incr);

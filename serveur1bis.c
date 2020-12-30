@@ -160,7 +160,7 @@ int main(int argc, char* argv[]){
                                   //  PROT_READ | PROT_WRITE,
                                   //  MAP_SHARED | MAP_ANONYMOUS, -1,0);;
 
-    int bloc_size = 8000000;
+    int bloc_size = 6000000;
     int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 du n° de séquence
     int packets_number = size_file/packets_size;
     int tableau_acks[packets_number+1];

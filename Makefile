@@ -1,4 +1,4 @@
-all:serveur1-No11 serveur3-No11 serveur2-No11 serveur3bis-No11 serveur3 test serveur1bis
+all:serveur1-No11 serveur3-No11 serveur2-No11 serveur3bis-No11 serveur3 serveur1bis
 
 #-Wall : active tous les warnings
 #$@ = cible = arbre.o

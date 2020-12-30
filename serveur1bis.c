@@ -288,7 +288,7 @@ int main(int argc, char* argv[]){
           //printf("estimation du SRTT : %ld\n", srtt.tv_usec);
 
 
-          printf("ACK %d reçu, on lit dans le fichier à la position %d\n", atoi(buffer_sequence),atoi(buffer_sequence)%1000);
+          printf("ACK %d reçu, on va stocker le nouveau segment dans tableau[%d]\n", atoi(buffer_sequence),atoi(buffer_sequence)%1000-1);
           printf("Position curseur avant fread :%ld\n",ftell(file));
           fread(tableau[(atoi(buffer_sequence)%1000)-1],1494,1,file);
           printf("Position curseur après fread :%ld\n",ftell(file));
@@ -322,10 +322,10 @@ int main(int argc, char* argv[]){
         } //FDISSET
         else { //si Timeout
 
-          if(last_ack_max == ack_max && last_ack_max == last2_ack_max){ //si le timeout a lieu sur le même ack que précédemment, on ne retransmet pas tout
+          //if(last_ack_max == ack_max && last_ack_max == last2_ack_max){ //si le timeout a lieu sur le même ack que précédemment, on ne retransmet pas tout
             //*shared_memory_window = ack_precedent+1;
-            goto skip2;                                                 //sécurité sur 2 ack car des bugs ont lieu lorsqu'on a un timeout et un ack dupliqué sur la même séquence
-          }
+        //    goto skip2;                                                 //sécurité sur 2 ack car des bugs ont lieu lorsqu'on a un timeout et un ack dupliqué sur la même séquence
+          //}
 
           *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
           printf("Timeout : retransmission à partir de %d\n",ack_max+1);
@@ -335,10 +335,10 @@ int main(int argc, char* argv[]){
           last2_ack_max = last_ack_max;
           last_ack_max = ack_max;
           //*shared_memory_window = ack_precedent+1;
-
+          /*
           skip2:
             continue;
-
+*/
         }
       }//fin while
 

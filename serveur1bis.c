@@ -258,6 +258,7 @@ int main(int argc, char* argv[]){
       int last_ack_max = 0;
       int last2_ack_max = 0;
       int incr = 0;
+      int seuil=100;
 
       /***RECEPTION DES ACKs***/
       while (ack_max != packets_number+1){
@@ -296,7 +297,9 @@ int main(int argc, char* argv[]){
           /*GESTION LECTURE FICHIER*/
           //printf("Position curseur %d\n",ftell(file));
           //if(ftell(file)<size_file){
-            if(atoi(buffer_sequence)%100==0){
+
+            if(atoi(buffer_sequence)>seuil){
+              seuil=seuil+100;
               printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
               printf("valeur de incr : %d\n", incr);
 

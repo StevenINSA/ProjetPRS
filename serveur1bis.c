@@ -160,9 +160,19 @@ int main(int argc, char* argv[]){
                                   //  PROT_READ | PROT_WRITE,
                                   //  MAP_SHARED | MAP_ANONYMOUS, -1,0);;
 
-    char (*tableau)[1494]=(char (*)[1494]) mmap(NULL, 1000*1494,PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1,0);
+    int bloc_size = 8000000;
+    int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 du n° de séquence
+    int packets_number = size_file/packets_size;
+    int tableau_acks[packets_number+1];
+    int size_window=100;
+    int size_tab = bloc_size/packets_size;
 
-    for(int i=0;i<1000;i++){
+    char (*tableau)[1494]=(char (*)[1494]) mmap(NULL, size_tab*1494,PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1,0);
+
+    if (size_file < size_tab) //si le fichier lu est moins grand que le tableau, on n'a pas à tout parcourir + pas de gestion de gros fichier à faire
+      size_tab = size_file;
+
+    for(int i=0;i<size_tab;i++){
       int read_blocks = fread(tableau[i],1494,1,file);
 
       if(read_blocks!=1){
@@ -173,10 +183,7 @@ int main(int argc, char* argv[]){
     //size_t read_blocks = fread(file_buffer,size_file,1,file); //on lit le fichier en un coup (1 bloc de taille_fichier octets)
 
 
-    int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 du n° de séquence
-    int packets_number = size_file/packets_size;
-    int tableau_acks[packets_number+1];
-    int size_window=100;
+
     printf("Nombre de paquets à envoyer au total : %d\n",packets_number+1);
 
 
@@ -230,7 +237,7 @@ int main(int argc, char* argv[]){
           //Segment auquel on rajoute en-tête
           memcpy(buffer_segment,buffer_sequence,6);
           //memcpy(buffer_segment+6,file_buffer+packets_size*(*shared_memory_seq-1),packets_size);
-          memcpy(buffer_segment+6,tableau[(*shared_memory_seq-1)%1000],packets_size);
+          memcpy(buffer_segment+6,tableau[(*shared_memory_seq-1)%size_tab],packets_size);
 
           /*ENVOI PAQUET*/
           sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
@@ -258,7 +265,7 @@ int main(int argc, char* argv[]){
       int last_ack_max = 0;
       int last2_ack_max = 0;
       int incr = 0;
-      int seuil=100;
+      int seuil=1000;
 
       /***RECEPTION DES ACKs***/
       while (ack_max != packets_number+1){
@@ -296,20 +303,20 @@ int main(int argc, char* argv[]){
 
           /*GESTION LECTURE FICHIER*/
           //printf("Position curseur %d\n",ftell(file));
-          //if(ftell(file)<size_file){
 
+          if(size_file != size_tab){ //si fichier non volumineux, on n'a pas à faire la suite
             if(atoi(buffer_sequence)>seuil){
-              seuil=seuil+100;
+              seuil=seuil+1000;
               //printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
               //printf("valeur de incr : %d\n", incr);
 
-              for (int i = 0; i < 100 ; i++){
+              for (int i = 0; i < 1000 ; i++){
                 //printf("valeur de incr : %d\n", incr);
-                fread(tableau[incr%1000],1494,1,file);
+                fread(tableau[incr%size_tab],1494,1,file);
                 incr++;
               }
             }
-          //}
+          }
 
 
 

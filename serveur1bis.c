@@ -298,10 +298,14 @@ int main(int argc, char* argv[]){
           }
 
           /*GESTION LECTURE FICHIER*/
-          if(atoi(buffer_sequence) != ack_precedent && atoi(buffer_sequence)==ack_max && ftell(file)!=size_file){
+          if(atoi(buffer_sequence) != ack_precedent && atoi(buffer_sequence)==ack_max){
             printf("ACK %d reçu, on va stocker le nouveau segment dans tableau[%d]\n", atoi(buffer_sequence),atoi(buffer_sequence)%1000-1);
             //printf("Position curseur avant fread :%ld\n",ftell(file));
-            fread(tableau[(ack_max%1000)-1],1494,1,file);
+            if (ftell(file)==size_file){
+              printf("Fin fichier \n");
+            } else {
+              fread(tableau[(ack_max%1000)-1],1494,1,file);
+            }
             //printf("Position curseur après fread :%ld\n",ftell(file));
           }
 

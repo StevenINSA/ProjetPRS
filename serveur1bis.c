@@ -291,12 +291,6 @@ int main(int argc, char* argv[]){
             *shared_memory_window=ack_max+size_window;
           }
 
-          /*GESTION ACKS DUPLIQUES*/
-          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
-            //*shared_memory_window = ack_precedent+1;
-            goto skip;
-          }
-
           /*GESTION LECTURE FICHIER*/
           if(atoi(buffer_sequence) != ack_precedent && atoi(buffer_sequence)==ack_max){
             printf("ACK %d reçu, on va stocker le nouveau segment dans tableau[%d]\n", atoi(buffer_sequence),atoi(buffer_sequence)%1000-1);
@@ -304,9 +298,15 @@ int main(int argc, char* argv[]){
             if (ftell(file)==size_file){
               printf("Fin fichier \n");
             } else {
-              fread(tableau[(ack_max%1000)-1],1494,1,file);
+              fread(tableau[(atoi(buffer_sequence)%1000)-1],1494,1,file);
             }
             //printf("Position curseur après fread :%ld\n",ftell(file));
+          }
+
+          /*GESTION ACKS DUPLIQUES*/
+          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
+            //*shared_memory_window = ack_precedent+1;
+            goto skip;
           }
 
           /*GESTION ACKS DUPLIQUES*/

@@ -277,32 +277,35 @@ int main(int argc, char* argv[]){
           int size_seq = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
           memcpy(buffer_sequence, bufferUDP_read_server+3, size_seq-3); //+3 car les 3 premières valeurs sont pour le mot ACK
 
+          /*GESTION RTT*/
           gettimeofday(&time2, NULL);                                   //on recalcule une timeofday pour faire la différence avec le premier
           array_fils[atoi(buffer_sequence)] = time2.tv_usec + time2.tv_sec*pow(10,6);
           rtt.tv_usec = array_fils[atoi(buffer_sequence)] - array_pere[atoi(buffer_sequence)];
           srtt.tv_usec = alpha*srtt.tv_usec + (1-alpha)*rtt.tv_usec;
-
           timeout.tv_usec = 3*srtt.tv_usec; //on attend 3 fois l'estimation avant de déclarer l'ACK comme perdu
           timeout.tv_sec = 0;
 
-          //printf("estimation du SRTT : %ld\n", srtt.tv_usec);
-
+          /*GESTION FENETRE GLISSANTE*/
           if (ack_max < atoi(buffer_sequence)){ //si le ack que l'on reçoie est supérieur au ack max stocké, ack max devient ce ack
             ack_max = atoi(buffer_sequence);
             *shared_memory_window=ack_max+size_window;
+          }
+
+          /*GESTION ACKS DUPLIQUES*/
+          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
+            //*shared_memory_window = ack_precedent+1;
+            goto skip;
+          }
+
+          /*GESTION LECTURE FICHIER*/
+          if(atoi(buffer_sequence) != ack_precedent && atoi(buffer_sequence)==ack_max && ftell(file)!=size_file){
             printf("ACK %d reçu, on va stocker le nouveau segment dans tableau[%d]\n", atoi(buffer_sequence),atoi(buffer_sequence)%1000-1);
             printf("Position curseur avant fread :%ld\n",ftell(file));
             fread(tableau[(ack_max%1000)-1],1494,1,file);
             printf("Position curseur après fread :%ld\n",ftell(file));
           }
 
-
-
-          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
-            //*shared_memory_window = ack_precedent+1;
-            goto skip;
-          }
-
+          /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent){
             printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués

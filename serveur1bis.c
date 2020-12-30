@@ -298,8 +298,10 @@ int main(int argc, char* argv[]){
           if(ftell(file)<size_file){
             if(ack_max%100==0){
               printf("ack max vaut : %d -> on rempli le buffer\n", ack_max);
+              printf("valeur de incr : %d\n", incr);
+              
               for (int i = incr % 1000 ; i < (incr + 100)%1000 ; i++){
-                printf("valeur de incr : %d\n", incr);
+                //printf("valeur de incr : %d\n", incr);
                 fread(tableau[incr%1000],1494,1,file);
                 incr++;
               }

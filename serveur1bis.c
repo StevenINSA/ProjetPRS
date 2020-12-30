@@ -295,11 +295,11 @@ int main(int argc, char* argv[]){
 
           /*GESTION LECTURE FICHIER*/
 
-          if(ftell(file)<size_file){
+          while(ftell(file)<size_file){
             if(ack_max%100==0){
               printf("ack max vaut : %d -> on rempli le buffer\n", ack_max);
               printf("valeur de incr : %d\n", incr);
-              
+
               for (int i = incr % 1000 ; i < (incr + 100)%1000 ; i++){
                 //printf("valeur de incr : %d\n", incr);
                 fread(tableau[incr%1000],1494,1,file);
@@ -332,7 +332,7 @@ int main(int argc, char* argv[]){
 
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent){
-            printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
+            //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
             timeout.tv_usec = 3*timeout.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;

@@ -265,7 +265,7 @@ int main(int argc, char* argv[]){
       int last_ack_max = 0;
       int last2_ack_max = 0;
       int incr = 0;
-      int seuil=1500;
+      int seuil=2000;
 
       /***RECEPTION DES ACKs***/
       while (ack_max != packets_number+1){
@@ -306,7 +306,7 @@ int main(int argc, char* argv[]){
 
           if(size_file != size_tab){ //si fichier non volumineux, on n'a pas à faire la suite
             if(atoi(buffer_sequence)>seuil){
-              seuil=seuil+1500;
+              seuil=seuil+2000;
               //printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
               //printf("valeur de incr : %d\n", incr);
 
@@ -366,7 +366,7 @@ int main(int argc, char* argv[]){
 
           *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
           printf("Timeout : retransmission à partir de %d\n",ack_max+1);
-          timeout.tv_usec = 5*timeout.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion
+          timeout.tv_usec = 10*timeout.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 
           last2_ack_max = last_ack_max;

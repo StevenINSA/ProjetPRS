@@ -294,7 +294,7 @@ int main(int argc, char* argv[]){
           }
 
           /*GESTION LECTURE FICHIER*/
-          printf("Position curseur %d\n",ftell(file));
+          //printf("Position curseur %d\n",ftell(file));
           if(ftell(file)<size_file){
             if(ack_max%100==0){
               printf("ack max vaut : %d -> on rempli le buffer\n", ack_max);

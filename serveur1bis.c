@@ -300,7 +300,7 @@ int main(int argc, char* argv[]){
               printf("ack max vaut : %d -> on rempli le buffer\n", ack_max);
               printf("valeur de incr : %d\n", incr);
 
-              for (int i = incr % 1000 ; i < (incr + 100)%1000 ; i++){
+              for (int i = (incr % 1000) ; i < ((incr + 100)%1000) ; i++){
                 //printf("valeur de incr : %d\n", incr);
                 fread(tableau[incr%1000],1494,1,file);
                 incr++;

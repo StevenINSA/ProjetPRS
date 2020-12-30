@@ -156,7 +156,7 @@ int main(int argc, char* argv[]){
     printf("taille du fichier en octet : %d\n", size_file);
     fseek(file, 0, SEEK_SET);          //on replace le curseur au début;
     //char file_buffer[size_file];
-    char *tableau= (char *) mmap(NULL, 1000*1494,
+    char **tableau= (char **) mmap(NULL, 1000*1494,
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);;
 

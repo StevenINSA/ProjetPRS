@@ -257,6 +257,7 @@ int main(int argc, char* argv[]){
       int ack_precedent_2=0;
       int last_ack_max = 0;
       int last2_ack_max = 0;
+      int incr = 0;
 
       /***RECEPTION DES ACKs***/
       while (ack_max != packets_number+1){
@@ -293,7 +294,7 @@ int main(int argc, char* argv[]){
           }
 
           /*GESTION LECTURE FICHIER*/
-          int incr=0;
+
           if(ftell(file)<size_file){
             if(ack_max%100==0){
               printf("ack max vaut : %d -> on rempli le buffer\n", ack_max);

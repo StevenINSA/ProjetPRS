@@ -297,7 +297,7 @@ int main(int argc, char* argv[]){
           //printf("Position curseur %d\n",ftell(file));
           //if(ftell(file)<size_file){
             if(atoi(buffer_sequence)%100==0){
-              printf("ack max vaut : %d -> on rempli le buffer\n", ack_max);
+              printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
               printf("valeur de incr : %d\n", incr);
 
               for (int i = (incr % 1000) ; i < ((incr + 100)%1000) ; i++){

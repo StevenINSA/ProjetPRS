@@ -156,9 +156,11 @@ int main(int argc, char* argv[]){
     printf("taille du fichier en octet : %d\n", size_file);
     fseek(file, 0, SEEK_SET);          //on replace le curseur au début;
     //char file_buffer[size_file];
-    char *tableau= (char *) mmap(NULL, 1000*1494,
-                                    PROT_READ | PROT_WRITE,
-                                    MAP_SHARED | MAP_ANONYMOUS, -1,0);;
+    //char *tableau= (char *) mmap(NULL, 1000*1494,
+                                  //  PROT_READ | PROT_WRITE,
+                                  //  MAP_SHARED | MAP_ANONYMOUS, -1,0);;
+
+    char (*tableau)[1494]=(char (*)[1494]) mmap(NULL, 1000*1494,PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1,0);
 
     for(int i=0;i<1000;i++){
       int read_blocks = fread(tableau[i],1494,1,file);
@@ -287,9 +289,9 @@ int main(int argc, char* argv[]){
 
 
           printf("ACK %d reçu, on lit dans le fichier à la position %d\n", atoi(buffer_sequence),atoi(buffer_sequence)%1000);
-          printf("Position curseur avant fread :%d\n",ftell(file));
+          printf("Position curseur avant fread :%ld\n",ftell(file));
           fread(tableau[(atoi(buffer_sequence)%1000)-1],1494,1,file);
-          printf("Position curseur après fread :%d\n",ftell(file));
+          printf("Position curseur après fread :%ld\n",ftell(file));
 
 
           if (ack_max < atoi(buffer_sequence)){ //si le ack que l'on reçoie est supérieur au ack max stocké, ack max devient ce ack

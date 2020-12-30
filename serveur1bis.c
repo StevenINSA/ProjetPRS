@@ -175,6 +175,7 @@ int main(int argc, char* argv[]){
 
     int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 du n° de séquence
     int packets_number = size_file/packets_size;
+    int tableau_acks[packets_number+1];
     int size_window=100;
     printf("Nombre de paquets à envoyer au total : %d\n",packets_number+1);
 
@@ -292,6 +293,23 @@ int main(int argc, char* argv[]){
           }
 
           /*GESTION LECTURE FICHIER*/
+          int incr=0;
+          if(ftell(file)<size_file){
+            if(ack_max%100==0){
+              printf("ack max vaut : %d -> on rempli le buffer\n", ack_max);
+              for (int i = incr % 1000 ; i < (incr + 100)%1000 ; i++){
+                printf("valeur de incr : %d\n", incr);
+                fread(tableau[incr%1000],1494,1,file);
+                incr++;
+              }
+            }
+          }
+
+
+
+
+
+          /*
           if(atoi(buffer_sequence) != ack_precedent && atoi(buffer_sequence)==ack_max){
             printf("ACK %d reçu, on va stocker le nouveau segment dans tableau[%d]\n", atoi(buffer_sequence),atoi(buffer_sequence)%1000-1);
             //printf("Position curseur avant fread :%ld\n",ftell(file));
@@ -301,7 +319,7 @@ int main(int argc, char* argv[]){
               fread(tableau[(atoi(buffer_sequence)%1000)-1],1494,1,file);
             }
             //printf("Position curseur après fread :%ld\n",ftell(file));
-          }
+          }*/
 
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){

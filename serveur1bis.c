@@ -230,7 +230,7 @@ int main(int argc, char* argv[]){
           //Segment auquel on rajoute en-tête
           memcpy(buffer_segment,buffer_sequence,6);
           //memcpy(buffer_segment+6,file_buffer+packets_size*(*shared_memory_seq-1),packets_size);
-          memcpy(buffer_segment+6,tableau[(*shared_memory_seq%1000)-1],packets_size);
+          memcpy(buffer_segment+6,tableau[(*shared_memory_seq-1)%1000],packets_size);
 
           /*ENVOI PAQUET*/
           sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);

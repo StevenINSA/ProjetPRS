@@ -287,17 +287,16 @@ int main(int argc, char* argv[]){
 
           //printf("estimation du SRTT : %ld\n", srtt.tv_usec);
 
-
-          printf("ACK %d reçu, on va stocker le nouveau segment dans tableau[%d]\n", atoi(buffer_sequence),atoi(buffer_sequence)%1000-1);
-          printf("Position curseur avant fread :%ld\n",ftell(file));
-          fread(tableau[(atoi(buffer_sequence)%1000)-1],1494,1,file);
-          printf("Position curseur après fread :%ld\n",ftell(file));
-
-
           if (ack_max < atoi(buffer_sequence)){ //si le ack que l'on reçoie est supérieur au ack max stocké, ack max devient ce ack
             ack_max = atoi(buffer_sequence);
             *shared_memory_window=ack_max+size_window;
+            printf("ACK %d reçu, on va stocker le nouveau segment dans tableau[%d]\n", atoi(buffer_sequence),atoi(buffer_sequence)%1000-1);
+            printf("Position curseur avant fread :%ld\n",ftell(file));
+            fread(tableau[(ack_max%1000)-1],1494,1,file);
+            printf("Position curseur après fread :%ld\n",ftell(file));
           }
+
+
 
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
             //*shared_memory_window = ack_precedent+1;

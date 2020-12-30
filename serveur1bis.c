@@ -265,7 +265,7 @@ int main(int argc, char* argv[]){
       int last_ack_max = 0;
       int last2_ack_max = 0;
       int incr = 0;
-      int seuil=1000;
+      int seuil=100;
 
       /***RECEPTION DES ACKs***/
       while (ack_max != packets_number+1){
@@ -306,11 +306,11 @@ int main(int argc, char* argv[]){
 
           if(size_file != size_tab){ //si fichier non volumineux, on n'a pas à faire la suite
             if(atoi(buffer_sequence)>seuil){
-              seuil=seuil+1000;
+              seuil=seuil+100;
               //printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
               //printf("valeur de incr : %d\n", incr);
 
-              for (int i = 0; i < 1000 ; i++){
+              for (int i = 0; i < 100 ; i++){
                 //printf("valeur de incr : %d\n", incr);
                 fread(tableau[incr%size_tab],1494,1,file);
                 incr++;

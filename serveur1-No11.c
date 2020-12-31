@@ -161,7 +161,7 @@ int main(int argc, char* argv[]){
     int size_tab = bloc_size/packets_size;
     printf("nombre de segments dans le tableau : %d\n", size_tab);
 
-    if (size_file < size_tab){  //si le fichier lu est moins grand que le tableau, on n'a pas à tout parcourir + pas de gestion de gros fichier à faire
+    if ((packets_number+1) < size_tab){  //si le fichier lu est moins grand que le tableau, on n'a pas à tout parcourir + pas de gestion de gros fichier à faire
       printf("c'est un petit fichier ! taille du fichier : %d taille du tableau : %d\n", size_file, size_tab);
       size_tab = size_file;
     }

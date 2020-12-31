@@ -156,14 +156,14 @@ int main(int argc, char* argv[]){
     fseek(file, 0, SEEK_SET);          //on replace le curseur au début;
     int bloc_size = 6000000;
     int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 du n° de séquence
-    int packets_number = size_file/packets_size;
+    int packets_number = (size_file/packets_size)+1;
     int size_window=100;
     int size_tab = bloc_size/packets_size;
     printf("nombre de segments dans le tableau : %d\n", size_tab);
 
-    if ((packets_number+1) < size_tab){  //si le fichier lu est moins grand que le tableau, on n'a pas à tout parcourir + pas de gestion de gros fichier à faire
-      printf("c'est un petit fichier ! nombre de segments à envoyer : %d taille du tableau : %d\n", packets_number+1, size_tab);
-      size_tab = packets_number+1;
+    if ((packets_number) < size_tab){  //si le fichier lu est moins grand que le tableau, on n'a pas à tout parcourir + pas de gestion de gros fichier à faire
+      printf("c'est un petit fichier ! nombre de segments à envoyer : %d taille du tableau : %d\n", packets_number, size_tab);
+      size_tab = packets_number;
     }
 
     char (*tableau)[1494]=(char (*)[packets_size]) mmap(NULL, size_tab*packets_size,PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1,0);
@@ -171,12 +171,12 @@ int main(int argc, char* argv[]){
 
     for(int i=0;i<size_tab;i++){
       int read_blocks = fread(tableau[i],1494,1,file);
-      /*
+
       if(read_blocks!=1){
         perror("erreur lecture fichier");
         ferror(file);
       }
-      */
+
     }
 
 
@@ -218,7 +218,7 @@ int main(int argc, char* argv[]){
       gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
       while (*shared_memory_fils==1) { //quand fils s'arrête
         //printf("voici la valeur du fils :%d\n",fils);
-        while (*shared_memory_seq <= *shared_memory_window && *shared_memory_seq <= packets_number+1) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
+        while (*shared_memory_seq <= *shared_memory_window && *shared_memory_seq <= packets_number) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
 
           //Remise à zéro des buffers
           memset(buffer_segment,0,sizeof(buffer_segment));
@@ -259,7 +259,7 @@ int main(int argc, char* argv[]){
       int seuil=2000;
 
       /***RECEPTION DES ACKs***/
-      while (ack_max != packets_number+1){
+      while (ack_max != packets_number){
 
         FD_ZERO(&set_descripteur_timer);
         FD_SET(data_descriptor, &set_descripteur_timer);
@@ -376,7 +376,7 @@ int main(int argc, char* argv[]){
     sendto(data_descriptor,bufferUDP_write_server,sizeof(bufferUDP_write_server),0,(struct sockaddr *)&client1_addr,len);
 
     time_debit.tv_usec = (time_debit_end.tv_sec-time_debit_start.tv_sec)*pow(10,6) + (time_debit_end.tv_usec - time_debit_start.tv_usec);
-    float debit = ((float)size_file+6*(packets_number+1)) / time_debit.tv_usec;
+    float debit = ((float)size_file+6*(packets_number)) / time_debit.tv_usec;
     printf("débit lors de la transmission : %f Mo/s\n", debit);
     printf("temps débit en micro sec : %ld\n", time_debit.tv_usec);
 

@@ -345,12 +345,12 @@ int main(int argc, char* argv[]){
 */
           *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
 
-          timeout.tv_usec = 5*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion
+          timeout.tv_usec = 10*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 
           last2_ack_max = last_ack_max;
           last_ack_max = ack_max;
-          *shared_memory_window = *shared_memory_seq+1;
+
           printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           //printf("taille de la fenêtre en timeout : %d\n", *shared_memory_window);
 /*

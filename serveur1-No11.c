@@ -245,7 +245,7 @@ int main(int argc, char* argv[]){
     } else if(idfork==0) { //si on est le processus fils
 
       //partie mise en place du timer pour la retransmission
-      timeout.tv_usec = 3*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
+      timeout.tv_usec = 3*srtt.tv_usec; //on initialise une première fois le timeout avec un srtt fixé au début
       timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
       printf("valeur du timeout en µs : %ld\n", timeout.tv_usec);
       //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
@@ -262,7 +262,7 @@ int main(int argc, char* argv[]){
         FD_ZERO(&set_descripteur_timer);
         FD_SET(data_descriptor, &set_descripteur_timer);
 
-        int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, NULL); //on écoute sur la socket pendant une durée timeout
+        int select_value = select(data_descriptor+1, &set_descripteur_timer, NULL, NULL, &timeout); //on écoute sur la socket pendant une durée timeout
 
         if (select_value == -1)
           perror("select error\n");

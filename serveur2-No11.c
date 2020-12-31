@@ -316,7 +316,7 @@ int main(int argc, char* argv[]){
 
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
-            timeout.tv_usec = 3*srtt.tv_usec;
+            timeout.tv_usec = 5*srtt.tv_usec;
             timeout.tv_sec = 0;
             goto skip;
           }
@@ -324,7 +324,7 @@ int main(int argc, char* argv[]){
           if(atoi(buffer_sequence)==ack_precedent){
             //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
-            timeout.tv_usec = 3*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
+            timeout.tv_usec = 5*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;
             size_window = 3;   //quand on a de la congestion, on réinitialise une petite taille de fenêtre
             *shared_memory_window = ack_precedent+1 + size_window;
@@ -344,11 +344,11 @@ int main(int argc, char* argv[]){
 
           *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
 
-          timeout.tv_usec = 5*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion
+          timeout.tv_usec = 30*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion (inférieure à serveur1 pour détecter plus de timeout)
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 
           size_window = 3; //quand timeout, il y a congestion donc on remet la fenêtre à 1
-          *shared_memory_window = ack_max+1 + size_window;
+          *shared_memory_window = ack_max+1 + size_window; //on refait glisser la fenêtre pour essayer de transmettre la suite
 
           printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           //printf("taille de la fenêtre en timeout : %d\n", size_window);

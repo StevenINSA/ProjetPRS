@@ -341,13 +341,8 @@ int main(int argc, char* argv[]){
             continue;
 
         } //FDISSET
-        else { //si Timeout
-
-          if(last_ack_max == ack_max && last_ack_max == last2_ack_max){ //si le timeout a lieu sur le même ack que précédemment, on ne retransmet pas tout
-            timeout.tv_usec = 5*srtt.tv_usec;
-            timeout.tv_sec = 0;
-            goto skip2;                                                 //sécurité sur 2 ack car des bugs ont lieu lorsqu'on a un timeout et un ack dupliqué sur la même séquence
-          }
+        else { //si Timeout, sur le serveur2, il faut laisser toutes les retransmission car il y a trop de pertes de paquets.
+               //on ne peux pas se permettre de ne pas retransmettre
 
           *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
 
@@ -361,10 +356,7 @@ int main(int argc, char* argv[]){
 
           printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           //printf("taille de la fenêtre en timeout : %d\n", size_window);
-
-          skip2:
-            continue;
-
+          
         }
       }//fin while
 

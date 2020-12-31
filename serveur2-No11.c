@@ -296,7 +296,7 @@ int main(int argc, char* argv[]){
             }
 
             *shared_memory_window = ack_max+size_window;  //et on fait glisser la fenêtre
-            printf("taille de la fenêtre en réception normale : %d\n", *shared_memory_window);
+            printf("taille de la fenêtre en réception normale : %d\n", size_window);
           }
 
           /*GESTION LECTURE FICHIER*/
@@ -329,8 +329,8 @@ int main(int argc, char* argv[]){
             timeout.tv_usec = 3*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;
             size_window = 3;   //quand on a de la congestion, on réinitialise une petite taille de fenêtre
-            *shared_memory_window = *shared_memory_seq + size_window;
-            printf("taille de la fenêtre en ack dupliqué : %d\n", *shared_memory_window);
+            *shared_memory_window = ack_precedent+1 + size_window;
+            printf("taille de la fenêtre en ack dupliqué : %d\n", size_window);
           }
 
           ack_precedent_2 = ack_precedent;
@@ -357,10 +357,10 @@ int main(int argc, char* argv[]){
           last2_ack_max = last_ack_max;
           last_ack_max = ack_max;
           size_window = 3; //quand timeout, il y a congestion donc on remet la fenêtre à 1
-          *shared_memory_window = *shared_memory_seq + size_window;
+          *shared_memory_window = ack_max+1 + size_window;
 
           //printf("Timeout : retransmission à partir de %d\n",ack_max+1);
-          printf("taille de la fenêtre en timeout : %d\n", *shared_memory_window);
+          printf("taille de la fenêtre en timeout : %d\n", size_window);
 
           skip2:
             continue;

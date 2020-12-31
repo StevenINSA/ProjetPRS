@@ -163,18 +163,19 @@ int main(int argc, char* argv[]){
     if (size_file < size_tab){  //si le fichier lu est moins grand que le tableau, on n'a pas à tout parcourir + pas de gestion de gros fichier à faire
       printf("c'est un petit fichier ! taille du fichier : %d taille du tableau : %d\n", size_file, size_tab);
       size_tab = size_file;
-    } 
+    }
 
     char (*tableau)[1494]=(char (*)[1494]) mmap(NULL, size_tab*1494,PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1,0);
 
 
     for(int i=0;i<size_tab;i++){
       int read_blocks = fread(tableau[i],1494,1,file);
-
+      /*
       if(read_blocks!=1){
         perror("erreur lecture fichier");
         ferror(file);
       }
+      */
     }
 
 

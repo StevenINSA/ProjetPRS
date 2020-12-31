@@ -338,7 +338,6 @@ int main(int argc, char* argv[]){
         else { //si Timeout
 
           if(last_ack_max == ack_max && last_ack_max == last2_ack_max){ //si le timeout a lieu sur le même ack que précédemment, on ne retransmet pas tout
-            *shared_memory_window = ack_max+5;
             timeout.tv_usec = 5*srtt.tv_usec;
             timeout.tv_sec = 0;
             goto skip2;                                                 //sécurité sur 2 ack car des bugs ont lieu lorsqu'on a un timeout et un ack dupliqué sur la même séquence

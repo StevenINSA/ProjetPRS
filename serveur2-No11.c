@@ -289,10 +289,10 @@ int main(int argc, char* argv[]){
           if (ack_max < atoi(buffer_sequence)){ //si le ack que l'on reçoie est supérieur au ack max stocké, ack max devient ce ack
             ack_max = atoi(buffer_sequence);
 
-            if (size_window > 50 && size_window <= 100){
-              size_window += 1;
-            } else {
+            if (size_window*2 < 50) {
               size_window = size_window*2; //si on a une petite taille de fenêtre, on l'augmente de façon exponentielle
+            } else if (size_window <= 100){
+              size_window += 1;
             }
 
             *shared_memory_window = ack_max+size_window;  //et on fait glisser la fenêtre

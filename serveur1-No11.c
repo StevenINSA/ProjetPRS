@@ -351,7 +351,7 @@ int main(int argc, char* argv[]){
           last2_ack_max = last_ack_max;
           last_ack_max = ack_max;
           *shared_memory_window = *shared_memory_seq+5;
-          //printf("Timeout : retransmission à partir de %d\n",ack_max+1);
+          printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           //printf("taille de la fenêtre en timeout : %d\n", *shared_memory_window);
 /*
           skip2:

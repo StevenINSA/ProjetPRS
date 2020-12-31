@@ -257,7 +257,7 @@ int main(int argc, char* argv[]){
       int seuil=2000;
 
       /***RECEPTION DES ACKs***/
-      while (ack_max != packets_number){
+      while (ack_max < packets_number){
 
         FD_ZERO(&set_descripteur_timer);
         FD_SET(data_descriptor, &set_descripteur_timer);

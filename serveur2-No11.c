@@ -256,7 +256,7 @@ int main(int argc, char* argv[]){
       int seuil=2000;
 
       /***RECEPTION DES ACKs***/
-      while (ack_max != packets_number){
+      while (ack_max < packets_number){
 
         FD_ZERO(&set_descripteur_timer);
         FD_SET(data_descriptor, &set_descripteur_timer);
@@ -339,8 +339,7 @@ int main(int argc, char* argv[]){
             continue;
 
         } //FDISSET
-        else { //si Timeout, sur le serveur2, il faut laisser toutes les retransmission car il y a trop de pertes de paquets.
-               //on ne peux pas se permettre de ne pas retransmettre
+        else { //si Timeout
 
           *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
 

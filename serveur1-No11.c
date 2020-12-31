@@ -162,7 +162,7 @@ int main(int argc, char* argv[]){
     printf("nombre de segments dans le tableau : %d\n", size_tab);
 
     if ((packets_number+1) < size_tab){  //si le fichier lu est moins grand que le tableau, on n'a pas à tout parcourir + pas de gestion de gros fichier à faire
-      printf("c'est un petit fichier ! taille du fichier : %d taille du tableau : %d\n", size_file, size_tab);
+      printf("c'est un petit fichier ! nombre de segments à envoyer : %d taille du tableau : %d\n", packets_number+1, size_tab);
       size_tab = packets_number+1;
     }
 

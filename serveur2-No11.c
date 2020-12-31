@@ -252,7 +252,6 @@ int main(int argc, char* argv[]){
       int ack_max = 0;
       int ack_precedent=0;
       int ack_precedent_2=0;
-      int last_ack_max = 0;
       int incr = 0;
       int seuil=2000;
 
@@ -348,7 +347,6 @@ int main(int argc, char* argv[]){
           timeout.tv_usec = 5*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 
-          last_ack_max = ack_max;
           size_window = 3; //quand timeout, il y a congestion donc on remet la fenêtre à 1
           *shared_memory_window = ack_max+1 + size_window;
 

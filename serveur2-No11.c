@@ -300,7 +300,7 @@ int main(int argc, char* argv[]){
           /*GESTION LECTURE FICHIER*/
           //printf("Position curseur %d\n",ftell(file));
 
-          if(size_file <= size_tab){ //si fichier non volumineux, on n'a pas à faire la suite
+          if(packets_number > size_tab){ //si fichier volumineux, on fait un buffer circulaire
             if(atoi(buffer_sequence)>seuil){
               seuil=seuil+2000;
               //printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));

@@ -371,6 +371,17 @@ int main(int argc, char* argv[]){
     printf("débit lors de la transmission : %f Mo/s\n", debit);
     printf("temps débit en micro sec : %ld\n", time_debit.tv_usec);
 
+    /* *** Stockage dans un fichier *** */
+    FILE *trace_data;
+    char data_in[100];
+    sprintf(data_in, "%f", debit);
+
+    trace_data = fopen("data_serveur1.txt", "a");
+    fputs(" ", trace_data);
+    fputs(data_in, trace_data);
+    fputs("\n", trace_data);
+    fclose(trace_data);
+
     close(data_descriptor);
     break;
     exit(0);

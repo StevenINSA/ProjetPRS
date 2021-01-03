@@ -168,7 +168,7 @@ int main(int argc, char* argv[]){
 
     char (*tableau)[1494]=(char (*)[packets_size]) mmap(NULL, size_tab*packets_size,PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1,0);
 
-
+    // on charge les premiers segments dans le buffer d'envoi
     for(int i=0;i<size_tab;i++){
       int read_blocks = fread(tableau[i],1494,1,file);
 
@@ -294,8 +294,8 @@ int main(int argc, char* argv[]){
           /*GESTION LECTURE FICHIER*/
           //printf("Position curseur %d\n",ftell(file));
 
-          if(size_file <= size_tab){ //si fichier non volumineux, on n'a pas à faire la suite
-            if(atoi(buffer_sequence)>seuil){
+          if(size_file > size_tab){ //si fichier volumineux, on fait un buffer circulaire
+            if(atoi(buffer_sequence)>seuil){ //on va remplacer dans le buffer de façon périodique, tous les 2000 acks reçus
               seuil=seuil+2000;
               //printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
               //printf("valeur de incr : %d\n", incr);
@@ -321,6 +321,8 @@ int main(int argc, char* argv[]){
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
             timeout.tv_usec = 3*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;
+
+            /* *** selective acknoledgment *** */
             *shared_memory_window = ack_precedent+1 + 5; //on a remarqué que le client1 ne perdait qu'un seul paquet. Au lieu d'en retransmettre 100, on n'en retransmet qu'un petit nombre (pas 1 car si le ack se perd on passe en timeout)
             //printf("taille de la fenêtre en ack dupliqué : %d\n", *shared_memory_window);
           }
@@ -377,7 +379,6 @@ int main(int argc, char* argv[]){
     sprintf(data_in, "%f", debit);
 
     trace_data = fopen("data_serveur1.txt", "a");
-    fputs(" ", trace_data);
     fputs(data_in, trace_data);
     fputs("\n", trace_data);
     fclose(trace_data);

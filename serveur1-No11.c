@@ -164,6 +164,7 @@ int main(int argc, char* argv[]){
     if ((packets_number) < size_tab){  //si le fichier lu est moins grand que le tableau, on n'a pas à tout parcourir + pas de gestion de gros fichier à faire
       printf("c'est un petit fichier ! nombre de segments à envoyer : %d taille du tableau : %d\n", packets_number, size_tab);
       size_tab = packets_number;
+      printf("nouvelle taille du buffer : %d\n", size_tab);
     }
 
     char (*tableau)[1494]=(char (*)[packets_size]) mmap(NULL, size_tab*packets_size,PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1,0);

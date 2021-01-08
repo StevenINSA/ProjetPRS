@@ -157,7 +157,7 @@ int main(int argc, char* argv[]){
     int bloc_size = 6000000;
     int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 du n° de séquence
     int packets_number = (size_file/packets_size)+1; //le nombre de segments que le serveur devra envoyer au client
-    int size_window = 100;
+    int size_window = 150;
     int size_tab = bloc_size/packets_size;
     printf("nombre de segments à envoyer : %d\n", packets_number);
 

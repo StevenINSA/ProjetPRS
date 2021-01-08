@@ -157,7 +157,7 @@ int main(int argc, char* argv[]){
     int bloc_size = 6000000;
     int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 du n° de séquence
     int packets_number = (size_file/packets_size)+1;
-    int size_window=1;
+    int size_window=10;
     int size_tab = bloc_size/packets_size;
     printf("nombre de segments dans le tableau : %d\n", size_tab);
 
@@ -287,7 +287,7 @@ int main(int argc, char* argv[]){
           if (ack_max < atoi(buffer_sequence)){ //si le ack que l'on reçoie est supérieur au ack max stocké, ack max devient ce ack
             ack_max = atoi(buffer_sequence);
 
-            if (size_window*2 < 60) { //on augmente jusqu'à max size_window = 30
+            if (size_window*2 < 100) { //on augmente jusqu'à max size_window = 30
               size_window = size_window*2; //si on a une petite taille de fenêtre, on l'augmente de façon exponentielle
             } else if (size_window <= 100){
               size_window += 1;
@@ -326,7 +326,7 @@ int main(int argc, char* argv[]){
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
             timeout.tv_usec = 5*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;
-            size_window = 3;   //quand on a de la congestion, on réinitialise une petite taille de fenêtre
+            size_window = 10;   //quand on a de la congestion, on réinitialise une petite taille de fenêtre
             *shared_memory_window = ack_precedent+1 + size_window;
             //printf("taille de la fenêtre en ack dupliqué : %d\n", size_window);
           }
@@ -346,7 +346,7 @@ int main(int argc, char* argv[]){
           timeout.tv_usec = 10*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion (inférieure à serveur1 pour détecter plus de timeout)
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 
-          size_window = 3; //quand timeout, il y a congestion donc on remet la fenêtre à 1
+          size_window = 10; //quand timeout, il y a congestion donc on remet la fenêtre à 1
           *shared_memory_window = ack_max+1 + size_window; //on refait glisser la fenêtre pour essayer de transmettre la suite
 
           printf("Timeout : retransmission à partir de %d\n",ack_max+1);

@@ -157,7 +157,7 @@ int main(int argc, char* argv[]){
     int bloc_size = 6000000;
     int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 du n° de séquence
     int packets_number = (size_file/packets_size)+1; //le nombre de segments que le serveur devra envoyer au client
-    int size_window = 200;
+    int size_window = 100;
     int size_tab = bloc_size/packets_size;
     printf("nombre de segments à envoyer : %d\n", packets_number);
 
@@ -278,7 +278,7 @@ int main(int argc, char* argv[]){
           memcpy(buffer_sequence, bufferUDP_read_server+3, size_seq-3); //+3 car les 3 premières valeurs sont pour le mot ACK
 
           /*GESTION RTT*/
-          gettimeofday(&time2, NULL);                                   //on recalcule une timeofday pour faire la différence avec le premier
+          gettimeofday(&time2, NULL);   //on recalcule une timeofday pour faire la différence avec le premier
           array_fils[atoi(buffer_sequence)] = time2.tv_usec + time2.tv_sec*pow(10,6);
           rtt.tv_usec = array_fils[atoi(buffer_sequence)] - array_pere[atoi(buffer_sequence)];
           srtt.tv_usec = alpha*srtt.tv_usec + (1-alpha)*rtt.tv_usec;

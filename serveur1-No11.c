@@ -372,7 +372,7 @@ int main(int argc, char* argv[]){
 
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent){
-            //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
+            printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
 
             if (mlock(shared_memory_seq, packets_number) == -1){
               printf("erreur mlock\n");

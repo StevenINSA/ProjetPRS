@@ -248,7 +248,7 @@ int main(int argc, char* argv[]){
           //Remise à zéro des buffers
           memset(buffer_segment,0,sizeof(buffer_segment));
           memset(buffer_sequence,0,sizeof(buffer_sequence));
-          printf("num seq avant mlock %d\n", *shared_memory_seq);
+          printf("\nnum seq avant mlock %d\n", *shared_memory_seq);
           if (mlock(shared_memory_seq, packets_number) == -1){
             printf("erreur mlock\n");
           }

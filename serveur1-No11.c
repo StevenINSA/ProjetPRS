@@ -248,7 +248,7 @@ int main(int argc, char* argv[]){
 
           //Segment auquel on rajoute en-tête
           memcpy(buffer_segment,buffer_sequence,6);
-          
+
           memcpy(buffer_segment+6,tableau[(*shared_memory_seq-1)%size_tab],packets_size);
 
           /*ENVOI PAQUET*/
@@ -265,6 +265,8 @@ int main(int argc, char* argv[]){
 
           if (msync(shared_memory_seq, packets_number, MS_SYNC) == -1)
             printf("sync failed");
+          if (msync(tableau, size_tab*packets_size, MS_SYNC) == -1)
+            printf("sync tableau failed");
 
           munlock(shared_memory_seq, packets_number);
 

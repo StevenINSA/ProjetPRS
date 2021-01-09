@@ -350,6 +350,7 @@ int main(int argc, char* argv[]){
             timeout.tv_sec = 0;
 
             *count_ack_memory = *count_ack_memory + 1;
+            printf("count ack memory : %d\n", *count_ack_memory);
             ack_precedent_2 = ack_precedent;
             ack_precedent=atoi(buffer_sequence);
             /* *** selective acknoledgment *** */

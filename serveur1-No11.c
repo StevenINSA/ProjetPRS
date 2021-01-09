@@ -248,8 +248,11 @@ int main(int argc, char* argv[]){
 
           //Segment auquel on rajoute en-tête
           memcpy(buffer_segment,buffer_sequence,6);
+          if (mlock(tableau, size_tab*packets_size) == -1){
+            printf("erreur mlock tableau pere\n");
+          }
           memcpy(buffer_segment+6,tableau[(*shared_memory_seq-1)%size_tab],packets_size);
-
+          munlock(tableau, size_tab*packets_size);
           /*ENVOI PAQUET*/
           packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size
 
@@ -316,7 +319,12 @@ int main(int argc, char* argv[]){
           /*GESTION FENETRE GLISSANTE*/
           if (ack_max < atoi(buffer_sequence)){ //si le ack que l'on reçoie est supérieur au ack max stocké, ack max devient ce ack
             ack_max = atoi(buffer_sequence);
+
+            if (mlock(shared_memory_window, packets_number) == -1){
+              printf("erreur mlock\n");
+            }
             *shared_memory_window=ack_max+size_window;  //et on fait glisser la fenêtre
+            munlock(shared_memory_window, packets_number);
             //printf("taille de la fenêtre en réception normale : %d\n", *shared_memory_window);
           }
 
@@ -341,10 +349,21 @@ int main(int argc, char* argv[]){
                     printf("on est au dernier segment\n");
                     *last_packet_size = size_file - ((packets_number-1)*packets_size);
                     //printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
+
+                    if (mlock(tableau, size_tab*packets_size) == -1){
+                      printf("erreur mlock tableau fils\n");
+                    }
                     fread(tableau[incr%size_tab], *last_packet_size, 1, file);
+                    munlock(tableau, size_tab*packets_size);
+
                   }
                   else if (ftell(file)!=size_file){
+
+                    if (mlock(tableau, size_tab*packets_size) == -1){
+                      printf("erreur mlock tableau fils\n");
+                    }
                     fread(tableau[incr%size_tab], packets_size, 1, file);
+                    munlock(tableau, size_tab*packets_size);
                   }
                   incr++;
                 }
@@ -381,7 +400,6 @@ int main(int argc, char* argv[]){
           ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);
 
-
           skip:
             continue;
 
@@ -399,7 +417,11 @@ int main(int argc, char* argv[]){
           timeout.tv_usec = 5*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion (évite 2 timeout consécutifs)
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 
-          *shared_memory_window = ack_max+1 + size_window;
+          if (mlock(shared_memory_window, packets_number) == -1){
+            printf("erreur mlock\n");
+          }
+          *shared_memory_window = ack_max+1 + size_window; //on remet à jour la fenêtre
+          munlock(shared_memory_window, packets_number);
           //printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           //printf("taille de la fenêtre en timeout : %d\n", *shared_memory_window);
 

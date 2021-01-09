@@ -209,7 +209,7 @@ int main(int argc, char* argv[]){
     uint16_t *shared_memory_seq = mmap(NULL, packets_number,           //pour que le fils mette à jour le n° de seq que le parent envoie
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
-*/  int shared_memory_seq = 0;
+*/  int shared_memory_seq = 1;
 
 /*    uint16_t *shared_memory_window = mmap(NULL, packets_number,
                                     PROT_READ | PROT_WRITE,

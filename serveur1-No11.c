@@ -339,6 +339,7 @@ int main(int argc, char* argv[]){
           }
 
           if (atoi(buffer_sequence) == ack_a_recevoir){
+            printf("on a reçu le bon ack : %d", ack_a_recevoir);
             if (mlock(shared_memory_seq, packets_number) != 0){
               printf("erreur lock fils \n");
             }
@@ -352,7 +353,7 @@ int main(int argc, char* argv[]){
 
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
-            //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
+            printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
             if (mlock(shared_memory_seq, packets_number) != 0){
               printf("erreur lock fils \n");
             }

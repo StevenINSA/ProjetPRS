@@ -315,7 +315,6 @@ int main(int argc, char* argv[]){
           //printf("Position curseur %d\n",ftell(file));
 
           if(packets_number > size_tab){ //si fichier volumineux, on fait un buffer circulaire
-            printf("gros fichier ! il faut un buffer circulaire\n");
             if(atoi(buffer_sequence)>seuil){ //on va remplacer dans le buffer de façon périodique, tous les 2000 acks reçus
               seuil=seuil+2000;
               //printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));

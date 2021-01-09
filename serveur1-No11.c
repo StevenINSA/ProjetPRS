@@ -345,6 +345,8 @@ int main(int argc, char* argv[]){
             }
             *shared_memory_seq = ack_max+1;
             munlock(shared_memory_seq, packets_number);
+            if (msync(shared_memory_seq, packets_number, MS_SYNC) == -1)
+              printf("sync failed");
           }
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2 && atoi(buffer_sequence)==ack_precedent_3){
@@ -360,6 +362,9 @@ int main(int argc, char* argv[]){
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
             ack_a_recevoir = *shared_memory_seq;
             munlock(shared_memory_seq, packets_number);
+
+            if (msync(shared_memory_seq, packets_number, MS_SYNC) == -1)
+              printf("sync failed");
 
             *count_ack_memory = *count_ack_memory + 1;
             //printf("count ack memory : %d\n", *count_ack_memory);
@@ -411,9 +416,12 @@ int main(int argc, char* argv[]){
 
         } //FDISSET
         else { //si Timeout
-
+          if (mlock(shared_memory_seq, packets_number) != 0){
+            printf("erreur lock fils \n");
+          }
           *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
-
+          munlock(shared_memory_seq, packets_number);
+          
           timeout.tv_usec = 5*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion (évite 2 timeout consécutifs)
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 

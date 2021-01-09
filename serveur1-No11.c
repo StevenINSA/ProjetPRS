@@ -176,7 +176,7 @@ int main(int argc, char* argv[]){
         packets_size = size_file - ftell(file);
         printf("taille du dernier bloc à lire : %d\n", packets_size);
       }
-
+      printf("taille des paquets : %d\n", packets_size);
       int read_blocks = fread(tableau[i],packets_size,1,file);
 
       if(read_blocks!=1){

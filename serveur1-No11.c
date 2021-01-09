@@ -185,7 +185,7 @@ int main(int argc, char* argv[]){
       }
 
     }
-
+    packets_size = 1494;
 
     uint8_t *shared_memory_fils = mmap(NULL, 2,          //pour que le parent envoie les fichiers tant que le fils écoute les acks
                                     PROT_READ | PROT_WRITE,

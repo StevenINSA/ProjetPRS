@@ -362,7 +362,14 @@ int main(int argc, char* argv[]){
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent){
             //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
+
+            if (mlock(shared_memory_seq, packets_number) == -1){
+              printf("erreur mlock\n");
+            }
+
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
+            munlock(shared_memory_seq, packets_number);
+
             timeout.tv_usec = srtt.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;
 
@@ -381,7 +388,13 @@ int main(int argc, char* argv[]){
         } //FDISSET
         else { //si Timeout
 
+          if (mlock(shared_memory_seq, packets_number) == -1){
+            printf("erreur mlock\n");
+          }
+
           *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
+
+          munlock(shared_memory_seq, packets_number);
 
           timeout.tv_usec = 10*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion (évite 2 timeout consécutifs)
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion

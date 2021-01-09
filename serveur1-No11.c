@@ -342,7 +342,7 @@ int main(int argc, char* argv[]){
 
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent){
-            //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
+            printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
 
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
 

@@ -220,7 +220,7 @@ int main(int argc, char* argv[]){
     long *array_fils = (long *)mmap(NULL, packets_number*sizeof(long)+sizeof(long),
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
-
+    /*
     uint8_t *count_timeout_memory = mmap(NULL, sizeof(int),          //pour compter les ack dupliqués et timout
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
@@ -228,7 +228,7 @@ int main(int argc, char* argv[]){
     uint8_t *count_ack_memory = mmap(NULL, sizeof(int),          //pour compter les ack dupliqués et timout
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
-
+    */
     /*** FORK ***/
     int idfork=fork();
     printf("Fork renvoie la valeur :%d\n",idfork);
@@ -349,8 +349,8 @@ int main(int argc, char* argv[]){
             timeout.tv_usec = 2*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;
 
-            *count_ack_memory = *count_ack_memory + 1;
-            printf("count ack memory : %d\n", *count_ack_memory);
+            //*count_ack_memory = *count_ack_memory + 1;
+            //printf("count ack memory : %d\n", *count_ack_memory);
             ack_precedent_2 = ack_precedent;
             ack_precedent=atoi(buffer_sequence);
             /* *** selective acknoledgment *** */
@@ -408,7 +408,7 @@ int main(int argc, char* argv[]){
           *shared_memory_window = ack_max+1 + size_window; //on remet à jour la fenêtre
           //printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           //printf("taille de la fenêtre en timeout : %d\n", *shared_memory_window);
-          *count_timeout_memory = *count_timeout_memory + 1;
+          //*count_timeout_memory = *count_timeout_memory + 1;
         }
       }//fin while
 
@@ -436,11 +436,11 @@ int main(int argc, char* argv[]){
     printf("temps débit en micro sec : %ld\n", time_debit.tv_usec);
 
     /* libération des mémoires */
-    int count_ack = *count_ack_memory;
-    int count_timeout = *count_timeout_memory;
+    //int count_ack = *count_ack_memory;
+    //int count_timeout = *count_timeout_memory;
 
-    munmap(count_ack_memory, sizeof(int));
-    munmap(count_timeout_memory, sizeof(int));
+    //munmap(count_ack_memory, sizeof(int));
+    //munmap(count_timeout_memory, sizeof(int));
     munmap(array_fils, packets_number*sizeof(long)+sizeof(long));
     munmap(array_pere, packets_number*sizeof(long)+sizeof(long));
     munmap(shared_memory_window, packets_number);
@@ -459,7 +459,7 @@ int main(int argc, char* argv[]){
     fputs("\n", trace_data);
     fclose(trace_data);
 
-    printf("il y a eu %d ack dupliqués, %d timeout\n", count_ack, count_timeout);
+    //printf("il y a eu %d ack dupliqués, %d timeout\n", count_ack, count_timeout);
 
     close(data_descriptor);
     break;

@@ -154,11 +154,11 @@ int main(int argc, char* argv[]){
 
     printf("taille du fichier en octet : %d\n", size_file);
     fseek(file, 0, SEEK_SET);          //on replace le curseur au début;
-    int bloc_size = 6000000;
+    int bloc_size = 8000000;
     int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 du n° de séquence
     int packets_number = (size_file/packets_size)+1; //le nombre de segments que le serveur devra envoyer au client
     int size_window = 100;
-    int size_tab = bloc_size/packets_size;
+    int size_tab = bloc_size/packets_size; //il faut que la dimension du tableau (collonne*lignes) ne dépasse pas 8 000 000
     printf("nombre de segments à envoyer : %d\n", packets_number);
 
     if ((packets_number) < size_tab){  //si le fichier lu est moins grand que le tableau, on n'a pas à tout parcourir + pas de gestion de gros fichier à faire
@@ -171,7 +171,12 @@ int main(int argc, char* argv[]){
 
     // on charge les premiers segments dans le buffer d'envoi
     for(int i=0;i<size_tab;i++){
-      int read_blocks = fread(tableau[i],1494,1,file);
+      if (size_file - ftell(file) < packets_size){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
+        packets_size = size_file - ftell(file);
+        printf("taille du dernier bloc à lire : %d\n", packets_size);
+      }
+
+      int read_blocks = fread(tableau[i],packets_size,1,file);
 
       if(read_blocks!=1){
         perror("erreur lecture fichier");
@@ -303,7 +308,12 @@ int main(int argc, char* argv[]){
 
               for (int i = 0; i < seuil ; i++){
                 //printf("valeur de incr : %d\n", incr);
-                fread(tableau[incr%size_tab],1494,1,file);
+                if (size_file - ftell(file) < packets_size){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
+                  packets_size = size_file - ftell(file);
+                  printf("taille du dernier bloc à lire : %d\n", packets_size);
+                }
+
+                fread(tableau[incr%size_tab], packets_size, 1, file);
                 incr++;
               }
             }

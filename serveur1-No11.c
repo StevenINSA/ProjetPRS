@@ -358,9 +358,6 @@ int main(int argc, char* argv[]){
           ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);
 
-          skip:
-            continue;
-
           /*GESTION BUFFER CIRCULAIRE*/
           //printf("Position curseur %d\n",ftell(file));
 
@@ -382,7 +379,7 @@ int main(int argc, char* argv[]){
                     printf("on est au dernier segment\n");
 
                     *last_packet_size = size_file - ((packets_number-1)*packets_size);
-                    //printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
+                    printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
 
                     fread(tableau[incr%size_tab], *last_packet_size, 1, file);
 
@@ -396,6 +393,9 @@ int main(int argc, char* argv[]){
               }
             }
           }
+          
+          skip:
+            continue;
 
         } //FDISSET
         else { //si Timeout

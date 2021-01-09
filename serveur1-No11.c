@@ -151,11 +151,11 @@ int main(int argc, char* argv[]){
     //on calcule ensuite la taille du fichier à envoyer
     fseek(file, 0, SEEK_END);     //fseek parcours le fichier et place un curseur à la fin appelée SEEK END
     int size_file = ftell(file);  //ftell donne la taille du chemin parcouru par fseek (valeur de la position du curseur)
-
     printf("taille du fichier en octet : %d\n", size_file);
     fseek(file, 0, SEEK_SET);          //on replace le curseur au début;
+
     int bloc_size = 8000000;
-    int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 du n° de séquence
+    int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 octets du n° de séquence
     int packets_number = (size_file/packets_size)+1; //le nombre de segments que le serveur devra envoyer au client
     int size_window = 100;
     int size_tab = bloc_size/packets_size; //il faut que la dimension du tableau (collonne*lignes) ne dépasse pas 8 000 000
@@ -171,6 +171,7 @@ int main(int argc, char* argv[]){
 
     // on charge les premiers segments dans le buffer d'envoi
     for(int i=0;i<size_tab;i++){
+      printf("valeurs du ftell : %d\n", ftell(file));
       if (size_file - ftell(file) < packets_size){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
         packets_size = size_file - ftell(file);
         printf("taille du dernier bloc à lire : %d\n", packets_size);

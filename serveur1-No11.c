@@ -348,7 +348,7 @@ int main(int argc, char* argv[]){
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
             timeout.tv_usec = 2*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;
-            goto skip;
+            //goto skip;
           }
 
           /*GESTION ACKS DUPLIQUES*/
@@ -367,8 +367,8 @@ int main(int argc, char* argv[]){
           ack_precedent=atoi(buffer_sequence);
 
 
-          skip:
-            continue;
+          //skip:
+            //continue;
 
         } //FDISSET
         else { //si Timeout

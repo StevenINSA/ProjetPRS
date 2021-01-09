@@ -323,12 +323,14 @@ int main(int argc, char* argv[]){
             */
               if(atoi(buffer_sequence)>seuil){ //on va remplacer dans le buffer de façon périodique, tous les 2000 acks reçus
                 seuil=seuil+2000;
+                printf("valeur de ftell dans le buffer circulaire : %d\n", ftell(file));
                 //printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
                 //printf("valeur de incr : %d\n", incr);
 
                 for (int i = seuil-2000 ; i < seuil || i < packets_number ; i++){ //pour le dernier tour du buffer, on ne veut pas aller jusqu'à seuil mais seulement jusqu'à la fin du fichier
                   //printf("valeur de incr : %d\n", incr);
                   if (size_file - ftell(file) < packets_size){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
+                    printf("on est au dernier segment\n");
                     *last_packet_size = size_file - ((packets_number-1)*packets_size);
                     //printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
                     fread(tableau[incr%size_tab], *last_packet_size, 1, file);

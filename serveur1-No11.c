@@ -168,7 +168,7 @@ int main(int argc, char* argv[]){
       printf("nouvelle taille du buffer : %d\n", size_tab);
     }
 
-    char (*tableau)[1494]=(char (*)[packets_size]) mmap(NULL, size_tab*packets_size,PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1,0);
+    char (*tableau)[1494]=(char (*)[packets_size]) mmap(NULL, size_tab*packets_size,PROT_EXEC | PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1,0);
 
 
     uint16_t *last_packet_size = mmap(NULL, sizeof(int),
@@ -240,6 +240,9 @@ int main(int argc, char* argv[]){
           memset(buffer_segment,0,sizeof(buffer_segment));
           memset(buffer_sequence,0,sizeof(buffer_sequence));
 
+          if (mlock(shared_memory_seq, packets_number) == -1){
+            printf("erreur mlock\n");
+          }
           sprintf(buffer_sequence,"%d",*shared_memory_seq);
           //printf("Sequence number (from buffer_sequence) : %s\n",buffer_sequence);
 
@@ -261,6 +264,8 @@ int main(int argc, char* argv[]){
 
           if (msync(shared_memory_seq, packets_number, MS_SYNC) == -1)
             printf("sync failed");
+
+          munlock(shared_memory_seq, packets_number);
 
         }
       } //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard

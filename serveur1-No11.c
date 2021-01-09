@@ -259,6 +259,9 @@ int main(int argc, char* argv[]){
 
           *shared_memory_seq = *shared_memory_seq+1;
 
+          if (msync(shared_memory_seq, packets_number, MS_SYNC) == -1)
+            printf("sync failed");
+
         }
       } //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
       printf("On est sorti du while du père :%d\n",*shared_memory_fils);

@@ -63,8 +63,6 @@ int main(int argc, char* argv[]){
   char sent_file[100]; //pour le stockage du nom de fichier
   char buffer_sequence[6];
   char buffer_segment[2000];// à redéfinir en fonction du client
-  int count_ack = 0;
-  int count_timeout = 0;
 
   int data_descriptor = 0; //pour récupérer le descripteur de la nouvelle socket
 
@@ -170,8 +168,9 @@ int main(int argc, char* argv[]){
       printf("nouvelle taille du buffer : %d\n", size_tab);
     }
 
-    char (*tableau)[1494]=(char (*)[packets_size]) mmap(NULL, size_tab*packets_size,PROT_EXEC | PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1,0);
-
+    char (*tableau)[1494]=(char (*)[packets_size]) mmap(NULL, size_tab*packets_size,
+                                    PROT_READ | PROT_WRITE,
+                                    MAP_SHARED | MAP_ANONYMOUS, -1,0);
 
     uint16_t *last_packet_size = mmap(NULL, sizeof(int),
                                     PROT_READ | PROT_WRITE,
@@ -219,6 +218,14 @@ int main(int argc, char* argv[]){
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
 
     long *array_fils = (long *)mmap(NULL, packets_number*sizeof(long)+sizeof(long),
+                                    PROT_READ | PROT_WRITE,
+                                    MAP_SHARED | MAP_ANONYMOUS, -1,0);
+
+    uint8_t *count_timeout_memory = mmap(NULL, sizeof(int),          //pour compter les ack dupliqués et timout
+                                    PROT_READ | PROT_WRITE,
+                                    MAP_SHARED | MAP_ANONYMOUS, -1,0);
+
+    uint8_t *count_ack_memory = mmap(NULL, sizeof(int),          //pour compter les ack dupliqués et timout
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
 
@@ -348,7 +355,7 @@ int main(int argc, char* argv[]){
             /* *** selective acknoledgment *** */
             //*shared_memory_window = ack_precedent+1 + size_window/10; //on a remarqué que le client1 ne perdait qu'un seul paquet. Au lieu d'en retransmettre 100, on n'en retransmet qu'un petit nombre (pas 1 car si le ack se perd on passe en timeout)
             //printf("taille de la fenêtre en ack dupliqué : %d\n", *shared_memory_window);
-            count_ack++;
+            *count_ack_memory = *count_ack_memory + 1;
           }
 
           skip:
@@ -401,14 +408,13 @@ int main(int argc, char* argv[]){
           *shared_memory_window = ack_max+1 + size_window; //on remet à jour la fenêtre
           //printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           //printf("taille de la fenêtre en timeout : %d\n", *shared_memory_window);
-          count_timeout++;
+          *count_timeout_memory = *count_timeout_memory + 1;
         }
       }//fin while
 
       printf("J'ai reçu le dernier ACK : ACK%d\n",ack_max);
       *shared_memory_fils=0;
       printf("Fin du fils : on ferme le fils\n");
-      return count_ack, count_timeout;
       //kill(0, SIGKILL);
       exit(0);
 
@@ -430,6 +436,10 @@ int main(int argc, char* argv[]){
     printf("temps débit en micro sec : %ld\n", time_debit.tv_usec);
 
     /* libération des mémoires */
+    int count_ack = *count_ack_memory;
+    int count_timeout = *count_timeout_memory;
+    munmap(count_ack_memory, sizeof(int));
+    munmap(count_timeout_memory, sizeof(int));
     munmap(array_fils, packets_number*sizeof(long)+sizeof(long));
     munmap(array_pere, packets_number*sizeof(long)+sizeof(long));
     munmap(shared_memory_window, packets_number);

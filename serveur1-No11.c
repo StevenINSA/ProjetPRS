@@ -324,7 +324,7 @@ int main(int argc, char* argv[]){
                 //printf("valeur de incr : %d\n", incr);
                 if (size_file - ftell(file) < packets_size){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
                   *last_packet_size = size_file - ftell(file);
-                  //printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
+                  printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
                   fread(tableau[incr%size_tab], *last_packet_size, 1, file);
                 }
                 else {

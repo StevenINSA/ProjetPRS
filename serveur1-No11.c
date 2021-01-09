@@ -408,7 +408,7 @@ int main(int argc, char* argv[]){
       printf("J'ai reçu le dernier ACK : ACK%d\n",ack_max);
       *shared_memory_fils=0;
       printf("Fin du fils : on ferme le fils\n");
-
+      return count_ack, count_timeout;
       //kill(0, SIGKILL);
       exit(0);
 

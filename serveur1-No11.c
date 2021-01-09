@@ -159,6 +159,7 @@ int main(int argc, char* argv[]){
     int packets_number = (size_file/packets_size)+1; //le nombre de segments que le serveur devra envoyer au client
     int size_window = 100;
     int size_tab = bloc_size/packets_size; //il faut que la dimension du tableau (collonne*lignes) ne dépasse pas 8 000 000
+    printf("taille du tableau : %d\n", size_tab);
     printf("nombre de segments à envoyer : %d\n", packets_number);
 
     if ((packets_number) < size_tab){  //si le fichier lu est moins grand que le tableau, on n'a pas à tout parcourir + pas de gestion de gros fichier à faire
@@ -327,7 +328,7 @@ int main(int argc, char* argv[]){
                   //printf("valeur de incr : %d\n", incr);
                   if (size_file - ftell(file) < packets_size){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
                     *last_packet_size = size_file - ((packets_number-1)*packets_size);
-                    printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
+                    //printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
                     fread(tableau[incr%size_tab], *last_packet_size, 1, file);
                   }
                   else {

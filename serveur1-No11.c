@@ -169,15 +169,24 @@ int main(int argc, char* argv[]){
 
     char (*tableau)[1494]=(char (*)[packets_size]) mmap(NULL, size_tab*packets_size,PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1,0);
 
+
+    uint16_t *last_packet_size = mmap(NULL, sizeof(int),
+                                    PROT_READ | PROT_WRITE,
+                                    MAP_SHARED | MAP_ANONYMOUS, -1,0);
+    *last_packet_size = packets_size; //valeur par défaut au cas où le dernier paquet fasse une taille de 1494
+    int read_blocks;
+
     // on charge les premiers segments dans le buffer d'envoi
     for(int i=0;i<size_tab;i++){
-      printf("valeurs du ftell : %d\n", ftell(file));
+
       if (size_file - ftell(file) < packets_size){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
-        packets_size = size_file - ftell(file);
-        printf("taille du dernier bloc à lire : %d\n", packets_size);
+        *last_packet_size = size_file - ftell(file);
+        printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
+        read_blocks = fread(tableau[i],*last_packet_size,1,file);
       }
-      printf("taille des paquets : %d\n", packets_size);
-      int read_blocks = fread(tableau[i],packets_size,1,file);
+      else {
+        read_blocks = fread(tableau[i],packets_size,1,file);
+      }
 
       if(read_blocks!=1){
         perror("erreur lecture fichier");
@@ -185,7 +194,6 @@ int main(int argc, char* argv[]){
       }
 
     }
-    packets_size = 1494;
 
     uint8_t *shared_memory_fils = mmap(NULL, 2,          //pour que le parent envoie les fichiers tant que le fils écoute les acks
                                     PROT_READ | PROT_WRITE,
@@ -239,6 +247,9 @@ int main(int argc, char* argv[]){
           memcpy(buffer_segment+6,tableau[(*shared_memory_seq-1)%size_tab],packets_size);
 
           /*ENVOI PAQUET*/
+          if (atoi(buffer_sequence) == packets_number) //on met à jour la taille du dernier segment à envoyer
+            packets_size = *last_packet_size;
+
           sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
           gettimeofday(&time1, NULL);
           array_pere[*shared_memory_seq] = time1.tv_usec + time1.tv_sec*pow(10,6);
@@ -311,11 +322,13 @@ int main(int argc, char* argv[]){
               for (int i = 0; i < seuil ; i++){
                 //printf("valeur de incr : %d\n", incr);
                 if (size_file - ftell(file) < packets_size){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
-                  packets_size = size_file - ftell(file);
-                  printf("taille du dernier bloc à lire : %d\n", packets_size);
+                  *last_packet_size = size_file - ftell(file);
+                  printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
+                  fread(tableau[incr%size_tab], *last_packet_size, 1, file);
                 }
-
-                fread(tableau[incr%size_tab], packets_size, 1, file);
+                else {
+                  fread(tableau[incr%size_tab], packets_size, 1, file);
+                }
                 incr++;
               }
             }

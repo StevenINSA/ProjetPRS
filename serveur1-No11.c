@@ -310,7 +310,7 @@ int main(int argc, char* argv[]){
           array_fils[atoi(buffer_sequence)] = time2.tv_usec + time2.tv_sec*pow(10,6);
           rtt.tv_usec = array_fils[atoi(buffer_sequence)] - array_pere[atoi(buffer_sequence)];
           srtt.tv_usec = alpha*srtt.tv_usec + (1-alpha)*rtt.tv_usec;
-          timeout.tv_usec = srtt.tv_usec; //on attend 3 fois l'estimation avant de déclarer l'ACK comme perdu
+          timeout.tv_usec = 2*srtt.tv_usec; //on attend 3 fois l'estimation avant de déclarer l'ACK comme perdu
           timeout.tv_sec = 0;
 
           /*GESTION FENETRE GLISSANTE*/
@@ -354,7 +354,7 @@ int main(int argc, char* argv[]){
 
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
-            timeout.tv_usec = srtt.tv_usec; //on sécurise le temps d'attente de retransmission
+            timeout.tv_usec = 2*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;
             goto skip;
           }
@@ -370,7 +370,7 @@ int main(int argc, char* argv[]){
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
             munlock(shared_memory_seq, packets_number);
 
-            timeout.tv_usec = srtt.tv_usec; //on sécurise le temps d'attente de retransmission
+            timeout.tv_usec = 2*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;
 
             /* *** selective acknoledgment *** */
@@ -396,7 +396,7 @@ int main(int argc, char* argv[]){
 
           munlock(shared_memory_seq, packets_number);
 
-          timeout.tv_usec = 10*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion (évite 2 timeout consécutifs)
+          timeout.tv_usec = 5*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion (évite 2 timeout consécutifs)
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 
           *shared_memory_window = ack_max+1 + size_window;
@@ -448,7 +448,7 @@ int main(int argc, char* argv[]){
     munmap(shared_memory_fils, sizeof(int));
     munmap(last_packet_size, sizeof(int));
     munmap(tableau, size_tab*packets_size);
-    
+
     close(data_descriptor);
     break;
     exit(0);

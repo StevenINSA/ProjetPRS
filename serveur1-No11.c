@@ -297,6 +297,7 @@ int main(int argc, char* argv[]){
       int ack_precedent=0;
       int ack_precedent_2=0;
       int ack_precedent_3=0;
+      int ack_a_recevoir = 0;
       int incr = 0;
       int seuil=2000;
 
@@ -337,23 +338,27 @@ int main(int argc, char* argv[]){
             //printf("taille de la fenêtre en réception normale : %d\n", *shared_memory_window);
           }
 
+          if (atoi(buffer_sequence) == ack_a_recevoir){
+            if (mlock(shared_memory_seq, packets_number) != 0){
+              printf("erreur lock fils \n");
+            }
+            *shared_memory_seq = ack_max+1;
+            munlock(shared_memory_seq, packets_number);
+          }
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2 && atoi(buffer_sequence)==ack_precedent_3){
-            timeout.tv_usec = 2*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
-            timeout.tv_sec = 0;
             goto skip;
           }
 
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
             //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
-            int lock = mlock(shared_memory_seq, packets_number);
-            if (lock != 0)
+            if (mlock(shared_memory_seq, packets_number) != 0){
               printf("erreur lock fils \n");
+            }
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
+            ack_a_recevoir = *shared_memory_seq;
             munlock(shared_memory_seq, packets_number);
-            timeout.tv_usec = 2*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
-            timeout.tv_sec = 0;
 
             *count_ack_memory = *count_ack_memory + 1;
             //printf("count ack memory : %d\n", *count_ack_memory);
@@ -364,7 +369,6 @@ int main(int argc, char* argv[]){
           ack_precedent_3 = ack_precedent_2;
           ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);
-
           /*GESTION BUFFER CIRCULAIRE*/
           //printf("Position curseur %d\n",ftell(file));
 

@@ -249,7 +249,7 @@ int main(int argc, char* argv[]){
           memset(buffer_segment,0,sizeof(buffer_segment));
           memset(buffer_sequence,0,sizeof(buffer_sequence));
           printf("\nnum seq avant mlock %d\n", *shared_memory_seq);
-          int lock = mlock(shared_memory_seq, packets_number
+          int lock = mlock(shared_memory_seq, packets_number);
           if (lock == -1){
             printf("erreur mlock\n");
           }

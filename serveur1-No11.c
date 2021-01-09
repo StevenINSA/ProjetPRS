@@ -21,11 +21,11 @@ int main(int argc, char* argv[]){
     exit(-1);
   }
   int port_public = atoi(argv[1]);
-  printf("Port du serveur : %d\n",port_public);
+  //printf("Port du serveur : %d\n",port_public);
 
   //Création socket UDP
 	int socket_UDP = socket(AF_INET,SOCK_DGRAM,0); //protocole UDP
-	printf("Descripteur socket UDP : %d\n",socket_UDP);
+	//printf("Descripteur socket UDP : %d\n",socket_UDP);
   if (socket_UDP<0){
 		perror("Erreur socket");
 		exit(-1);
@@ -44,10 +44,10 @@ int main(int argc, char* argv[]){
 
   //Serveur
   serveur_addr.sin_addr.s_addr = INADDR_ANY ;
-  printf("Adresse serveur =%d\n",serveur_addr.sin_addr.s_addr);
+  //printf("Adresse serveur =%d\n",serveur_addr.sin_addr.s_addr);
   serveur_addr.sin_family=AF_INET;
   serveur_addr.sin_port=htons(port_public);
-	printf("Port du serveur UDP: %d\n",port_public);
+	//printf("Port du serveur UDP: %d\n",port_public);
 
   //Lien socket-structure
   int bind_UDP = bind(socket_UDP,(struct sockaddr*)&serveur_addr,sizeof(struct sockaddr_in));
@@ -55,7 +55,7 @@ int main(int argc, char* argv[]){
     perror("Erreur bind\n");
     exit(-1);
   }
-  printf("Bind UDP = %d\n",bind_UDP);
+  //printf("Bind UDP = %d\n",bind_UDP);
 
   char bufferUDP_read_server[100]; //on crée un buffer pour stocker 99 caractères (le dernier étant réservé au \0 pour signaler la fin de la chaîne
   char bufferUDP_write_server[100];
@@ -75,19 +75,19 @@ int main(int argc, char* argv[]){
   float alpha = 0.4;
 
   while(1){
-    printf("Boucle while n°1.\n");
+    //printf("Boucle while n°1.\n");
     //Echange UDP
 
     int size_syn = recvfrom(socket_UDP,bufferUDP_read_server,sizeof(bufferUDP_read_server),0,(struct sockaddr *)&client1_addr,&len);
     printf("size syn : %d\n",size_syn);
-    printf("Client 1 :%s\n", bufferUDP_read_server);
+    //printf("Client 1 :%s\n", bufferUDP_read_server);
 
     int result = strcmp("SYN",bufferUDP_read_server);
-    printf("Resultat de la comparaison : %d\n",result);
+    //printf("Resultat de la comparaison : %d\n",result);
 
      //Si on reçoit un SYN
     if(result==0){
-      printf("Le message reçu est bien un SYN\n");
+      //printf("Le message reçu est bien un SYN\n");
       memset(bufferUDP_write_server,0,sizeof(bufferUDP_write_server));
       memcpy(bufferUDP_write_server,"SYN-ACK",7);
 
@@ -353,7 +353,7 @@ int main(int argc, char* argv[]){
 
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent){
-            //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
+            printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
             timeout.tv_usec = 2*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;

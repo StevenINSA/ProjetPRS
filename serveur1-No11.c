@@ -220,7 +220,7 @@ int main(int argc, char* argv[]){
     long *array_fils = (long *)mmap(NULL, packets_number*sizeof(long)+sizeof(long),
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
-    /*
+
     uint8_t *count_timeout_memory = mmap(NULL, sizeof(int),          //pour compter les ack dupliqués et timout
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
@@ -228,7 +228,7 @@ int main(int argc, char* argv[]){
     uint8_t *count_ack_memory = mmap(NULL, sizeof(int),          //pour compter les ack dupliqués et timout
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
-    */
+
     /*** FORK ***/
     int idfork=fork();
     printf("Fork renvoie la valeur :%d\n",idfork);
@@ -342,14 +342,14 @@ int main(int argc, char* argv[]){
 
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent){
-            printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
+            //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
 
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
 
             timeout.tv_usec = 2*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;
 
-            //*count_ack_memory = *count_ack_memory + 1;
+            *count_ack_memory = *count_ack_memory + 1;
             //printf("count ack memory : %d\n", *count_ack_memory);
             /* *** selective acknoledgment *** */
             //*shared_memory_window = ack_precedent+1 + size_window/10; //on a remarqué que le client1 ne perdait qu'un seul paquet. Au lieu d'en retransmettre 100, on n'en retransmet qu'un petit nombre (pas 1 car si le ack se perd on passe en timeout)
@@ -375,8 +375,8 @@ int main(int argc, char* argv[]){
                 //printf("valeur de ftell dans le buffer circulaire : %d\n", ftell(file));
                 //printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
                 //printf("valeur de incr : %d\n", incr);
-
                 printf("i va de %d à %d ou %d\n", seuil-2000, seuil, packets_number);
+
                 for (int i = seuil-2000 ; i < seuil && i < packets_number ; i++){ //pour le dernier tour du buffer, on ne veut pas aller jusqu'à seuil mais seulement jusqu'à la fin du fichier
                   if (size_file - ftell(file) < packets_size && ftell(file)!=size_file){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
                     printf("on est au dernier segment\n");
@@ -408,7 +408,7 @@ int main(int argc, char* argv[]){
           *shared_memory_window = ack_max+1 + size_window; //on remet à jour la fenêtre
           //printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           //printf("taille de la fenêtre en timeout : %d\n", *shared_memory_window);
-          //*count_timeout_memory = *count_timeout_memory + 1;
+          *count_timeout_memory = *count_timeout_memory + 1;
         }
       }//fin while
 
@@ -436,11 +436,11 @@ int main(int argc, char* argv[]){
     printf("temps débit en micro sec : %ld\n", time_debit.tv_usec);
 
     /* libération des mémoires */
-    //int count_ack = *count_ack_memory;
-    //int count_timeout = *count_timeout_memory;
+    int count_ack = *count_ack_memory;
+    int count_timeout = *count_timeout_memory;
 
-    //munmap(count_ack_memory, sizeof(int));
-    //munmap(count_timeout_memory, sizeof(int));
+    munmap(count_ack_memory, sizeof(int));
+    munmap(count_timeout_memory, sizeof(int));
     munmap(array_fils, packets_number*sizeof(long)+sizeof(long));
     munmap(array_pere, packets_number*sizeof(long)+sizeof(long));
     munmap(shared_memory_window, packets_number);
@@ -459,7 +459,7 @@ int main(int argc, char* argv[]){
     fputs("\n", trace_data);
     fclose(trace_data);
 
-    //printf("il y a eu %d ack dupliqués, %d timeout\n", count_ack, count_timeout);
+    printf("il y a eu %d ack dupliqués, %d timeout\n", count_ack, count_timeout);
 
     close(data_descriptor);
     break;

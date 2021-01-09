@@ -1,0 +1,1944 @@
+ INSA de Lyon
+Département Télécommunications, Services et Usages
+   Communications Numériques Avancées (CNA) - Partie I
+ Digital domain
+Encoding
+Decoding
+Baseband domain
+Baseband processing Digital DAC Analog
+Baseband processing Digital ADC Analog
+RF domain
+     Mapping
+Unmapping
+Transposition
+x(t)
+ Transposition y(t)
+ Physical Channel (RF, Optical fiber, ...)
+ Edition 2020-2021 INSA de Lyon
+
+ 2
+
+Table des matières
+1 Description générale du cours 5
+1.1 Introduction.................................... 5
+1.2 Compétences ................................... 6
+1.2.1 Connaissances .............................. 6
+1.2.2 Capacités ................................. 6
+1.2.3 Auto-évaluation.............................. 6
+1.3 Notationsetrappels ............................... 7
+Glossaire 9
+1.3.1 Fonctions ................................. 10 1.3.2 Probabilités................................ 10 1.3.3 Systèmeslinéaires ............................ 11
+1.4 Variables ..................................... 12
+2 Estimation-détection 13
+2.1 Introduction.................................... 13
+2.2 Definition..................................... 14
+2.3 Détectionbinaire................................. 18
+2.3.1 Détecteurbayésien............................ 19 2.3.2 Cas d’une observation multi-dimensionnelle . . . . . . . . . . . . . . 23 2.3.3 Maximumdevraisemblance....................... 25 2.3.4 Détecteurauxmoindrescarrés ..................... 26 2.3.5 DétecteurMAP.............................. 27 2.3.6 Statistiquesuffisante........................... 28
+2.4 ROC........................................ 31
+2.4.1 courbe caractéristiques opérationnelles du récepteur –receiver operating
+characteristics–(ROC).......................... 31
+2.4.2 TestdeNeyman-Pearson ........................ 32
+2.4.3 Applicationàl’exercice2.13,partieB . . . . . . . . . . . . . . . . . 34
+2.5 DétectionM-aire ................................. 36 3
+
+TABLE DES MATIÈRES TABLE DES MATIÈRES
+ 2.6 Estimation .................................... 38
+2.6.1 Minimisationd’unefonctiondecoût .................. 39
+2.6.2 Estimateur maximum de vraisemblance –maximum likelihood– (ML) 43
+2.6.3 Performancedesestimateurs ...................... 44
+2.7 Sujetsavancésliésàl’estimation ........................ 47 2.7.1 Notesurl’estimationmulti-paramètres. . . . . . . . . . . . . . . . . 48 2.7.2 Estimationitérative ........................... 48
+2.8 Com.Num..................................... 49 2.8.1 Applicationdeladétection ....................... 49 2.8.2 Applicationsdel’estimation....................... 51
+2.9 Synthèseduchapitre............................... 52
+2.10Exercices ..................................... 53 2.10.1 Exercicesportantsurlathéoriedeladétection . . . . . . . . . . . . 53 2.10.2 Exercices portant sur la théorie de l’estimation . . . . . . . . . . . . 58
+3 Théorie de l’information 61
+3.1 Introduction.................................... 61
+3.2 Canaldetransmission .............................. 61
+3.3 Rappels ...................................... 63
+3.3.1 Entropie.................................. 63
+3.3.2 Informationmutuelle........................... 64
+3.3.3 Règledechaînage(Chainrule) ..................... 65
+3.3.4 Théorème de l’inégalité du traitement de l’information, ou Data ProcessingInequality .......................... 66
+3.4 CanalDMC.................................... 67 3.4.1 Définitionducanaldiscretsansmémoire(DMC) . . . . . . . . . . . 67 3.4.2 Détecteuroptimal ............................ 68 3.4.3 Enoncéduthéorèmedecapacité .................... 69 3.4.4 Converse-ThéorèmedeFano...................... 70 3.4.5 Achievability-Typicalité ........................ 72
+3.5 CanalGaussien.................................. 73 3.5.1 Entropiedifférentielle .......................... 73 3.5.2 Converse ................................. 76
+3.6 Ouverture..................................... 77
+3.7 Ouverture..................................... 78
+3.8 Synthèse...................................... 78
+3.9 Exercices ..................................... 79
+4
+
+Chapitre 1
+Description générale du cours
+1.1 Introduction
+L’objectif d’un système de transmission est de permettre de transmettre une certaine quantité d’information entre un émetteur et un récepteur de façon fiable et sécurisée, tout en consommant un nombre minimal de ressources (énergie et bande passante). Le but de cette section est de décrire ce problème de façon très générale mais rigoureuse.
+Nous pourrons alors définir les méthodes de transmission les plus robustes et démontrer leurs performances. Car si il est relativement facile et à la portée de tous, de développer un système de transmission qui fonctionne, réaliser un système qui soit efficace voire optimal, relève d’une démarche rigoureuse alliant mathématique et physique.
+Le but de ce cours est d’aller plus loin qu’une description des systèmes mais bien de comprendre les principes théoriques à la base de leur conception. Nous allons montrer comment les outils mathématiques de la théorie de l’estimation de la théorie de la détection et de la théorie de l’information sont puissamment utilisés pour concevoir des systèmes extrêmement performants et même parfois proches de l’optimal. Sans être un cours de mathématiques, ce cours s’appuie sur des principes rigoureux, les met en oeuvre et permettra d’aller jusqu’à la réalisation de systèmes complets, tels qu’ils seront mis en oeuvre dans l’EC suivant, PSC.
+Ce cours s’adresse à des étudiants de 2ième année du département Télécommunications, Services et Usages. Il vise à donner aux étudiants les bases nécessaires à la modélisation et l’évaluation des systèmes de communications numériques. La première partie du cours est consacrée aux outils fondamentaux de la théorie de l’estimation, de la détection et de l’information. La deuxième partie exploite ces outils pour modéliser et concevoir les systèmes modernes de communications numériques incluant les systèmes orthogonal frequency division multiplexing, accès multiple par division en fréquences orthogonales (OFDM), multiple input multiple output, entrées multiples sorties multiples (MIMO) et multi-utilisateurs.
+Les étudiants qui suivent ce cours sont supposés avoir des connaissances solides en traitement du signal (filtrage, transformée de Fourier, transformée en Z, auto-corrélation, convolution), en probabilité et statistiques (densité de probabilité, probabilités conditionnelles). Ils connaissent les principaux blocs constituant les systèmes de transmission (modulation, codage, etc...). Le cours propose une approche assez théorique, en poursuivant l’objectif de donner à l’ingénieur les outils permettant de comprendre ce qu’est un système optimal. Un système de communications numériques n’est pas seulement un système qui marche, c’est
+5
+
+1.2. COMPÉTENCES CHAPITRE 1. DESCRIPTION GÉNÉRALE DU COURS
+ un système dont les performances sont pratiquement optimales. Cette notion d’optimalité est fondamentale, car dans un domaine extrêmement compétitif, et où les ressources (fréquences, énergie) sont précieuses, l’ingénieur se doit de concevoir un système optimal.
+Nous étudions de façon détaillée les méthodes modernes de transmission : codage, égalisation, étalement de spectre, transmission multi-porteuses, diversité et systèmes MIMO.
+Les éléments vus dans ce cours pourront être mis en oeuvre dans le module PSC où les étudiants mettent en oeuvre un système de transmission complet lors de projets en groupes. Les éléments de systèmes de communication vus dans ce cours seront indispensable pour le cours RAN du 2ieme semestre, qui s’intéresse aux réseaux radio multi-utilisateurs et en particuliers au réseaux radio-mobiles.
+1.2 Compétences, capacités et connaissances attendues
+Le but de ce cours est de vous faire acquérir les bases théoriques nécessaires à la compréhension, à la conception et à l’optimisation des systèmes de radiocommunication (communications numériques, canal radio, modélisation de performances).
+1.2.1 Connaissances
+Les connaissances développées sont :
+— Estimation Bayésienne, estimateur optimal.
+— Modélisation théorique en bande de base.
+— Modélisation d’un canal radio en bande de base.
+— Méthodes d’évaluation des performances d’un système de communication.
+— Techniquesdetransmissionencanalréel:codagecanal,égalisation,diversité,étalement de spectre.
+— Techniques de transmissions multi-porteuses : OFDM, peak to average power ratio, rapport de puissance crête à puissance moyenne (PAPR), préfixe cyclique, single carrier frequency division multiplexing, accès multiple par division en fréquences à porteuse unique (SC-FDMA).
+— TechniquesdetransmissionsMIMO:diversité,beamforming,capacité,codagespatio- temporel.
+1.2.2 Capacités
+A l’issu de ce cours vous devez être capables de :
+— Concevoir un système de transmission suivant une démarche cohérente et validée, adapté à un canal donné.
+— Analyser un standard : identifier les différentes fonction et leur rôle.
+1.2.3 Auto-évaluation
+Vous trouverez tout au long de ce document des exercices, dont certains seront faits en TD, mais pas tous, et qui ont vocation à vous permettre de vous auto-évaluer sur vos capacités. Certains éléments de corrections sont fournis en fin de chapitres.
+6
+
+CHAPITRE 1. DESCRIPTION GÉNÉRALE DU COURS1.3. NOTATIONS ET RAPPELS
+ Un QCM par chapitre est disponible en ligne et permet de vous évaluer sur vos connaissances élémentaires.
+1.3 Notations et rappels
+Nous résumons ici les principales notations utilisées tout au long du cours.
+Notons que nous utilisons la notation := lorsqu’il s’agit de la définition d’une variable,
+et la notation = lorsqu’il s’agit d’une égalité qui découle des propriétés des opérandes.
+7
+
+1.3. NOTATIONS ET RAPPELSCHAPITRE 1. DESCRIPTION GÉNÉRALE DU COURS
+ 8
+
+Glossaire
+ALOHA protocole d’accès aléatoire au medium. 41
+AWGN bruit blanc additif gaussien –additive white gaussian noise–. 23, 26, 27, 36, 49,
+51, 61, 69, 73
+BER taux d’erreur binaire –bit error rate– . 19, 25, 45
+BPSK modulation par déplacement de phase à deux états –binary phase-shift keying–. 50
+BSC canal binaire symmétrique –binary symmetric channel–. 63 CRLB Cramer-Rao lower bound. 47
+CSMA accès multiple par détection de porteuse –carrier sense multiple access–. 15 DMC discrete memoryless channel, canal discret sans mémoire. 63, 67, 68, 78
+FA fausse alarme –false alarm–. 19, 26, 28, 31
+GMC gaussian memoryless channel, canal gaussien sans mémoire. 62, 78
+iid indépendantesetidentiquementdistribuées–independentlyandidenticallydistributed– . 23, 24, 26, 35, 43, 45, 53–55, 58, 62
+LDPC test de parité à faible densité –low density parity check–. 37 LRT test du log-vraisemblance –log-likelihood ratio test–. 23, 24, 53–55
+MAC contrôle d’accès multiple –medium access control–. 15
+MAE mean absolute error, erreur moyenne au sens de la valeur absolue. 39
+MAP maximum a posteriori. 27, 28, 31, 37, 39–41, 43, 48, 52–54, 58, 59
+MIMO multiple input multiple output, entrées multiples sorties multiples. 5, 6, 63, 75
+ML maximum de vraisemblance –maximum likelihood–. 25–28, 31, 36, 37, 42–44, 46–49, 51–54, 57, 59, 69
+MMAE minimum mean absolute error. 39–43, 59
+MMSE erreur minimale au sens des moindres carrés –minimum mean square error–. 39,
+40, 42, 43, 49, 58, 59
+MMSPE erreur de prédiction minimale au sens des moindres carrés –minimum mean square prediction error–. 26, 27
+MSE erreur moyenne au sens des moindres carrés –mean square error–. 39, 52 9
+
+Glossaire Glossaire
+ ND non detection –misdetection–. 19, 26, 28, 31
+OFDM orthogonalfrequencydivisionmultiplexing,accèsmultiplepardivisionenfréquences
+orthogonales. 5, 6
+PAPR peak to average power ratio, rapport de puissance crête à puissance moyenne. 6
+PSK phase-shift keying. 50
+QAM quadrature amplitude modulation. 37, 50, 80
+QPSK quadrature phase-shift keying. 50, 80 RF radio-fréquences. 73
+ROC caractéristiques opérationnelles du récepteur –receiver operating characteristics–. 19, 31, 32, 34, 36, 52–55, 57
+RSSI received signal strength indicator, indicateur de puissance de signal reçu. 51 SC-FDMA single carrier frequency division multiplexing, accès multiple par division en
+fréquences à porteuse unique. 6
+SNR signal to noise ratio, rapport signal à bruit. 80
+v.a. variable aléatoire –random variable–. 15–17, 23, 24 1.3.1 Fonctions
+⌊a⌋
+sign (a)
+sinc (t)
+rectT (t)
+U (t)
+δij
+max .
+min .
+arg maxx∈X f (x)
+med (f (x)) H(x(t))
+1{test} Q(x)
+: partie entière de a.
+: fonctionsigne:−1sia<0,0sia=0et1sia>0.
+: fonction sinus cardinal de période 1.
+: fonction rectangle de période T .
+: fonction échelon unité.
+: fonctiondeltaδij =1sii=j,etδij =0sinon.
+: valeur max de l’argument de la fonction.
+: valeur min de l’argument de la fonction.
+: argument du max def(x). C’est à dire que la fonction retourne la valeur
+(ou les valeurs) de x pour lequel f(x) est maximal.
+: valeur médiane de f (x).
+: transformée de Hilbert de x(t)
+: fonction indicatrice, égale à 1 si le test est vrai et à 0 sinon.
+: fonction d’erreur : Q (x) := √1 ∫ ∞ exp(−z2/2)dz
+2π z=x
+: fonction erreur complémentaire : erfc (x) := √2
+exp(−z2) · dz. fonction erfc (x) est utilisée dans les documents francophones. Elles sont liées par erfc (x) =
+erfc (x)
+remarque : la fonction Q(x) est usuelle dans les documents anglophones, alors que la
+2 · Q (√2 · x).
+1.3.2 Probabilités
+Notations
+— Soit X une variable aléatoire. x une réalisation de cette variable. Le domaine de définition de la variable aléatoire est notée X. Lorsqu’il est utile de distinguer plusieurs réalisations différentes, on pourra les indexer et les noter xi.
+10
+∫∞ π z=x
+
+Glossaire Glossaire
+ — On note X les vecteurs aléatoires lorsqu’il est nécessaire de faire apparaitre explicitement que l’on travaille sur des vecteurs et non sur des scalaires.
+— Tout ensemble à valeurs discrètes, ou tout domaine continu, est noté par une variable majuscule calligraphique, par exemple E, A, X.
+— Les fonction de probabilité à valeurs discrètes sont notées PA (a), où A représente la variable aléatoire à valeurs dans A. a ∈ A est une réalisation de A.
+— Les fonction de densité de probabilité (à valeurs continues) sont notées fX (x), où X représente la variable aléatoire à valeurs dans X. x ∈ X est une réalisation de X.
+— La probabilité de X conditionnée à une réalisation y d’une autre variable aléatoire Y est notée PX|Y (x|y) lorsque la variable X est à valeurs discrètes, et sa densité est notée fX|Y (x|y) lorsque la variable X est à valeur continues.
+H1
+— ≷test d’hypothèse.
+H0
+— lois de probabilité :
+— N (m, v) : loi normale de moyenne m et de variance v.
+— N (m, v) : loi normale complexe à symétrie circulaire est de moyenne m et de
+variance v.
+Propriétés et théorèmes
+Nous rappelons dans cette section les résultats de probabilité supposés connus pour ce cours. TODO : voir slides, compléter avec les principales propriétés (Bayes, etc...)
+1.3.3 Systèmes linéaires
+Concernant les matrices et les vecteurs, soit M une matrice et X un vecteur
+— On note X⊤ la transposée de X et X† sa transposée conjuguée.
+— On note Id la matrice identité.
+— La matrice de covariance d’un signal aléatoire x(n) est notée Kx, où kx(i,j) = E[x∗(i)x(j)]. Si le signal est ergodique alors on a kx(i, j) = kx(a, a + j − i), et si les échantillons sont indépendants, alors Kx = σx2 · Id, où σ2 est la puissance moyenne du signal.
+TODO : a compléter
+11
+
+1.4. VARIABLES
+Glossaire
+ 1.4 Variables
+e : eˆ : fenc(w) et fdec(y) : fc : x :
+xBB : xRF :
+xRF : xˆRF :
+Cij : Cfp :
+Cnd : Ls :
+Pfp : Pnd : Qc : Qs : R : Tc : Λ(y) : E = {e0,e1,...,eN} : W = {w1,w2,...,wN} : X : Y : Hk : R :
+évènement à retrouver (v.a.).
+évènement estimé (v.a.).
+fonctions d’encodage et de décodage associées à un système de transmissi fréquence porteuse (ou modulant)
+signal à support temporel fini, ou vecteur.
+ou simplement x ou x(t) signal continu en bande de base (donc complexe signal radio-fréquence .
+signal analytique associé au signal xRF .
+transformée de Hilbert du signal xRF .
+coût associé à la décision ei lorsque l’évènement réel est ej.
+coût associé à un faux positif.
+coût associé à une non détection.
+Latence maximale
+probabilité d’erreur de fausse alarme (faux positif).
+probabilité de non-détection (faux négatif).
+Quantité d’information par paquet de couche physique
+Quantité d’information insécable
+rate, débit
+rapport de vraisemblance.
+domaine de définition des évènements à estimer (estimation-détection). dictionnaire de la source (théorie de l’information).
+domaine de définition des signaux d’entrée (communications numériques) domaine d’observation (estimation-détection, communications numérique hypothèse k.
+règle de décision.
+12
+
+Chapitre 2 Estimation-détection
+2.1 Introduction
+Ce chapitre a pour but de poser rigoureusement les bases de la théorie de l’estimation et de la détection, utilisée pour la conception et l’évaluation des systèmes de communication. Mais il faut souligner que l’usage de cette théorie va bien au-delà des télécommunications. On peut citer les applications dans le domaine des radars, et plus généralement dans tous les problèmes d’observation de systèmes complexes : formation d’image, astronomie, médecine, etc...
+Cette théorie doit beaucoup aux travaux de Thomas Bayes (mathématicien anglais, 1702-1761), qui a écrit Essay towards solving a problem in the doctrine of chances , publié après sa mort en 1764 (Encyclopaedia Universalis).
+Ces outils théoriques sont très liés au traitement du signal ou de l’image. Plusieurs livres traitent de l’estimation et de la détection sous l’angle du traitement du signal, voir par exemple le livre du Professeur H. Vincent Poor de l’Université de Princeton [9] qui est une référence sur le sujet, sur lequel s’appuie en partie les deux premiers chapitres de cours. On peut également suggérer la lecture de [5] ou en français de [2, 4].
+En ce qui concerne l’application spécifiquement aux télécommunications, vous pourrez trouver en ligne les supports de cours de Philippe Ciblat (IMT-Paris) ou encore de Christian Jutten (Polytech Grenoble).
+Comme dit précédemment, ces outils théoriques ont une portée beaucoup plus large que les télécommunications : observation spatiale, localisation, poursuite de cibles, analyse statistique en particulier dans le domaine médical. Enfin, ces modèles jouent également un rôle crucial dans le développement de ce qu’on appelle aujourd’hui l’apprentissage machine ou l’intelligence artificielle.
+Pour ceux d’entre vous qui portent un intérêt au traitement du signal et à la théorie de la décision, je vous invite à creuser ce domaine, au-delà du cours. Certains exercices d’approfondissement sont là pour vous aider à aller plus loin.
+Bien entendu, toutes ces notions sont fortement liées aux signaux aléatoires. Vous pouvez consulter le livre de référence de Bernard Picinbono [8] pour une présentation détaillée des signaux aléatoires et de leurs propriétés, mais vous avez acquis les bases essentielles pour comprendre ce chapitre, dans les cours PBS, CMN ou TSA, que je vous invite à relire au début de ce cours. Dans ce chapitre, nous ne parlerons pas explicitement de télécommunications, et sa portée est donc générale. Les éléments développés dans ce
+13
+
+2.2. DEFINITION CHAPITRE 2. ESTIMATION-DÉTECTION
+ chapitre seront utilisés dans tous les autres chapitres du cours pour construire, optimiser et justifier les éléments des systèmes de communication numérique.
+Nous commençons par poser formellement ce que sont les problèmes de détection et d’estimation, puis nous étudions plusieurs approches pour les résoudre (estimation Bayésienne, estimation de Neyman-Pearson).
+2.2 Définition d’un problème de détection
+La problématique centrale d’un problème de détection est de déterminer si un évènement donné a eu lieu. Pour un radar, il s’agit de déterminer si une cible est présente, pour un système de communication, il peut s’agir de déterminer le message qui a été envoyé, en médecine, on souhaite évaluer si un médicament a un effet positif sur tel virus.
+L’objectif de poser un cadre théorique pour un tel problème, est de répondre à cette question avec la plus grande fiabilité possible, ou mieux, d’adapter l’expérience afin d’obtenir la fiabilité voulue. La théorie de la détection repose sur les probabilités et l’analyse statistique, qui offrent tous les outils permettant de prendre une décision, en contrôlant le risque d’erreur.
+En théorie de la détection, l’espace des évènements est un espace discret (le nombre d’évènement possible est fini et comptabilisable), noté :
+E := {e1,e2,...,en}.
+Pour en faire un espace probabilisé, il faut définir une tribu1 T sur E, et associer à chaque élément T k de T , une mesure noté P(T k), telle que P(E) = 1. L’espace probabilisé correspondant est noté (E , T , P).
+La variable aléatoire E est définie par la fonction P(ek) pour tout k ∈ {1, . . . , n}, qui est la probabilité de l’évènement E = ek.
+ Exercice 2.1 : Espace probabilisé
+ Il s’agit d’un petit exercice de mise en jambe et de rappel sur les probabilités. Soit un jeu de lancé de dés, constitué de 3 dés à 6 faces, numérotées de 1 à 6.
+1. Identifiez E. Donnnez son cardinal, noté |E|.
+2. Identifiez T . Donnnez son cardinal, noté |T |.
+3. Quelle est la probabilité P associée à chaque évènement de E ? 4. Quelle est la probabilité P associée à chaque élément de T ?
+A un instant donné, l’évènement E étant aléatoire, sa réalisation n’est pas connue. Cependant il est observé au travers d’un système bruité. L’observation est effectuée dans le domaine d’observation Y, qui lui, peut être à valeurs discrètes ou continues, suivant le problème étudié. La principe de la détection, est d’effectuer des hypothèses Hi, et choisir parmi les hypothèses celle qui est la plus probable.
+Comme déjà mentionné, de très nombreux problèmes peuvent être formulés de la sorte :
+1. une tribu sur un ensemble E est un ensemble non vide de parties de E, stable par passage au complémentaire et par union dénombrable
+ 14
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.2. DEFINITION
+    Y {H1,...,Hn}
+{D1,...,Dn}
+ System
+ Y
+ Figure 2.1 – Représentation du problème de détection optimale.
+— Lorsqu’un radar émet des signaux de tests, il exploite les signaux reçus par réflexion
+pour déterminer la présence éventuelle d’une cible.
+— Lorsqu’un télescope observe l’espace, il cherchera à détecter la présence ou l’absence d’une étoile ou d’un objet céleste, à une distance donnée.
+— Lorsqu’un capteur de recul embarqué sur un véhicule, observe les signaux réfléchis par l’environnement, il doit déterminer si il y a un obstacle dans son champ de vision.
+Le problème de détection est une composante essentielle dans les processus de décision ou dans les approches par apprentissage, ou en intelligence artificielle.
+Plus généralement, le raisonnement probabiliste est un élément essentiel du processus de décision en ingénierie.
+En télécommunications, si l’on considère un message reçu, l’espace E représente l’ensemble des messages possibles, la variable aléatoire –random variable– (v.a.) E représente donc le mot code émis par la source. Mais ce n’est pas le seul cas d’utilisation de la théorie de la détection. La théorie de la détection est présente également dans les protocoles contrôle d’accès multiple –medium access control– (MAC) et dans les algorithmes de gestion des ressources radio, en particulier pour la détection de présence de signal, pour la détection d’un code d’étalement ou simplement pour détecter si le canal est libre, en accès multiple par détection de porteuse –carrier sense multiple access– (CSMA).
+Après avoir probabilisé l’espace (discret) des évènements, la théorie de la détection repose sur la modélisation probabiliste du système d’observation lui-même. Lorsque l’espace d’observation est discret et comptabilisable (Y = {y1, . . . , yM }), le système est caractérisé par un ensemble de probabilités conditionnelles, reliant l’observation à l’évènement :
+PY |E (.|.) : {1,...,n} × {1,...,m} −→ [0,1] . (i,j) PY|E (yj|ei)
+Cette fonction se lit comme la probabilité d’observer yj sachant que l’évènement ei s’est réalisé. C’est une probabilité conditionnelle qui se nomme la vraisemblance de ei. C’est une mesure qui ne dépend que du système d’observation et non des probabilités a priori sur E.
+Lorsque l’espace d’observation est un espace continu, non dénombrable, la fonction de 15
+
+2.2. DEFINITION CHAPITRE 2. ESTIMATION-DÉTECTION
+ densité de probabilité 2 est utilisée. Le système d’observation est alors décrit par la loi de densité conditionnelle (également appelée vraisemblance) :
+fY|E (.|.) : {1,...,n}×Y −→ [0,1] . (i,y) fY|E (y|ei)
+Notez que les fonctions PY |E (y|ei) et fY |E (y|ei) sont indexées par la v.a. associée, ici Y |E (qui se lit Y sachant E). L’argument y|ei, indique la réalisation y sachant que l’évènement est ei. Cette notation est un peu lourde, mais permet de bien préciser la loi par rapport à laquelle sont définies les probabilités. La notation majuscule indique une v.a. dont la loi est supposée connu. La notation minuscule indique une réalisation de cette v.a..
+ Exercice 2.2 : Vraisemblance de variables discrètes
+ Continuons avec le jeu de lancé de dés, constitué cette fois de 2 dés à 6 faces, numérotées de 1 à 6. Après avoir lancé les 2 dés, un partenaire vous donne uniquement la somme des valeurs obtenues.
+1. Quel est le domaine d’observation Y ?
+2. Déterminez la vraisemblance PY |E (y|e) pour tous les évènements possibles. 3. Déterminez la loi PY (y).
+4. Dans quels cas peut-on déterminer avec exactitude la valeur de chaque dé ? 5. Dans quels cas peut-on déterminer avec exactitude le couple de valeurs ?
+6. Quel est le pire cas en termes de prise de décision ?
+Votre partenaire ajoute un aléa. Il utilise une pièce de monnaie pour décider si il ajoute un aléa : soit il vous donne la vraie valeur (pile), soit pour chaque dé, il prend le complément à 7 et vous donne la somme (face). Par exemple, considérons que les dés ont donné (6,5). Votre partenaire vous indique alors 11 si il a fait pile, et 3 si il a fait face. Bien entendu, vous ne connaissez pas le résultat de la pièce.
+7. Reprennez les questions ci-dessus.
+La notion de vraisemblance vraiment essentielle pour la suite peut se référer tant à une densité qu’à une probabilité, en fonction des caractéristiques de l’espace d’observation.
+Dans le cas de la détection bayésienne, ces probabilités conditionnelles sont supposées connues (en communications numériques, on dira que le canal est connu).
+Nous pouvons maintenant formuler le problème de la détection optimale. L’observateur effectue un ensemble d’hypothèses possibles, notées H1,...Hn, et veut déterminer la plus vraisemblable : il réalise un test d’hypothèses. L’observateur retient l’hypothèse qui minimise un certain risque qu’il nous reste à préciser.
+Notons que les hypothèses faites peuvent être associées à des sous-ensembles d’évènements (donc des éléments de A) . A partir de l’exercice 2.2, on peut s’intéresser à la probabilité que les deux dés aient la même valeur. Il s’agit dans ce cas de calculer la vraisemblance de l’ensemble Ak = {(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6)}, sous condition d’une observation donnée.
+2. Nous ne discutons pas ici des conditions d’existence de cette densité et supposons qu’elle existe sur les espaces d’observation étudiés dans ce cours
+ 16
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.2. DEFINITION
+ L’objectif de ce chapitre est d’exploiter cette notion de vraisemblance pour prendre la meilleure décision possible, et la quantifier. Nous allons voir que mathématiquement, la solution peut être exprimée assez facilement, bien que parfois très difficile à calculer explicitement. Une approche exhaustive (tester toutes les entrées possibles) est rarement efficace, car le nombre de possibilités est très grand. Prenons le cas de la transmission d’un paquet de 1000 bits d’information, le nombre d’évènements possibles est égal à 21000. Si l’on détermine chaque bit indépendamment des autres, alors il y a seulement 1000 tests binaires à faire, ce qui est beaucoup plus simple. Malheureusement, en communications numériques, les observations sont liées entre elles par le codage, la modulation et l’effet du canal, et une telle approche n’est pas optimale.
+La formulation du problème est la suivante :
+ Définition 2.1 : Détection-décision
+ Soit un espace probabilisé (E, T , P) et une v.a. sur cet espace notée E. Soit un système d’observation de E, à valeurs dans Y, défini par sa vraisemblance fY |E (cas continu) ou PY |E (cas discret).
+Soit un ensemble d’hypothèses formulées par l’observateur {Hn; n ∈ [1, . . . , N]}. Dans le cas général, l’ensemble des hypothèses constitue une partition de E, (par exemple dan le cas du jet de dés, on peut faire deux hypothèses : pair ou impair). Mais dans ce cours,par défaut, chaque hypothèse correspondra à un évènement de E.
+Une fonction de décision déterministe (qui implémente une règle de décision R) fait correspondre à toute observation y ∈ Y, un choix unique parmi les hypothèses.
+ Définition 2.2 : Sous-espaces de décision
+ Dans un problème de décision, l’ensemble des points qui conduisent à la même décision Eˆ = ei est appelé le sous-espace de décision associé à l’évènement ei, noté Di. L’ensemble des Di constitue une partition de Y (voir figure 2.1).
+ Exercice 2.3 : Canal binaire Gaussien
+ Considérons le cas d’un évènement binaire (ON/OFF) probabiliste E sur E = {e0, e1}. Il s’agit par exemple d’un capteur automobile de recul, qui sur la base d’une observation y doit déterminer la présence éventuelle d’un obstacle.
+L’observation est effectuée au travers d’une fonction déterministe h(E) (la fonction de transfert du capteur et de l’ensemble de la chaîne de mesure), perturbée par un bruit additif noté N, qui est également une v.a. :
+Y =h(E)+N.
+Considérons que N est une variable continue, de densité de probabilité fN (n).
+1. Calculez la fonction de vraisemblance fY |E (y|ei), pour i ∈ {1, 2}.
+La fonction h(E) étant déterministe, la vraisemblance fY |E (y|ei) est donnée par : fY |E (y|ei) = fN (y − h(ei)) .
+17
+
+2.3. DÉTECTION BINAIRE CHAPITRE 2. ESTIMATION-DÉTECTION
+ En effet, du point de vue de l’observation et pour un évènement ei donné, h(ei) est une constante. La distribution de Y et égale à celle de N, décalée de h(ei).
+Les deux fonctions de vraisemblance, en fonction de y, sont illustrées à la figure 2.2 pouruneobservationy=x+n,oùX ={−2,2}etoùnsuituneloinormaleN(0,1).
+Figure 2.2 – densités a posteriori fY |E (y|e0) et fY |E (y|e1) où l’évènement e0 correspond à un signal d’entrée x = −2 et l’évènement e1 à x = 2. La densité fY (y) est également représentée (avec un facteur 2).
+On observe dans cet exemple que les lois des vraisemblance sont régies par les propriétés du bruit additif.
+Une fois le problème posé, on souhaite développer un processus de décision, qui à partir d’une observation y, retourne la valeur de E la plus vraisemblable. Un question additionnelle, est de savoir, lorsque la mesure peut être répétée K fois, comment prendre une décision à partir de ce vecteur observé et comment déterminer le nombre de mesures à réaliser. La suite du cours va permettre de répondre à ces questions.
+2.3 Détection binaire
+Nous allons construire les règles de décision optimales, dans le cas relativement simple où l’espace d’évènements est binaire, E := {e0, e1}. C’est typiquement le cas d’un capteur de fumée qui surveille une certaine zone et qui doit déclencher une alerte en cas de fumée (e1), à partir d’un signal bruité. Il fait deux hypothèses. On note H0 l’hypothèse qu’il n’y a pas de fumée, et H1 l’hypothèse contraire. Ces hypothèses sont formulées à partir d’une observation Y (scalaire ou vectorielle), mesurée dans un certain domaine Y. A titre d’exemple, considérons le cas où Y est une tension, mesurée aux bornes d’un capteur de fumée, et prenant ses valeurs sur Y := [0, 5] Volts.
+Le capteur doit prendre une décision à partir des observations et construit une décision sur E, notée Eˆ. 4 cas sont possibles :
+— l’évènement est E = e0, et l’hypothèse choisie est H0, i.e. Eˆ = e0 : pas d’erreur ; vrai négatif.
+ 18
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.3. DÉTECTION BINAIRE
+ — l’évènement est E = e0, et l’hypothèse choisie est H1, i.e. Eˆ = e1 : erreur dite de faux positif, souvent appelée fausse alarme –false alarm– (FA).
+— l’évènement est E = e1,l’hypothèse choisie estH0, i.e. Eˆ = e0 : erreur dite de faux négatif, ou encore non detection –misdetection– (ND).
+— l’évènement est E = e1, et l’hypothèse choisie est H1, i.e. Eˆ = e1 : pas d’erreur; bonne détection (vrai positif).
+Chacun des états conjoints est notée (ei,ej), avec i,j ∈ {0,1}. Nous avons donc deux cas de mauvaise décision et deux cas de bonnes décision.
+Le sens des erreur de FA et de ND est particulièrement important dans le cas d’un problème de détection d’alerte, où l’état e1 revêt un caractère particulièrement critique.
+Au contraire, pour une transmission d’un bit d’information, où e0 correspond au bit 0 et e1 au bit 1, les deux types d’erreurs ont le même impact sur la qualité de transmission, et les deux types d’erreur ont donc le même poids et se mêlent dans le calcul du taux d’erreur binaire –bit error rate– (BER) :
+Pr(err) = P(e0) · Pr(fa) + P(e1) · Pr(md).
+Nous allons voir que la définition d’une bonne règle de décision repose sur un compromis entre probabilité de bonne détection et probabilité de faux positif, qui est représentée au travers de la courbe ROC. L’approche de Neyman-Pearson ou l’approche Minimax permettent alors de prendre la décision finale (voir section 2.4).
+Lorsque les probabilités a priori des évènements P (ej ) sont connues, ainsi que les coûts associés aux erreurs, le détecteur optimal est le détecteur bayésien, par lequel nous allons commencer.
+2.3.1 Détecteur bayésien
+L’approche bayésienne repose sur la définition du risque de Bayes.
+Pour chacune des 4 situations définies ci-dessus (E = ej → Eˆ = ei), nous supposons connu un coût Cij, qui a pour simple contrainte d’être plus élevé en cas d’erreur : Cij > Cjj. C00 et C11 correspondent aux coûts associés aux bonnes décisions et C01 et C10 aux coûts associés aux mauvaises décisions.
+Par exemple, pour un canal de communication binaire, le coût représente les erreurs, etonauraC00 =C11 =0etC01 =C10 =1.
+ Définition 2.3 : Risque de Bayes
+ Soit une règle de décision R qui à toute observation y fait correspondre une décision eˆ : R : y ∈ Y → eˆ ∈ E. Il s’agit d’une règle de décision déterministe.
+Dans certains cas, il peut être utile d’introduire la notion de règle randomisée, c’est à dire que la décision est probabiliste : R(r) : y ∈ Y → Pr(e)∀e ∈ E.
+Pour une règle déterministe, le coût global appelé risque de Bayes est défini comme
+suit :
+∑∑
+i∈{0,1} j∈{0,1}
+Q(R) :=
+CijPEEˆ (ei,ej),
+19
+
+2.3. DÉTECTION BINAIRE CHAPITRE 2. ESTIMATION-DÉTECTION
+  où PEEˆ (ei,ej) est la loi de probabilité conjointe des évènements E et Eˆ.
+La généralisation de cette définition du risque de Bayes au cas M-aire 3 est triviale : il
+suffit de sommer sur l’ensemble des éléments de E.
+Pour obtenir cette règle de décision, on va réécrire le risque de Bayes en y faisant apparaitre la vraisemblance.
+ Définition 2.4 : Règle de Bayes
+ La règle de Bayes RBayes est la règle de décision qui minimise le risque de Bayes.
+La loi de Bayes 4 permet de réécrire le coût global sous la forme : ∑∑
+i∈{0,1} j∈{0,1} De plus, les lois de probabilités vérifient
+Q(R)=
+(2.1)
+CjiPEˆ|E (ej|ei)·PE (ei). PEˆ|E (e0|e0) = 1 − PEˆ|E (e1|e0)
+PEˆ|E (e1|e1) = 1 − PEˆ|E (e0|e1) , qui, injectées dans (2.1) donnent :
+Q(R) = C00 · PEˆ|E (e0|e0) · PE (e0) + C01 · PEˆ|E (e0|e1) · PE (e1) , + C11 · PEˆ|E (e1|e1) · PE (e1) + C10 · PEˆ|E (e1|e0) · PE (e0) ,
+(2.2)
+On peut réduire les degrés de liberté dans la formulation du problème. En effet, les deux premiers termes C00 · PE (e0) et C11 · PE (e1) ne dépendent pas de la règle de décision. Ce sont donc des constantes du problème.
+(2.2) s’écrit :
+Q(R)∝Cfp ·P0 ·PEˆ|E (e1|e0)+Cnd ·P1 ·PEˆ|E (e0|e1), (2.3)
+oùl’onanotéP0 :=PE(e0),P1 :=PE(e1),avecP0+P1 =1.Cfp :=(C10−C00)et Cnd := (C01−C11) sont les différentiels de coût. Le premier correspond au surcoût associé à un faux positif, et le deuxième au surcoût d’une non-détection. Ce sont des termes positifs.
+Pour faire apparaitre plus clairement le rôle de la règle de décision dans cette équation, il faut développer les probabilités conditionnelles et faire apparaitre la vraisemblance.
+Dans le cas où le domaine d’observation est continu, on obtient :
+∫ ∫D1
+D0
+3. On qualifie un problème de détection de M-aire lorsque l’espace d’évènement est de cardinalité M. 4. On rappelle la loi de Bayes :
+PAB (a,b) = PA|B (a|b) · PB (b),
+= C00 ·PE (e0)+C11 ·PE (e1)
++ (C10 − C00) · PE (e0) · PEˆ|E (e1|e0) + (C01 − C11) · PE (e1) · PEˆ|E (e0|e1).
+PEˆ|E (e1|e0) = PEˆ|E (e0|e1) =
+fY |E (y|e0) · dy fY |E (y|e1) · dy.
+ 20
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.3. DÉTECTION BINAIRE
+ Et en insérant ces intégrales dans (2.3) :
+∫∫
+Q(R)∝Cfp ·P0 · fY|E (y|e0)·dy+Cnd ·P1 · D1
+fY|E (y|e1)·dy. D0
+La même démarche peut être suivie lorsque l’espace d’observation Y est discret. Vous trouverez en fin de chapitre l’exercice2.16 qui traite le cas du canal binaire, dont l’espace d’observation est discret. Ces développements nous amène à une réécriture importante du risque de Bayes :
+ Propriété 2.1 : Risque de Bayes
+ Le risque de Bayes associé à une règle de décision dans un problème de détection binaire, est donné, dans le cas où le domaine d’observation Y est continu, par :
+∫()
+1{y∈D1} ·Cfp ·P0 ·fY|E (y|e0)+1{y∈D0}Cnd ·P1 ·fY|E (y|e1) ·dy,
+Q(R)=
+Dans le cas discret, le risque de Bayes est donné par :
+Q(R)=
+∑()
+1{y∈D1}Cfp·P0·PY|E(yi|e0)+1{y∈D0}Cnd·P1·PY|E(yi|e1)) .
+Y
+yi ∈Y
+Notons que pour tout y, soit 1{y∈D1} = 1, soit 1{y∈D0} = 1. Ainsi, pour toute observation y, et quelle que soit la règle de décision, il y a un coût à payer : soit Cfp·P0·fY |E (y|e0), soit Cnd ·P1 ·fY |E (y|e1). La règle optimale consiste donc à affecter y au domaine qui minimsera le coût. Et ce n’est pas forcément l’évènement qui a la vraisemblance maximale, car les coûts et les probabilités a priori interviennent dans le calcul.
+Trouver une bonne stratégie revient donc à partitionner l’espace d’observation Y associé à Y en deux régions D0 et D1, telles que :
+Y = D0 ∪ D1.
+avec D0 ∩ D1 = ∅.
+La bonne décision dépend donc des coûts et des probabilités a priori P0 et P1 associées à E.
+ Exercice 2.4 : Détecteur de fumée
+ Reprenons l’exemple du capteur de fumée. On suppose que le coût d’une non détection est estimé à Cnd = 100 et le coût d’un faux positif à Cfp = 1 (On estime dans cet exemple la non détection plus dommageable que le faux positif). On suppose d’autre part que la probabilité qu’une alerte se produise est égale à P1 = 1e−6. On mesure en sortie une tension comprise entre [0, 5]Volts. Le détecteur a un bruit additif Gaussien de variance σ2 = 0.04Volts2.
+Quelle est la bonne décision à prendre en fonction de la tension mesurée? Pour
+21
+
+2.3. DÉTECTION BINAIRE CHAPITRE 2. ESTIMATION-DÉTECTION
+  chaque valeur de Y , il faut donc calculer les 2 coûts : Cfp·P0·fY|E(y|e0)=1·(1−1e−6)·√ 1 e−y2
+ 2π0, 2 0, 08 Cnd·P1·fY|E(y|e1)=100·1e−6·√ 1 e−(y−5)2
+  Pour chaque valeur de y, il reste alors à choisir la meilleure hypothèse du point de vu du critère de Bayes. Cette règle minimise le coût, à condition de connaître parfaitement : les lois a priori des évènements (P0 et P1), les coûts associés aux différentes erreurs, et le modèle de bruit du système qui conduit aux lois de probabilités conditionnelles fY |E .
+2π0, 2 0, 08
+Rapport de vraisemblance
+Nous venons de voir dans l’expression du coût global de la propriété 2.1, la bonne règle de décision dépend de la comparaison entre deux termes :
+H1
+Cnd ·P1 ·fY|E (y|e1) ≷ Cfp ·P0 ·fY|E (y|e0) (2.4)
+H0
+Effectuer cette comparaison s’appelle faire un test d’hypothèse (très utilisé dans toutes les
+sciences expérimentales : médecine, biologie, etc...).
+Ce test d’hypothèse s’exprime à partir du rapport de vraisemblance :
+Le test d’hypothèse consiste à comparer ce rapport à une valeur seuil η. D’après (2.4), on a le théorème suivant :
+ Définition 2.5 : Rapport de vraisemblance
+ Le rapport de vraisemblance associé à un problème de détection binaire s’écrit :
+Λ(y) := fY |E (y|e1) fY |E (y|e0)
+  Théorème 2.1 : Test du rapport de vraisemblance
+ Le test du rapport de vraisemblance est donné par :
+H1 Λ(y) ≷ η,
+H0
+où le seuil optimal (qui minimise le risque de Bayes) est égal à :
+η = Cfp · P0 . Cnd · P1
+ On écrit également ce test de vraisemblance sous la forme de la log-vraisemblance, l’intérêt étant principalement calculatoire, en particulier pour les signaux gaussiens :
+22
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.3. DÉTECTION BINAIRE
+  Théorème 2.2 : Test de log-vraisemblance
+ Soit la log-vraisemblance donnée par log (fY |E (y|ei)).
+Le test du log-vraisemblance –log-likelihood ratio test– (LRT) s’écrit :
+H1
+log (Λ(y)) = log fY |E (y|e1) − log fY |E (y|e0) ≷ log(η).
+H0
+2.3.2 Cas d’une observation multi-dimensionnelle
+L’observation est rarement limitée à une seule mesure. L’espace d’observation est souvent multidimensionnel et est associé à un vecteur d’observation
+Y =[Y[1],...,Y[N]]t.
+Par exemple, un capteur de fumée peut effectuer plusieurs mesures successives avant de décider la présence ou non d’un incendie. Nous allons traiter l’exercice 2.13, très classique, qui s’appelle le test de position en canal bruit blanc additif gaussien –additive white gaussian noise– (AWGN).
+Soit une v.a. X à valeurs dans X = {m0, m1}, mesurée au travers d’un système bruité, tel que
+Y =X+V,
+où V[k], avec k ∈ [1;N], est une séquence de variables indépendantes et identiquement distribuées –independently and identically distributed– (iid) de loi normale N (0,σ2). Notez bien que Xest constant durant l’expérience, c’est donc un scalaire dans cette expression.
+D’un point de vue applicatif, il peut s’agir d’un terminal qui mesure l’occupation d’un canal radio, où m0 = 0 traduit l’absence de signal et m1 représente le niveau de puissance attendu sur ce canal.
+Le test d’hypothèse associé est le suivant :
+H0 :Y=m0+V H1 :Y=m1+V,
+où l’on supposera sans perte de généralité que m1 > m0.
+Du fait de l’indépendance entre échantillons de bruit, on obtient :
+.
+fY |E (y|ei) =
+Comme le bruit est AWGN, la vraisemblance de Y [k] est :
+1 ( |yk−mi|2) fY |E (y[k]|ei) = √2πσ · exp − 2σ2
+La vraisemblance du vecteur observé est alors égale à :
+∏N k=1
+fY |E (y[k]|ei) .
+ ( ∑N
+fY |E (y|ei) = 1 · exp − k=1 |yk − mi| .
+2)
+  (2πσ2)N/2 2σ2 23
+
+2.3. DÉTECTION BINAIRE CHAPITRE 2. ESTIMATION-DÉTECTION
+ Finalement, le rapport de vraisemblance est donné par :
+( ∑N 2 2) Λ(y)=exp m1−m0 · yk−N(m1−m0) .
+  σ2
+Le rapport de log-vraisemblance associé est
+m1−m0 ∑N
+2σ2
+k=1
+log (Λ(y)) = σ2 ·
+Définissons la v.a. S := N1 ∑Nk=1 Y [k]. On montre alors aisément que le LRT se réécrit
+yk −
+N(m21−m20) 2σ2 .
+  sous la forme :
+avecγ=m1+m0 + σ2log(η) . 2 N(m1−m0)
+k=1
+H1
+S ≷ γ. H0
+  Remarque : vous vérifierez ce calcul.
+Notons que si P0 = P1 et Cfa = Cnd, alors le seuil γ n’est autre que la valeur moyenne
+des deux valeurs possibles de X, γ = m1+m0 . Il peut être intéressant d’étudier les lois 2
+conditionnelles de S|X=m0 et de S|X=m1. Dans le premier cas, on a
+1 ∑N
+ S|X=m0 =N
+= m0 + N
+k=1
+V [k].
+La somme dans cette expression est la somme de variables aléatoires iid normales. S|X =
+mi est donc une v.a. de loi N (mi,σ2/N).
+Pour établir ce résultat, rappelons la propriété suivante qui sera utile dans beaucoup
+d’exercices utilisant les lois normales :
+La variance décroit donc avec N, ce qui permet de garantir que la détection s’améliore en 1/N avec le nombre de mesures. Ces distributions sont illustrées à la figure 2.3.
+Les exercices 2.14 et 2.15 mettent en oeuvre la même démarche sur d’autres exemples, avec d’autres lois.
+Ce développement est un des éléments clés du savoir-faire présenté dans ce chapitre.
+Y[k] 1 ∑N
+k=1
+ Propriété 2.2 : sommes de v.a. normales iid
+ Soient X1, X2, . . . , XN , N variables aléatoires iid, normales de loi N (0, σ2). Alors la somme U = X1+X2+···+XN est une variable aléatoire normale de loi N (0,σ2/N).
+ Exercice 2.5 : Log-vraisemblance
+ Dans l’exercice traité ci-dessus, analysez l’intérêt du test de log-vraisemblance par rapport au test de vraisemblance.
+24
+
+CHAPITRE 2. ESTIMATION-DÉTECTION
+2.3. DÉTECTION BINAIRE
+    0.4
+0.35 1.2
+m =0 0
+m =2 1
+0.3 0.25 0.2 0.15 0.1 0.05
+1
+0.8
+0.6
+0.4
+0.2
+00
+-4 -3 -2 -1 0 1 2 3 4 -4 -3 -2 -1 0 1 2 3 4
+(a) N=1 (b) N=10
+Figure 2.3 – Distributions des observations conditionnées de la variable S pour 1 seule observation (a) et pour 10 observations (b), avec m0 = 0, m1 = 2 et σ2 = 1.
+2.3.3 Maximum de vraisemblance
+En télécommunications, lorsqu’on utilise ces techniques pour la détection des bits transmis, les coûts Cfp et Cnd sont identiques. Avec Cfp = Cnd = 1, la fonction de coût global mesure le BER. Enfin, si la source est équiprobable (P0 = P1), alors η = 1. Le rapport de vraisemblance doit simplement être comparé à 1 :
+et le test sur la log-vraisemblance à
+H1 Λ(y) ≷ 1.
+H0
+H1 log (Λ(y)) ≷ 0.
+H0
+Cette règle de décision s’appelle le détecteur du ML.
+Définition 2.6 : Détecteur ML
+Le détecteur du ML est défini par :
+eˆML(y)=arg max fY|E(y|ei). ei ;i∈{0,1}
+Ce détecteur est optimal au sens du risque de Bayes, seulement si les deux hypothèses sont équiprobables si les coûts sont symétriques. Cette remarque est également généralisable au cas M-aire.
+Exercice 2.6 : Détecteur ML
+Reprenez l’exercice 2.5 et déterminez les régions de décision correspondant au détecteur du maximum de vraisemblance.
+1.4
+  m =0 0
+m =2 1
+      25
+
+2.3. DÉTECTION BINAIRE CHAPITRE 2. ESTIMATION-DÉTECTION
+ Réponse : sur la figure 2.3, le seuil de détection du ML est localisé en S = 1 qui correspond au croisement des courbes. En effet le test ML sélectionne simplement la vraisemblance la plus grande. L’axe des abscisses est partagé en deux : si S < 1, la décision ML est H0 et sinon H1. Pour S = 1, les deux hypothèses ont une probabilité de 0, 5.
+Enfin, pour calculer les probabilités d’erreur de ND et de FA, il faut intégrer sur les queues des gaussiennees à partir de S = 1.
+Voici un exercice d’application en télécommunications.
+ Exercice 2.7 : Signal aléatoire continu dans du bruit
+ Un récepteur radio observe un signal aléatoire échantillonné Y [k]. Il veut tester la présence ou l’absence d’un signal radio, à partir de N mesures indépendantes. Le test repose sur 2 hypothèses :
+— H0 : pas de signal présent, Y [k] = N [k]. Le signal mesuré est alors simplement un bruit gaussien additif de loi N (0, σn2 ).
+— H1 : un signal est présent Y [k] = X[k] + N[k]. Comme on ne connait pas la source, on modélise la source par une autre loi normale N (0,σx2), où les échantillons X[k] sont iid.
+1. Quelle est la différence principale avec l’exercice traité ci-dessus ?
+2. Déterminez les log-vraisemblances associées à chacune des hypothèses.
+3. Déterminez le test du log-vraisemblance et la valeur de décision.
+4. Explicitez le calcul des probabilités d’erreur de FA et de ND ?
+2.3.4 Détecteur aux moindres carrés
+Un détecteur alternatif parfois utilisé consiste à minimiser l’erreur de prédiction. On l’appelle erreur de prédiction minimale au sens des moindres carrés –minimum mean square prediction error– (MMSPE).
+Il est construit à partir des évènements possibles. Pour chaque évènement ei on construire une prédiction y ̃i qui est l’observation la plus vraisemblable.
+Par exemple, dans le cas du canal AWGN, Y = X + N , la valeur la plus probable du bruit est n = 0. La prédiction est donc y ̃i = xi. Dans le cas binaire, on construit donc deux prédictions y ̃0 ou y ̃1.
+Le détecteur aux moindres carrés cherche à minimiser la somme du carré des erreurs de détection (quand on a plusieurs observations), en choisissant entre y ̃0 ou y ̃1 celui qui minimise la distance avec y.
+Ce détecteur est en général assez facile à calculer, surtout lorsque l’observation est 26
+ Définition 2.7 : Détecteur MMSPE
+ Le détecteur MMSPE choisi l’hypothèse qui minimise l’erreur de prédiction :
+eˆMMSPE(y)=arg min ||y−y ̃i||2. ei ;i∈{0,1}
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.3. DÉTECTION BINAIRE
+ une fonction linéaire de l’entrée. Malheureusement, ce détecteur peut s’avérer très sous- optimal, car minimiser l’erreur de prédiction moyenne (E[y − y ̃]) n’est pas équivalent, dans le cas général, à minimiser le risque de Bayes. Rappelez-vous que le risque de Bayes se calcule sur les valeurs d’entrées non observables, alors que l’erreur de prédiction se calcule sur les observations.
+2.3.5 Détecteur MAP
+Le dernier détecteur que nous présentons est appelé détecteur du maximum a posteriori (MAP). Pour le relier au détecteur de Bayes, conservons l’hypothèse que les coûts de faux positif et de non détection sont identiques. Par contre, on suppose connues les probabilités marginales des évènements, P0 = PE (e0) et P1 = PE (e1), qui ne sont pas équiprobables.
+Dans ce cas le test du rapport de vraisemblance Th.2.1 devient :
+H1 P0 Λ(y) ≷ P .
+H0 1
+En passant les probabilités P0 et P1 à gauche du test, on obtient :
+P1 H1 Λ(y)·P0 H≷1.
+0
+Effectuer ce test revient donc à choisir l’hypothèse qui donne le minimum entre fY |E (y|e1)· PE (e1) et fY |E (y|e0) · PE (e0). ce qui conduit, par l’égalité de Bayes, à la définition du MAP.
+D’après Bayes on peut écrire en effet : PE|Y (ei|y) = fY |E (y|ei) · PE (ei) /fY (y). comme fY (y) est la densité d’observation qui est une constante pour y donné, la maximisation de PE|Y (ei|y) est bien équivalent à maximiser fY |E (y|ei) · PE (ei).
+Bien entendu, si PE (e1) = PE (e2), alors le détecteur MAP est équivalent au détecteur ML.
+On retiendra, notamment pour l’extension M − aire, les relations suivantes entre les log-probabilités :
+log PE|Y (ei|y) ∝ log fY |E (y|ei) + log PE (e).
+􏰂 􏰁􏰀 􏰃 􏰂 􏰁􏰀 􏰃
+aposteriori vraisemblance
+ Exercice 2.8 : Comparaison MMSPE et ML
+ 1. Vous montrerez que ces deux détecteurs sont équivalents dans le cas d’un signal binaire (par exemple à valeurs −1 ou 1), dans un canal AWGN.
+2. Trouvezunautreexempledanslequellesdeuxdétecteursnesontpaséquivalents.
+ Définition 2.8 : Détecteur MAP
+ Le détecteur MAP choisi l’hypothèse qui maximise la probabilité a posteriori :
+eˆMAP(y)=arg max PE|Y (ei|y). ei ;i∈{0,1}
+27
+􏰂 􏰁􏰀 􏰃
+apriori
+
+2.3. DÉTECTION BINAIRE CHAPITRE 2. ESTIMATION-DÉTECTION
+ Cette expression met en évidence la différence entre l’estimateur ML et l’estimateur MAP. Ce dernier permet d’ajouter dans le modèle une connaissance a priori sur les évènements à détecter. Il s’agit d’une connaissance sur la loi de probabilité P associée à l’espace probabilisé des évènements (E , T , P).
+Pour résumer, nous pouvons dire que
+— le détecteur ML est optimal si les deux types d’erreurs (ND et FA) ont le même coût et si les évènements sont équiprobables.
+— LedétecteurMAPpermetd’introduireunapriorisousformedeprobabilitémarginale (a priori) des évènements. Il est plus performant que le ML si l’a priori introduit est juste.
+— Le détecteur optimal de Bayes est nécessaire si l’on a des coûts d’erreur asymétriques et permet, par rapport au détecteur du MAP d’adapter les seuils de décision.
+2.3.6 Statistique suffisante
+La notion de statistique suffisante est importante pour l’étude de problèmes complexes à grandes dimensions. Prenons un vecteur d’observation Y de dimension N . La recherche d’une statistique suffisante consiste à rechercher un espace de représentation des données de dimension D < N. Cet espace caractérise alors une statistique suffisante du problème si la résolution du problème de détection est aussi efficace dans ce sous-espace que dans l’espace original.
+ Propriété 2.3 : Statistique suffisante
+ Soit un problème de détection défini par un espace d’évènements E, et une observation Y ∈Y.SoitS∈S,unvecteuraléatoireconstruitàpartirdeY :S=g(Y)ettel que la dimension de S est inférieure à celle de Y.
+On dit que S est une statistique suffisante de Y pour le la détection de E, si la connaissance de S est strictement suffisante pour déterminer la solution optimale du problème de détection.
+Prenons l’exemple d’un réseau de capteurs, qui remonte des informations vers une entité centrale qui doit prendre une décision (par exemple déclencer une alerte si la valeur moyenne remontée est supérieure à une certaine valeur). L’approche basique consiste à faire remonter toutes les mesures à l’entité centrale. Celle ci pouvant alors calculer la température moyenne. Mais est-il vraiment nécessaire de faire remonter toutes les informations ?
+Supposons qu’il existe une transformation bijective permettant de décomposer Y en
+deux composantes :
+[]
+Y→g S, (2.5) A
+de telle sorte que la v.a. A|S (lire A sachant S) soit indépendante de E. Autrement dit A n’apporte pas de connaissance supplémentaire sur E par rapport à S.
+Cela s’écrit :
+fA|S,E (a|s, e0) = fA|S,E (a|s, e1) = fA|S (a|s) . (2.6) 28
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.3. DÉTECTION BINAIRE
+ L’application g(·) peut correspondre à un changement de base, par exemple une transformée de Fourier. On notera la fonction inverse g−1.
+Si cette application est linéaire, elle peut alors être représentée par sa matrice Mg, telle []
+S A
+suffisante pour effectuer correctement le test d’hypothèse.
+Le test d’hypothèse étant basé sur l’étude du rapport de vraisemblance (Def.2.5), décomposons la vraisemblance (ici dans le cas d’un espace d’observation continu). En utilisant le théorème des densités composées (voir cours de PBS), on obtient :
+fY |E (y|ei) = J(g−1) · fA,S|E (a, s|ei) ,
+où J(g−1) est le Jacobien5 de la fonction g−1. C’est pour pouvoir écrire cette relation,
+qu’on a du introduire la variable A ci-dessus.
+Enfin, la formule des probabilités conditionnelles conduit à :
+fY |E (y|ei) = J(g−1) · fA|S,E (a|s, ei) · fS|E (s|ei)
+En injectant ce résultat dans la formule du rapport de vraisemblance, on obtient :
+Λ(y) = J(g−1) · fA|S,E (a|s, e1) · fS|E (s|e1) J(g−1) · fA|S,E (a|s, e0) · fS|E (s|e0)
+Les jacobiens s’annulent mutuellement car ils sont indépendants de ei. En injectant (2.6), on obtient alors : Λ(y) = Λ(s).
+Le test de vraisemblance peut donc être conduit uniquement à partir de S. L’utilisation d’une statistique suffisante permet de réduire la dimensionalité du problème.
+Ceci est particulièrement utile lorsqu’on manipule des données massives.
+Etudions la construction d’une statistique suffisante sur un problème relativement simple.
+que
+= Mg · Y .
+Montrons que si la décomposition (2.5) vérifie (2.6), alors la connaissance de S est
+  Exercice 2.9 : Construction d’une statistique suffisante
+ Dans l’exemple étudié à la section 2.3.2 qui résoud l’exercice 2.13, la valeur moyenne du vecteur observé notée S constitue une statistique suffisante. En effet, nous avons montré que le test de vraisemblance s’exprime uniquement à partir de la valeur de S.
+Nous prenons ici un exercice un petit peu différent.
+H1 : Y[k]∼N m1,σ12 pour1≤k≤N avecσ12 >σ02 etm1 >m0.
+1. Construire une statistique suffisante de Y .
+H0 : Y[k]∼N(m0,σ2) ( 0)
+ 5. Le Jacobien d’une fonction multivariée est une matrice dont l’élément (i, j) contient la dérivée de la ieme composante par rapport à la jieme variable
+29
+
+2.3. DÉTECTION BINAIRE CHAPITRE 2. ESTIMATION-DÉTECTION
+  La seule différence avec l’exercice 2.13 est qu’ici la variance est également différente pour les deux hypothèses. Mais comme précédemment, la vraisemblance s’écrit à partir des propriétés des lois normales :
+fY |E (y|ei) = =
+∏N k=1
+fY |E (y[k]|ei)
+( ∑N 2) · exp − k=1(y[k] − mi)
+1 (2πσi2 )N/2
+  2σi2
+La première égalité découle de l’indépendance entre les échantillons. La deuxième égalité
+dérive de la définition de la loi normale.
+En développant l’exposant de l’exponentielle, on peut écrire :
+avec comme paramètres :
+Et la statistique suffisante :
+fY |E (y|ei) = bi · exp (−θit · s) .
+θi = [ N · mi/σi2 −N/2σi2 ]t
+bi=
+1 (2πσi2 )N/2
+( Nm2) ·exp− i
+ 2σi2
+1[∑ ∑ ]t
+s = g(y) = N y[k] N y[k]2 N k=1 k=1
+Le rapport de vraisemblance est alors :
+Λ(y) = Λ(s) = b1 ·exp((θ0 −θ1)t ·s) b0
+La statistique suffisante (de dimension 2) obtenue à l’exercice précédent est-elle minimale ? Et bien non. En fait, pour un problème binaire tel que celui étudié ici, la vraisemblance Λ(y) est en elle-même une statistique suffisante ! Et c’est une variable scalaire d’ordre 1.
+Attention, ce n’est pas le cas pour un problème de décision M-aire. En effet, Si |E| > 2, il faut alors effectuer plusieurs tests, deux à deux, entre les hypothèses. L’étude des rapports de vraisemblance (entre hypothèses, 2 à 2) nécessite un espace multivarié qui constitue une statistique suffisante mais non nécessairement minimale.
+ Définition 2.9 : Statistique suffisante minimale
+ Une statistique suffisante est dite minimale si elle a la plus petite dimension parmi toutes les statistiques suffisantes.
+ Propriété 2.4 : Propriété du rapport de vraisemblance binaire
+ Pour tout problème de test d’hypothèse binaire, le rapport de vraisemblance constitue une statistique suffisante minimale de dimension 1.
+30
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.4. ROC
+ 2.4 Caractéristiques opérationnelles d’un récepteur 2.4.1 courbe ROC
+Dans les section précédentes, nous nous sommes intéressés à la détection bayésienne, conduisant au test de vraisemblance et aux détecteurs MAP ou ML. L’inconvénient de l’approche bayésienne est qu’elle nécessite de connaitre les probabilités a priori des évènements et les coûts associés aux erreurs. Dans le cas d’une transmission numérique binaire (modèle du canal binaire par exemple), l’hypothèse que les erreurs de ND ou de FA sont équivalentes est légitime. De plus les embrouilleurs utilisés du côté des encodeurs garantissent en général l’équiprobabilité des symboles, ce qui justifie l’utilisation du ML.
+Mais dans de nombreux cas applicatifs (notamment en radar, en localisation, en détection), les erreurs de ND ou de FA n’ont pas le même impact.
+En partant de (2.2) et en y intégrant la définition des probabilités de fausse alarme
+pfa :=PEˆ|E(e1|e0)etdedétection6 pd :=PEˆ|E(e1|e1).L’étudedescaractéristiquesopérationnelles (avec les courbes ROC) consiste à étudier l’ensemble des paires (pd,pfa) simultanément atteignables.
+Reprenons l’exemple du détecteur de fumée.
+Si le détecteur retourne systématiquement une détection de fumée, alors :
+PEˆ|E(e1|e0) = PEˆ|E(e1|e1) = PEˆ(e1) = 1,
+conduisant à pd = 1, pf a = 1. Au contraire, si le détecteur retourne systématiquement une
+absence de fumée, alors :
+PEˆ|E(e1|e0) = PEˆ|E(e1|e1) = PEˆ(e1) = 0.
+Ce qui donne cette fois pd = 0,pfa = 0.
+Aucun de ces deux tests n’est satisfaisant !
+L’espace des tests possibles, en termes de performance, est représenté par un carré (0 ≤ pd ≤ 1) × (0 ≤ pf a ≤ 1) (voir figure 2.4). Les deux détecteurs naifs défini ci-dessus se retrouvent aux extrémités (1, 1) et (0, 0).
+Le point opérationnel idéal a pour coordonnées (1, 0), en haut à gauche.
+Plus généralement, pour un problème de détection, l’ensemble de points réalisables est délimité par 2 courbes, telles que représentées à la figure 2.4. La courbe supérieure de la zone des tests réalisables contient l’ensemble des points optimaux au sens de Pareto7. Le choix d’un détecteur, sur cette courbe dépend de l’importance relative des erreurs de fausse alarme et de non détection. On appelle cette courbe, la courbe ROC. Plus elle s’approche du point optimal, plus le test est performant.
+La courbe inférieure est en réalité la symétrique de la borne supérieure par rapport au point (0,5;0,5). Ceci se démontre de la façon suivante. Soit un test réalisable de probabilités R1 : (pd,pfa). Alors on peut définir un test qui prend systématique la décision
+6. Nous avons défini préalablement la probabilité de non détection pnd. La probabilité de détection est son complément : pd = 1 − pnd.
+7. L’optimalité au sens de Pareto est définie pour des problèmes multi-objectifs. Une solution est dite Pareto optimale si il n’existe pas de solution qui permette d’améliorer le résultat relativement à un des objectifs sans dégrader le résultat sur les autres objectifs.
+ 31
+
+2.4. ROC CHAPITRE 2. ESTIMATION-DÉTECTION
+  1
+pd
+00 pfa 1
+Axe de symétrie
+ ROC
+Figure 2.4 – Domaine de définition et propriétés des courbes ROC.
+contraire : là où le premier test décide qu’il y a une fumée, le deuxième teste décide qu’il
+n’yenapas,etvice-versa.CetestauralesperformancessuivantesR2 :(1−pd,1−pfa).
+Ainsi, à partir de tout test dont les performances sont situées sous la diagonale, il est possible de construire un test situé au-dessus de cette diagonale. La zone inférieure à la diagonale n’a donc pas d’intérêt, er les pires tests sont ceux situés sur la diagonale. Si le lieu des points réalisables est réduit à la diagonale, cela indique qu’il n’est pas possible de faire mieux que de prendre une décision complètement arbitraire.
+2.4.2 Test de Neyman-Pearson
+Pour éviter d’avoir à définir des coûts associés aux différents évènements, comme dans l’approche bayésienne, Jerzy Neyman et Egon Sharpe Pearson ont proposé en 1931 [6], le raisonnement suivant, plus facile à exploiter d’un point de vue opérationnel.
+Fixons une probabilité de fausse alarme cible α, qui ne doit pas être dépassée, i.e. pfa ≤ α. Sa valeur peut être librement choisie par l’expérimentateur.
+A toute règle R, correspondent deux probabilités pd(R) et pfa(R) . On note Dα ={R;pfa(R)≤α},
+l’ensemble des règles qui vérifient la condition sur la probabilité de fausse alarme.
+L’objectif du test de Neyman-Pearson est de trouver une règle R, garantissant la contrainte de faussse alarme, tout en cherchant à maximiser la probabilité de détection pd.
+Cette formulation priorise le taux de fausse alarme. On peut aussi dans certains cas, poser le problème dans l’autre sens, i.e. fixer pd et chercher à minimiser pfa.
+ Définition 2.10 : Test de Neyman-Pearson
+ Le test de Neyman-Pearson est défini par la règle suivante
+RNP := arg max pd(R). R∈Dα
+où α exprime la contrainte sur la probabilité de fausse alarme, et Dα l’ensemble des
+32
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.4. ROC
+  règles qui vérifient cette contrainte.
+Cette définition se traduit littéralement par : la règle associée au test de Neyman-Pearson est celle qui maximise la probabilité de détection sous contrainte que la probabilité de fausse alarme soit inférieure ou égale à α.
+Pour trouver ce test, il faut envisager tous les tests possibles, puis sélectionner celui qui maximise la probabilité de détection, parmi ceux qui vérifient le taux de fausse alarme.
+Dans l’approche bayésienne, nous avons démontré qu’un choix déterministe était suffisant pour trouver une règle de décision optimale au sens bayésien, c’est à dire qu’à tout y correspond une décision unique.
+Mais pour développe l’approche de Neymann-Pearson, il faut considérer tous les tests possibles, y compris des tests dont la décision est randomisée, c’est à dire que pour chaque observation y, la règle fait correspondre une décision probabiliste : la sortie du test est la probabilité de sélectionner l’évènement e1 lorsque y est observé :
+ Définition 2.11 : Test randomisé
+ Un test binaire randomisé est défini par une règle qui a toute observation y associe une détection positive avec une certaine probabilité.
+R: Y → [0;1] . y δ ̃(y) = P(eˆ = 1|y)
+Avant de donner les résultats obtenus par Neymann et Pearson, définissons un sous- ensemble de tests, dits tests de vraisemblance randomisés :
+ Définition 2.12 : Test de vraisemblance randomisé
+ 
+=1 si Λ(y)>η
+δ ̃(y)=q si Λ(y)=η , =0 si Λ(y)<η
+où q ∈ [0,1] et η ∈ [0;∞) sont des paramètres du test.
+Par rapport au test de vraisemblance déterministe, la différence est localisée à l’interface entre les deu régions de décision D0 et D1. A cette interface, e1 est choisi avec la probabilité q, alors que dans le test de vraisemblance déterministe il aurait fallu choisir lorsque Λ(y) = η, l’une ou l’autre des décisions.
+Notons qu’ici la probabilité q est identique pour tous les y pour lesquels le rapport de vraisemblance est égal à η.
+On a alors tous les éléments pour exprimer le théorème de Neyman-Pearson.
+ Théorème 2.3 : Neyman Pearson
+ Soit un test de vraisemblance randomisé tel que défini dans Def.2.12, de règle de décision δ ̃(y) et qui vérifie pfa(δ ̃) = α.
+1. Optimalité : ce test est optimal au sens de Neymann-Pearson, c’est à dire que
+33
+
+2.4. ROC CHAPITRE 2. ESTIMATION-DÉTECTION
+  tout autre test (de tout type possible, du moment qu’il n’utilise pas d’information a priori complémentaire) de règle δ ̃′(y) et qui vérifie aussi pfa(δ ̃′) ≤ α, conduit à une probabilité de détection inférieure ou égale : pd(δ ̃′) ≤ pd(δ ̃).
+2. Existence : Pour tout α ∈ [0, 1] il existe un test de vraisemblance randomisé, de règle de décision δ ̃NP pour laquelle pfa(δ ̃) = α.
+3. Unicité : Soit une règle δ ̃′′ qui est un test optimal au sens de Neyman-Pearson de paramètre α, alors δ ̃′′ est un test de vraisemblance randomisé, tel que défini en Def.2.12.
+La preuve de ce théroème nécessite de manipuler la résolution Lagrangienne, que nous n’avons pas détaillée dans ce cours. Le lecteur intéressé pourra trouver la preuve dans [9]. TODO : Il serait intéressant cependant d’étudier ce type d’algorithme, utile pour beaucoup de problèmes en CNA.
+Nous retiendrons surtout l’interprétation de ce théorème, qui dit littéralement :
+1. Tout test de vraisemblance randomisé est optimal au sens de Neyman-Pearson (situé sur la courbe ROC).
+2. Pour toute contrainte α, il existe un test de vraisemblance qui permet de la vérifier.
+3. Tout test qui est optimal au sens de Neyman-Pearson est un test de vraisemblance
+randomisé.
+Ainsi en choisissant les paramètres η et q d’un test de vraisemblance, l’ensemble des solutions Pareto-optimale du problème de détection binaire peut être parcouru.
+Enfin, comme nous le verrons en exercice, la randomisation n’est nécessaire que dans le cas où l’espace d’observation est discret ou disjoint (comme dans l’exercice2.16). Lorsque le domaine d’observation Y est continu, alors la probabilité que le rapport de vraisemblance soit exactement égal à η tend vers 0 et la randomisation n’est pas nécessaire. On a alors une stricte équivalence entre les solutions optimales au sens de Bayes et les solutions de Neymann-Pearson, qui se trouvent sur le front de Pareto.
+Notons que le choix de du seuil η conditionne le poids relatif des deux types d’erreur. Pour tenir compte de l’état intermédiaire probabiliste, on peut écrire les probabilités de détection et de fausse alarme :
+∫
+δ ̃(y) · fY |E (y|e1) · dy
+∫ (2.7)
+δ ̃(y) =
+2.4.3 Application à l’exercice 2.13, partie B
+Pour simplifier l’analyse, nous prenons comme indiqué dans l’énoncé m0 = 0 etm1 = ρ. Pour rappel, nous avons démontré que le test de vraisemblance optimal pour le risque de Bayes s’écrit :
+H1
+S ≷ γ, (2.8)
+pd(R) = EY |E=e1 pfa(R) = EY |E=e0
+Y Y
+δ ̃(y) · fY |E (y|e0) · dy
+[]
+δ ̃(y) = []
+H0
+avec γ = ρ + σ2 log(η) . Ce test fait intervenir S et non Y . En effet, nous avons ramené le
+ 2 Nρ
+problème à l’étude d’une statistique suffisante S. D’après le théorème de Neymann Pearson
+34
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.4. ROC
+ et l’équivalence entre la formulation du test de vraisemblance et du test de Neymann- Pearson dans le cas où Y est continu, la décision sur Y se ramène à une décision relative àS:
+δ ̃(y) ≡ δ ̃(s = f(y)).
+Ce qui est confortable, car dès lors les intégrales multiples peuvent être remplacées par des intégrales mono-variables, et (2.7) devient :
+∫∞
+pd(R) = δ ̃′(s) · fS|E (s|e1) · ds
+s=−∞ ∫∞
+s=−∞
+Nous venons de voir que tout test de Neyman-Pearson peut s’exprimer comme un test de vraisemblance, en faisant varier la valeur du seuil dans (2.8). C’est à dire que la fonction
+δ ̃′(s) s’identifie à :
+{=1 si s≥γ δ ̃′(s) =0 sinon .
+pd(R) = pfa(R) =
+(2πσ2/N) · exp − 2σ2/N ∫∞ 1 (s2)
+(2πσ2/N) · exp −2σ2/N
+pfa(R) =
+δ ̃′(s) · fS|E (s|e0) · ds.
+qui n’est autre que la fonction échelon unité U (s − γ). Les probabilités de détection et de fausse alarme sont dans cet exemple données par :
+∫∞
+pd(R) = fS|E (s|e1) · ds
+s=γ ∫∞
+fS|E (s|e0) · ds,
+Elle suit donc une loi normale d’après la propriété 2.2. N (0,σ2/N). On obtient alors :
+pfa(R) =
+La variable S est dans cet exemple la moyenne de variables aléatoires iid de loi normale.
+s=γ
+∫∞ 1 ( (s−ρ)2)
+· ds · ds,
+  s=γ
+s=γ
+  Par changement de variable, on peut faire apparaitre la fonction Q(x) (on utilise également la propriété Q(−x) = 1 − Q(x). On obtient :
+(√ ) p d ( R ) = Q σN ( γ − ρ )
+(√ ) p f a ( R ) = Q σN γ
+Ces expressions caractérisent bien l’intégration de la queue des gaussiennes jusqu’à γ. Quandγ=−∞,onobtientpd =pfa =1,etpourγ=∞,pd =pfa =0.Cesdeuxpoints
+correspondent aux positions extrêmes de la courbe.
+On peut introduire une distance normalisée entre les 2 positions, notée d = ρ · σN et
+√
+un paramètre normalisé de seuil τ = σN γ. On obtient alors : pd(R) = Q (τ − d))
+pfa(R) = Q(τ) 35
+√
+
+2.5. DÉTECTION M-AIRE CHAPITRE 2. ESTIMATION-DÉTECTION
+ Enfin, on peut exprimer la probabilité de détection en fonction de la probabilité de fausse alarme, caractérisant ainsi les courbes ROC associées à ce problème :
+pd =1−Q(d−Q−1(pfa)), (2.9)
+représentées à la figure 2.5.
+ 1
+0.9
+0.8
+0.7
+0.6
+0.5
+0.4
+0.3
+0.2
+0.1
+ROC (test binaire de position AWGN)
+  N=1 N=10
+                        0
+0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1
+p fa
+  Figure 2.5 – Courbes ROC associées au problème du test binaire de position en canal AWGN, d’après (2.9).
+On peut observer deux propriétés des courbes ROC, qui sont toujours vraies : — La courbe pd = f(pfa) est concave.
+— La courbe démarre et termine aux points (0, 1) et (1, 0).
+D’autre part, le test ML obtenu pour η = 1, peut se retrouver à partir de la courbe ROC, au point où sa dérivée est égale à −1, car on cherche dans ce cas à maximiser pfa +1−pd.
+Pour mettre en évidence l’apport de la randomisation, il faut étudier un cas où l’espace d’observation est discret. C’est le cas de la deuxième partie de l’exercice 2.16, qui permet de calculer la courbe ROC dans le cas du canal binaire. Si cette approche peut paraître un peu artificielle dans le cas du canal binaire car les erreurs de fausse alarme et de non détection ont le même poids. Cependant, dans d’autres situations, typiquement celle de notre détecteur de fumée, il peut être très intéressant de caractériser la courbe ROC.
+Dans des problèmes complexes, où vous pouvez avoir à comparer plusieurs méthodes de détection, comparer les courbes ROC associées à chacune des méthodes est très intéressant. TODO : prévoir un exo à ce sujet
+2.5 Détection M-aire
+La généralisation du cas binaire à un cas de dimension supérieure (appelé M-aire) n’est pas difficile du point de vue conceptuel, mais conduit à des difficultés calculatoires.
+Soit un évènement à valeurs dans E = {e0,e1,...,eM−1}. Pour développer un cadre baysésien, il faut définir les coûts associés à chaque couple (E,Eˆ). Il faut donc définir N2 coûts : Cij et calculer le risque de Bayes global associé à chaque règle de décision.
+36
+p d
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.5. DÉTECTION M-AIRE
+ où
+En extrapolant le théorème 2.1, le risque de Bayes s’exprime maintenant par :
+Q(R)=
+Ci(y)fY (y)dy,
+(2.10)
+M−1 ∫ ∑
+Yi M−1
+i=0
+∑
+Cij ·PE|Y (ej|y). l’évènement ek tel quel k = arg mini∈[0,M−1] Ci(y).
+Si les coûts sont donnés par Cij = 1 − δij , alors minimiser Ci(y) revient à sélectionner l’évènement dont la probabilité a posteriori est la plus élevée. On obtient donc le détecteur du MAP.
+eˆMAP = arg max PE|Y (ei|y). ei ;i∈{0,1,...,M −1}
+Enfin, si les évènements sont équiprobables, alors maximiser PE|Y (ej|y) revient à maximiser la vraisemblance fY |E (y|ei) et on retrouve le détecteur ML.
+Ces détecteurs sont utiles par exemple pour étudier les propriétés des modulations d’ordre élevé, par exemple une quadrature amplitude modulation (QAM) à 16 états, où chaque symbole représente une des hypothèses. Egalement, lorsque les transmissions sont codées, le décodage doit se faire sur le mot code complet. Considérons un mot de Ns symboles M-aire, transmis conjointement dans un paquet, dans un canal perturbé qui engendre des échos. Le récepteur ML correspondant doit chercher parmi tous les mots codes celui qui a la vraisemblance la plus forte. Mais il y a MNs mots codes possible. Dès lors implémenter un ML, bien que théoriquement optimal, s’avère impossible. C’est pour obtenir des décodeurs/démodulateurs moins complexes que les techniques de modulations et codages numériques continuent de se développer (turbo-codes, test de parité à faible densité –low density parity check– (LDPC),...).
+Ci(y):=
+Clairement, la règle sera optimale au sens de Bayes, si pour tout y observé, on choisi
+j=0
+ Définition 2.13 : Détecteurs M-aire
+ Dans un problème M-aire à coût uniforme on défini les détecteurs suivants :
+— ML : eˆML = arg maxei;i∈{0,1,...,M−1} fY |E (y|ei).
+— MAP : eˆMAP = arg maxei;i∈{0,1,...,M−1} PE|Y (ej|y).
+37
+
+2.6. ESTIMATION CHAPITRE 2. ESTIMATION-DÉTECTION
+ 2.6 Estimation
+La théorie de l’estimation s’intéresse à un problème similaire à celui de la détection, mais conduit malgré tout à la mise en oeuvre de méthodes assez différentes. L’unique différence dans la formulation du problème est que l’ensemble d’évènements discrets E, est remplacé par un espace de paramètres à estimer qui prend ses valeurs dans un espace continu A. On note a l’élément de A à estimer.
+Si l’on reprend l’exemple du capteur de fumée, il s’agit maintenant d’estimer le taux de CO2 et non seulement la présence de fumée. Le capteur mesure ce niveau d’émission et la converti en tension, par exemple entre 0 et 5 volts. Imaginons que la tension (notée y) est une fonction du taux de particules (noté x), bruitée par un bruit additif noté n. On peut écrire :
+y = g(x) + n (2.11)
+Mettre en place une technique d’estimation a deux objectifs :
+— Trouver quelle est la valeur de x la plus probable.
+— Définir la fiabilité de cette mesure, en estimant par exemple un intervalle de confiance sur cette estimation.
+Dans de nombreux problèmes d’estimation, l’observation est constituée de plusieurs observations, c’est à dire que y est un vecteur. Une question très importante est d’analyser le comportement
+de la prédiction en fonction du nombre de mesures.
+2A
+Figure 2.6 – Représentation du problème d’estimation optimale.
+  A
+Y
+aˆ
+ System
+ Définition 2.14 : Problème d’estimation
+ Un problème d’estimation est défini par les éléments suivants :
+1. Un espace de paramètres noté A, qui représente l’ensemble des valeurs que peut prendre le (ou les) paramètre(s) que l’on cherche à estimer.
+2. Un espace d’observation de dimension finie, et noté Y. Une observation y est un élément de cet espace.
+3. Une loi de probabilités conditionnelles, connue, qui relie les observations aux paramètres recherchés : fY |A (y|a) ou PY |A (yi|a) si l’espace d’observation est discret.
+4. Une règle d’estimation qui prédit a sous la forme d’un estimateur aˆ(y).
+38
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.6. ESTIMATION
+ Ce type de problème trouve de nombreuses applications en Télécoms : estimation de la fréquence d’une porteuse, du niveau de bruit d’un canal, du niveau de puissance utile, des coefficients du canal, etc...
+Définir un bon estimateur poursuit plusieurs objectifs :
+— Minimiser l’erreur (justesse et précision).
+— Minimiser le nombre d’observations nécessaires
+— Limiter la complexité mathématique ou algorithmique de cet estimateur.
+Nous allons nous appuyer sur ce que nous avons vu en théorie de la détection, mais la notion de test d’hypothèse ne s’applique plus directement, car nous travaillons sur un espace continu. Nous cherchons la valeur de a la plus probable dans un espace continu A. Ceci constitue la différence fondamentale entre estimation et détection.
+2.6.1 Minimisation d’une fonction de coût
+Nous commençons par définir l’erreur d’estimation comme la différence entre la valeur du paramètre et la valeur estimée :
+ε(y|a) := a ̃(y) − a.
+La fonction de coût se défini alors en fonction de l’erreur : C(ε). On peut imaginer une
+infinité de fonctions de coût. En voici 3 exemples très importants.
+1. La fonction de coût quadratique : CMSE(ε) := ε2, appelée erreur moyenne au sens
+des moindres carrés –mean square error– (MSE).
+2. La fonction de coût valeur absolue : CMAE(ε) := |ε|, appelée mean absolute error,
+erreur moyenne au sens de la valeur absolue (MAE).
+3. La fonction de coût uniforme : C∆(ε) := 1 si |ε| > ∆/2, et 0 sinon.
+Ces fonctions de coût proposent trois façons différentes d’évaluer le coût de l’erreur d’estimation à adapter en fonction du problème étudié.
+ Définition 2.15 : Rsque de Bayes pour l’estimation
+ Le critère qui est minimisé dans un problème d’estimation est le risque de Bayes, défini comme le coût moyen :
+Q(R) := EA,Y [C(ε)] ,
+pour une certaine fonction C(ε), positive, croissante, à valeurs dans R.
+Chaque fonction de coût conduit donc à un estimateur optimal différent. L’estimateur erreur minimale au sens des moindres carrés –minimum mean square error– (MMSE) minimise le coût quadratique moyen, l’estimateur minimum mean absolute error (MMAE) minimise le coût valeur absolu et l’estimateur MAP minimise le coût uniforme pour ∆ → 0.
+ Théorème 2.4 : Estimateurs optimaux
+ Les estimateurs optimaux associés respectivement aux fonctions de coût quadratique, absolue et uniforme, se calculent à partir de la fonction de densité a posteriori :
+39
+
+2.6. ESTIMATION CHAPITRE 2. ESTIMATION-DÉTECTION
+  — MMSE : aˆMMSE(y) = EA|Y [a].
+— MMAE : aˆMMAE(y) = med(fA|Y (a|y)). [ ] — MAP : aˆMAP (y) = aˆ∆→0(y) = arg maxa∈A fA|Y (a|y) .
+La relation entre la définition de ces estimateurs et ces expressions n’est pas triviale. Nous allons les démontrer. Pour cela, il faut partir du coût de Bayes, et intégrer par rapport à toutes les réalisations possibles sur A × Y :
+Q(R) = EA,Y [C(ε(y, a))] ∫∫
+=
+C(aˆ(y)−a)·fAY (a,y)·dy·da
+a∈A y∈Y
+En développant, avec la formule de Bayes, fAY (a, y) = fY (y) · fA|Y (a|y), et en supposant les intégrales uniformément convergentes, le théorème de Fubini permet d’intervertir les
+intégrales et d’écrire :
+∫[∫ ]
+Q(R) = fY (y) C(aˆ(y)−a)·fA|Y (a|y)·da ·dy y∈Y 􏰂 a∈A 􏰁􏰀   􏰃
+I(y)
+où I(y) représente l’expression à minimiser indépendamment pour chaque observation y,
+exactement comme nous l’avons fait pour les problèmes de détection. Etudions les trois fonctions de coût proposées précédemment.
+1. MMSE : la fonction de coût dépend de l’intégrale I(y) notée ici : ∫
+ (aˆ(y) − a)2 · fA|Y (a|y) · da.
+IMSE(y) =
+La minimisation de cette fonction peut se faire en cherchant pour quelle valeur de aˆ
+la dérivée est nulle : ∫ d IMSE(y) = d
+daˆ
+daˆ a∈A ∫
+a∈A ∫ = 2aˆ(y)·
+a∈A ∫
+fA|Y (a|y)·da−2
+∫
+a∈A
+afA|Y (a|y)·da
+=2aˆ(y)−2
+afA|Y (a|y)·da ∫
+MMSE
+=E[E[(aˆ (y)−a)2]] Y [ A|Y [ MMSE ]]
+a∈A
+(aˆ(y) − a)2 · fA|Y (a|y) · da = 2 (aˆ(y)−a)·fA|Y (a|y)·da
+a∈A
+qui s’annule uniquement pour aˆMMSE(y) = a∈A afA|Y (a|y) · da, que l’on peut interpréter en disant que l’estimateur optimal au sens des moindres carrés est égal à la moyenne statistique a posteriori du paramètre, conditionnée par l’observation y. On la note aˆMMSE(y) = EA|Y [a], c’est à dire la moyenne de la v.a. A, selon la loi fA|Y (.).
+Une fois connu l’estimateur, on peut exprimer la valeur du risque de Bayes :
+Q
+= E [ ( aˆ ( y ) − a ) 2 ] AY MMSE
+= EY EA|Y (EA|Y [a] − a)2 [[2] 2]
+=EY EA|Y a −EA|Y [a] =E[E[a2]−aˆ (y)2]
+(2.12)
+Y
+A|Y MMSE
+40
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.6. ESTIMATION
+ 2. MMAE : la fonction de coût dépend de l’intégrale I(y) notée ici : ∫
+|aˆ(y)−a|·fA|Y (a|y)·da.
+Pour évaluer la fonction valeur absolue, il faut décomposer l’intégration sur deux domaines complémentaires. En supposant que A = R, on peut écrire :
+∫ aˆ ( y ) Iabs(y) =
+∫ + ∞ a=aˆ(y)
+Iabs(y)=
+a∈A
+(aˆ(y)−a)·fA|Y (a|y)·da+
+La différentiation de cette fonction par rapport à aˆ(y) conduit à :
+d Iabs(y) = aˆ(y) · fA|Y (a|y) − aˆ(y) · fA|Y (a|y) . daˆ
+a=−∞
+(a−aˆ(y))·fA|Y (a|y)·da.
+Il faut donc choisir aˆMMAE(y) qui vérifie :
+∫ aˆMMAE(y)
+∫ +∞
+fA|Y (a|y)·da=
+fA|Y (a|y)·da,
+a=−∞
+qui n’est autre que la médiane de la densité a posteriori.
+3. Coût uniforme sur [−∆/2; ∆/2]. Il faut alors trouver aˆ∆ qui maximise : ∫ aˆ∆(y)+∆/2
+a∈A
+qui n’est autre que le MAP.
+Nous avons donc trois estimateurs qui s’appuient sur les caractéristiques de la loi a posteriori : sa moyenne, sa médiane ou son maximum. Du fait que ces estimateurs soient basés sur la loi a posteriori, cela veut dire que leur mise en oeuvre nécessite de connaitre une loi a priori pour le paramètre concerné. On retrouve alors, comme pour la théorie de la détection, la notion de connaissance a priori.
+Nous allons étudier un exemple d’application.
+I∆(y) =
+De fait, si l’on fait tendre ∆ → 0, on obtient alors :
+a=aˆM M AE (y)
+fA|Y (a|y) · da. aˆ∆→0 =argmaxfA|Y (a|y),
+a = aˆ ∆ ( y ) − ∆ / 2
+ Exercice 2.10 : Estimation d’une loi exponentielle
+ On observe un scalaire réel, Y ∈ Y = R+, issu d’un processus aléatoire donné par une loi exponentielle de paramètre a :
+{a·e−ay si y≥0 fY|A(y|a):= 0 si y<0
+La loi exponentielle est classiquement utilisée pour simuler des processus d’arrivée aléatoire. Elle est à la base de l’étude des files d’attente. Imaginons une cellule radio de type Wifi où les noeuds mobiles utilisent un protocole d’accès au medium de type protocole d’accès aléatoire au medium (ALOHA). La variable Y représente alors la distribution du temps entre arrivées de paquets, et le paramètre a caractérise la charge de la cellule. Plus a est petit, plus la cellule est chargée. La station de base peut donc estimer la charge de la cellule à partir de l’observation des intervalles entre l’arrivée des paquets.
+41
+
+2.6. ESTIMATION CHAPITRE 2. ESTIMATION-DÉTECTION
+  On pose comme connaissance a priori, que le paramètre a suit lui-même une loi
+exponentielle :
+{α·e−αa si a≥0 fA(a):= 0 si a<0
+1. Calculez la loi de probabilité a posteriori correspondant au problème.
+2. Calculez l’expression des estimateurs de a pour les 3 estimateurs définis dans le cours.
+3. Evaluez le risque de Bayes associé au ML.
+La station de base effectue cette estimation à partir de N échantillons.
+4. Calculez la loi de probabilité a posteriori en fonction de N.
+5. Calculez l’expression des estimateurs de a pour les 3 estimateurs en fonction de N.
+La loi a posteriori est donnée par
+fA|Y (a|y) = fY |A (y|a) · fA (a). (2.13)
+fY (y)
+Les deux distributions du numérateur sont données dans l’énnoncé. La loi marginale de y, utilisée au dénominateur se calcule par la loi des probabilités totales :
+ ce qui donne :
+est .
+QMMSE = 2 3α2
+fY (y)=
+∫
+a
+fY|A(y|a)·fA(a)·da,
+f
+(a|y) = ∫ aαe−(α+y)a
+∞ aαe−(α+y)a · da
+0
+= (α + y)2ae−a(α+y)
+A|Y
+ L’estimateur MMSE est obtenu en calculant la moyenne, soit :
+∫∞ ∫∞
+aˆMMSE = afA|Y (a|y) · da = (α + y)2 a2e−(α+y)a · da
+00
+=2. α+y
+(2.14)
+En appliquant la formule (2.12), vous pourrez vérifier que le risque de Bayes associé
+L’estimateur MMAE aˆMMAE(y) est obtenu au point médian de la distribution. Il est solution de :
+∫∞
+aˆM M AE (y)
+En intégrant, on obtient :
+[1 + (α + y)aˆMMAE(y)]e−(α+y)aˆMMAE(y) = 12. 42
+fA|Y (a|y) · da = 1/2.
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.6. ESTIMATION
+ ce qui donne aˆMMAE(y) = T0 ; avec T0 ≈ 1,68, solution de [1 + T0]e−T0 = 1. α+y 2
+Enfin, l’estimateur MAP est obtenu en cherchant le point pour lequel la dérivée de fA|Y (a|y) s’annule. On obtient
+aˆMAP(y)= 1 . α+y
+Notons que le calcul complet de la densité a posterori n’est nécessaire que pour les estimateurs MMSE et MMAE. L’estimateur du MAP n’ayant besoin que de calculer le max de cette densité, seul le numérateur de cette fraction est nécessaire puisque le dénominateur ne dépend pas de a.
+On a donc 3 estimateurs qui retournent trois valeurs différentes. Chacun est optimal par rapport à une fonction de coût initiale.
+Passons au cas où l’on observe N échantillons Y [k] iid. On a alors
+oùy ̄:= 1 ∑ y[k]. Nk
+La loi a posteriori est alors donnée par :
+f
+( a | y ) = ∫ a N α e − ( α + N y ̄ ) a
+∞ aN αe−(α+N y ̄)a · da
+A|Y
+fY |A (y|a) =
+= a N · e − N · a y ̄ ,
+∏N k=1
+fY |A (y[k]|a)
+ 0
+(α + Ny ̄)N+1 N
+(2.15)
+−a(α+Ny ̄)
+Dont on peut tirer les 3 estimateurs. Vous terminerez l’exercice en exprimant les 3 estimateurs
+à partir de (2.15).
+2.6.2 Estimateur ML
+Nous avons défini ci-dessus l’estimateur du MAP pour l’estimation d’une variable aléatoire, en faisant tendre ∆ → 0 à partir de la fonction de coût uniforme.
+Revenons sur la construction de cet estimateur. Rechercher le maximum de fA|Y (a|y) consiste à trouver le point pour lequel sa dérivée s’annule ∂fA|Y (a|y) = 0.
+∂a
+Parce que la fonction log est strictement monotone et croissante, cela est également équivalent à chercher
+= N! ae
+  ∂ log(fA|Y (a|y)) = 0. ∂a
+En injectant le théorème de Bayes dans la fonction log, on obtient :
+log(fA|Y (a|y)) = log(fY |A (y|a)) + log(fA (a)) − log(fY (y)).
+Le dernier terme est indépendant de a, et l’estimateur MAP est donc donné par :
+aˆmap(y) = arg max [log(fY |A (y|a)) + log(fA (a))] . a∈A
+(2.16)
+(2.17)
+ 43
+
+2.6. ESTIMATION CHAPITRE 2. ESTIMATION-DÉTECTION
+ Le premier terme est la log-vraisemblance qui dépend du modèle du système et qui décrit l’observation en fonction du paramètre à estimer. Le deuxième terme représente la connaissance a priori sur la loi du paramètre recherché .
+Si nous n’avons aucune connaissance a priori sur ce paramètre, on peut seulement considérer que la loi sur A est uniforme (i.e. fA (a) = cste). Le problème se résume à la maximisation de la log-vraisemblance.
+On obtient ainsi un nouvel estimateur qui ne nécessite pas de formuler une connaissance a priori sur le paramètre recherché :
+On notera qu’une condition nécessaire d’existence pour qu’un estimateur ML est qu’il existe un point pour lequel la dérivée de la vraisemblance s’annule :
+ Théorème 2.5 : Estimateur ML
+ L’estimateur ML associé un problème d’estimation est donné par :
+— aˆ (y)=argmax [f (y|a)]. ML a Y|A
+lim y ̄=EY|A=a[y], et par propriété de la loi exponentielle, on a
+∂]
+∂a log fY |A (y|a)
+= 0.
+EY |A=a [y] = a−1.
+L’estimateur est donc consistant, c’est-à-dire que la valeur estimée tend vers la vraie valeur lorsque le nombre de mesures tend vers l’infini. Vous pourrez vérifier si cette propriété est vérifiée pour les autres estimateurs.
+2.6.3 Performance des estimateurs
+L’estimateur ML a de très bonnes performances en général. On s’intéressera à mesurer son biais et la variance de son erreur. En particulier, la convergence des estimateurs
+44
+a = aˆ M L ( y )
+Notons qu’il existe d’autres classes d’estimateurs de paramètres, en l’absence de connaissance a priori. En particulier les estimateurs non biaisés à variance minimale (voir par exemple
+[9], chap.4, les estimateurs MVUE), que nous n’étudierons pas dans ce cours.
+Pour l’exemple étudié dans l’exercice 2.10 on obtient :
+aˆ M L ( y ) = 1 . y ̄
+Cet estimateur est-il performant ? Nous allons traiter cet aspect dans la section suivante, mais commençons par une rapide analyse sur cet exemple.
+Prenons A = a fixé. La question que l’on se pose est de savoir si lorsque le nombre de mesures tend vers l’infini, l’estimation aˆML(y) tend vers a?
+Nous savons que pour a fixé
+N→∞
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.6. ESTIMATION
+ avec le nombre de mesures est très importante, notamment lorsque l’on veut vérifier des résultats théoriques par simulation. Typiquement, l’évaluation du BER d’une transmission numérique, ou du taux d’erreur paquet dans un réseau. Il est d’usage d’effectuer des simulations extensives et de calculer le comportement moyen. On parle alors de simulation Monte-Carlo. Ce problème peut être assimilé à un problème d’estimation (il s’agit ici d’estimer la probabilité d’erreur). Le calcul théorique que nous développons ci-dessous permet d’une part de démontrer si la simulation a un biais (justesse du résultat), et d’autre part, de calculer la variance en fonction du nombre de mesures, ce qui permet d’en déduire le nombre d’expériences à réaliser pour garantir la fiabilité des résultats.
+En résumé, on cherchera à répondre aux questions suivantes :
+— L’estimateur est-il biaisé? Autrement dit la valeur retournée est-elle en moyenne juste ?
+— A quelle vitesse l’estimateur converge-t-il vers la bonne valeur lorsque l’on fait croître le nombre de mesures ?
+La réponse est liée à l’étude de la variance de l’estimateur. Idéalement, il faut démontrer que la variance tend vers 0 quand le nombre de mesures tend vers l’infini, et on s’intéresse alors à la vitesse à laquelle cette variance tend vers 0.
+ Définition 2.16 : Performance des estimateurs
+ Soit un estimateur aˆ(y) d’un paramètre a, fixé, mesuré au travers d’un vecteur d’observations iid : Y ∈ Y N .
+1. Le biais de l’estimateur est défini comme l’erreur moyenne d’estimation pour une valeur donnée a :
+ε(a, N ) := EY |A=a [aˆ(y)] − a.
+2. L’estimateur est consistant (convergence en probabilité) si :
+lim ε(a,N) = Pr(|aˆ(y) − a| > ε) = 0;∀ε > 0. N→∞
+3. La variance d’estimation est :
+var(a, N) := E [aˆ(y)2] − E [aˆ(y)]2 . Y |A=a Y |A=a
+Reprenons l’exemple 2.10 (pour N > 1). L’application direct de la formule du biais implique de calculer :
+EY |A=a [aˆ(y)] = où fY |A (y|a) a été définie dans (2.6.1).
+∫1 y∈YN y ̄
+· fY |A (y|a) , (2.18) Le calcul direct de cette expression n’est pas triviale car elle nécesite une intégration
+multiple. Si N = 1, on obtient :
+EY |A=a [aˆ(y)] =
+Cette intégrale est divergente, voir par exemple [3]. En effet, la fonction x−1e−x tends vers l’infini en 0.
+∫ a−a·y
+y∈Y
+y e · dy.
+45
+
+2.6. ESTIMATION CHAPITRE 2. ESTIMATION-DÉTECTION
+ Pour N > 1, on peut exploiter le résultat trouvé dans (2.6.1), qui montre que la vraisemblance ne dépend que de y ̄. Comme pour la détection, cela indique que y ̄ est une statistique suffisante pour ce problème d’estimation. On s’intéressera alors à l’expression suivante : ∫ 1
+EY ̄ |A=a [aˆ(y ̄)] = y ̄ · fY ̄ |A (y ̄|a) · dy ̄. y ̄∈Y
+Pour calculer fY ̄ |A (y ̄|a), il faut utiliser la loi de composition des variables aléatoires. En effet, la fonction caractéristique de y ̄ est le produit des fonctions caractéristiques des yk.
+On obtient :
+{
+fY ̄ |A (y ̄|a) :=
+Grâce à cette expression, l’intégration 8 donne :
+(2.19)
+Le biais est donc, pour N > 2 :
+ε(a,N) = a . N−1
+(Na)N ·y ̄N−1·e−Nay ̄ si y ̄≥0 N !
+0
+si y<0
+EY|A=a[aˆML(y)]= N·a. N−1
+L’estimateur ML dans ce cas est donc biaisé, avec un biais égal à a , pour N > 1. N−1
+Cependant il est asymptotiquement non biaisé : le biais tend vers 0 quand N → ∞. Notons qu’il est facile de construire un estimateur qui compense ce biais :
+aˆNB(y) := N − 1 · aˆML(y). N
+Ainsi, pour N = 2, on obtient aˆNB(y) = 0.5 · aˆML(y), ce qui montre l’intérêt de cette modélisation pour améliorer l’estimation de paramètres statistiques.
+Toujours pour notre exemple, vous vérifierez que la variance de nos 2 estimateurs est (pour N > 2) :
+var(aˆML(y)) = a2N2
+(N − 1)2(N − 2)
+a2 var(aˆNB(y)) = N − 2.
+On notera que la variance de l’estimateur NB est légèrement plus faible que celle du ML.
+Plutôt qu’un calcul direct, il est possible d’utiliser les inégalités de Cramer-Rao (établies par Cramer et Rao respectivement en 1942 et 1945, à partir des travaux de Fisher (1922) et Dugué (1945), que nous ne démontrerons pas dans ce cours.
+8. L’inrégrale à calculer est connue : ∫ ∞ xν−1 exp(−μx)dx = 1 Γ(ν) d’après [3], 3.381 (4), p.346 0 μν
+  Théorème 2.6 : Inégalités de Cramer-Rao
+ Soit un estimateur aˆ(y) quelconque non biaisé de a, tel que fY |A (y|a) possède des dérivées partielles premières et secondes par rapport à a absolument intégrables. La
+ 46
+
+CHAPITRE 2. ESTIMATION-DÉTECT2I.O7.NSUJETS AVANCÉS LIÉS À L’ESTIMATION
+  variance de l’erreur vérifie alors les propriétés suivantes :
+{ [∂2 log fY |A (y|a)]}−1 Var[aˆ − a] ≥ − EY |A=a ∂a2
+ Un estimateur qui atteint l’égalité est dit efficace. Il vérifie alors :
+∂ log fY |A (y|a) = (aˆ(y) − a) · g(a), (2.20)
+ ∂a
+où g(a) est une fonction indépendante des observations y. Si un estimateur non biaisé et
+efficace existe, on peut montrer que :
+aˆ(y) = aˆML(y)
+V ar(aˆ(y) − a) = g(a)−1.
+Autrement dit, il est équivalent à l’estimateur ML et sa variance est définie par g(a)−1. Revenons sur notre exemple, et calculons la borne Cramer-Rao lower bound (CRLB)
+à partir de la dérivée seconde de la densité a posteriori. On obtient
+a2 CRLB = N .
+On peut observer qu’aucun de nos deux estimateurs n’est efficace, puisque leur variance est supérieure à la CRLB. Cependant, les deux estimateurs sont asymptotiquement efficaces, car la variance de ces estimateurs tend vers la CRLB. Ce résultat était prévisible, car si un estimateur non biaisé et efficace existait, ce serait le ML. De plus la borne de Cramer-Rao est une borne et n’est pas nécessairement atteignable.
+ Exercice 2.11 : Performance d’un estimateur
+ On observe une grandeur physique (toujours notre détecteur de fumée par exemple), à travers un système bruité, avec un ensemble de N mesures notées
+y[k] = a + n[k]
+On suppose encore une fois que le bruit est gaussien centré N[k] ∼ N(0,σ2). Les
+différentes mesures sont supposées indépendantes. 1. Calculez l’estimateur ML.
+2. Déterminez si il est biaisé.
+3. Déterminez les bornes de Cramer-Rao.
+4. Déterminez si il est efficace.
+2.7 Sujets avancés liés à l’estimation
+Nous avons abordé dans ce cours les notions fondamentales de la théorie de l’estimation et de la détection. De nombreux sujets de recherche restent ouverts dans ce domaine,
+47
+
+2.7. SUJETS AVANCÉS LIÉS À L’ESTIMATCIOHNAPITRE 2. ESTIMATION-DÉTECTION
+ en particulier lorsque le problème étudié est non-linéaire, à large dimension ou encore distribué.
+Des bases dans ce domaine sont indispensable pour comprendre les bases des algorithmes d’apprentissage qui mettent en oeuvre de nombreuses étapes de détection ou d’estimation. Dans les approches proposées ici, la première difficulté est de modéliser la fonction de vraisemblance et l’a priori. Ensuite, il faut calculer l’estimateur, comme le ML ou le MAP, tâche qui s’avère particulièrement diffile. C’est pourquoi une approche par apprentissage profond contourne ces difficultés. Il s’agit d’aquérir une grande base de données d’observation (les y dans les notations précédentes), pour lesquelles l’entrée est connue (l’évènement recherché). Le réseau de neurone se substitue alors au modèle mathématique, et apprend la relation entre E et Y . Plus exactement il apprend d’estimation qui donne Eˆ en fonction de Y . Quelque part, la complexité de la modélisation mathématique est remplacée par l’exploitation de données massives. Ces approches sont apparues récemment dans les télécoms, voir par exemple [7]. Toutefois, cet aspect ne sera pas abordé dans ce cours.
+2.7.1 Note sur l’estimation multi-paramètres
+L’estimation multi-paramètre consiste à estimer un vecteur de paramètres a = [a1, . . . , am].
+Le problème n’est pas fondamentalement différent, mais l’espace de recherche étant multi-dimensionnel, les calculs de performance de ces estimateurs nécessitent de manipuler les opérateurs de dérivée partielle et le calcul matriciel.
+TODO : A compléter seulement si nécessaire pour la suite du cours
+2.7.2 Estimation itérative
+Dans de nombreux systèmes, en particulier en télécommunications, nous devons estimer un paramètre qui évolue lentement au cours du temps. Il s’agit par exemple de l’estimation de la fréquence porteuse d’un signal modulé. Du fait des propriétés des composants électroniques utilisés à l’émetteur et au récepteur, la fréquence porteuse n’est pas constante lors de la transmission d’un flux d’information. Si l’on veut démoduler un signal, il faut détecter la fréquence porteuse dans le signal reçu, et la compenser. Une première approche consiste à numériser le signal reçu, le stocker, puis corriger à posteriori la fréquence. Cependant, une telle approche à deux inconvénients : elle ne permet que de compenser une erreur statique et elle introduit un délai de traitement puisqu’elle est réalisée en post- traitement.
+Une autre approche consiste à estimer la fréquence porteuse courante, en cours de réception (typiquement à partir des N derniers échantillons reçus) et à compenser la fréquence en cours de réception. Cette approche est beaucoup plus efficace, mais nécessite un algorithme complexe et assez sophistiqué, qui met en général en oeuvre un estimateur itératif de maximum de vraisemblance. Typiquement, en télécommunications, le récepteur devra se synchroniser en fréquence, en phase, en amplitude (gain) et en rythme (période d’échantillonnage). Cette étape de synchronisation est essentielle pour les communications numériques et très complexe à implémenter, car idéalement il faut estimer simultanément tous ces paramètres de façon itérative. Ce sujet sort du cadre de ce cours.
+TODO : il pourrait être intéressant de développer un exemple de type estimation itérative de phase, mais également une section sur les algorithmes de type message passing ou factor graphs.
+48
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.8. COM. NUM.
+ 2.8 Application aux communications numériques
+Pour conclure ce chapitre, nous illustrons les éléments théoriques vus dans ce chapitre, à partir de petits problèmes classiques de communications numériques, que nous détaillerons dans les chapitres suivant. Cette section est en quelque sorte une mise en bouche des chapitres à venir, et justifie les efforts faits jusque là pour comprendre ces outils théoriques.
+2.8.1 Application de la détection
+La théorie de la détection est utilisée en transmission dès que l’on veut prendre une décision dans un ensemble discret, à partir d’une ou plusieurs observations. Voici quelques applications
+Démodulation numérique
+Lorsque qu’une transmission est effectuée selon un schéma traditionnel en bande de base (voir cours CMN), la démodulation s’effectue en général symbole par symbole. On rappelle que la démodulation numérique se réfère à l’étape de démapping, c’est à dire la conversion d’un nombre complexe (symbole I/Q) en un symbole de la constellation, qui code un mot binaire.
+Considérons le cas d’un canal sans mémoire. On s’intéresse donc à l’estimation des symboles, indépendamment les uns des autres, et on a la relation suivante ye[k] = xe[k] + ne[k]. Ainsi, l’espace des évènements E n’est autre que la constellation, de taille 2Nb avec Nb le nombre de bits transmis par symbole.
+Le démodulateur numérique implémente donc bien un processus de décision.
+Si les symboles sont équiprobables, l’estimateur ML est optimal, ce qui permet de définir les sous-espaces de décision associés à chaque symbole, de façon unique. Chaque nombre complexe reçu est assimilé au symbole le plus proche, comme illustré à la figure 2.7. C’est ce qui est mis en oeuvre dans l’exercice 2.12.
+En effet, le calcul du ML, dans le cas d’un bruit gaussien même en complexe, revient à recherche le symbole le plus proche. Autrement dit l’estimateur ML est équivalent à l’estimateur MMSE. Cette équivalence valable uniquement ou presque, dans le cas du bruit gaussien, simplifie bien les choses.
+  -1
+j
+si Di
+-j
++1
+Figure 2.7 – Région de décision Di associée au symbole si, lorsque le canal est AWGN. Vous pourrez facilement résoudre l’exercice suivant en vous appuyant sur ces éléments.
+49
+
+2.8. COM. NUM. CHAPITRE 2. ESTIMATION-DÉTECTION
+  Exercice 2.12 : Démodulation optimale
+1. Déterminezpourdifférentesmodulationslinéaires:modulationpardéplacement de phase à deux états –binary phase-shift keying– (BPSK), quadrature phase- shift keying (QPSK), 16−QAM, 8−phase-shift keying (PSK)), quels sont les sous-espaces de décision associés à chaque symbole.
+2. Imaginezqu’unconstellation4−QAMpossèdeunsymboledeprobabilitésupérieure au trois autres, et que cette propriété soit connue du récepteur. Comment peut-
+il améliorer ses performances ?
+Décodage
+Intéressons nous maintenant au décodage d’un mot codé par un code systématique, passé dans un canal binaire symétrique, de probabilité d’erreur p. L’espace d’évènements est l’ensemble des mots codes valides. Le bruit associé ici n’est plus un bruit gaussien, puisque nous travaillons alors dans un corps F2n. On note ce vecteur aléatoire Wn, à réalisation dans Wn. C’est l’entrée du canal. On observe en sortie de canal une variable aléatoire Cn.
+Soit un mot code wn, choisi aléatoirement et cn le mot code reçu. On note la probabilité conditionnelle de cette réalisation PCn|Wn (cn|wn). Le canal étant sans mémoire, on peut
+écrire :
+ nn∏ PCn|Wn (c |w ) =
+PC|W (c[k]|w[k])
+Pour un canal binaire symétrique, on a PC|W (c[k]|w[k]) = 1 − pe si c(k) = w(k) et
+PC|W (c[k]|w[k]) = pe si c(k) ̸= w(k). Ainsi, la probabilité s’écrit : P n n (cn|wn) = (1 − p )m · pn−m
+C|W ee où m est égal au nombre de bits pour lesquels c(k) = w(k).
+SI les séquences binaires sont équiprobables (d’où l’importance du codage de source), alors le détecteur optimale est celui qui minimise la distance de Hamming. La théorie de la détection permet donc de justifier le choix d’un décodeur basé sur la distance de Hamming.
+Toutefois dans un canal plus complexe avec des retards et des échos multiples, le décodeur optimal n’est plus celui qui minimise la distance minimal. Nous ferons appel à des techniques plus sophistiquées, comme l’algorithme de Viterbi, ou la propagation de croyance.
+Egalisation ML
+TODO : revoir les notations une fois réécrit le chapitre 4
+Nous verrons que l’égalisation consiste à annuler l’effet du canal pour retrouver le signal émis. Soit un signal échantillonné de durée Tx, représenté par un vecteur x. Après passage dans un canal on peut écrire :
+y = H ·x+n. (2.21) 50
+k
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.8. COM. NUM.
+ Effectivement, nous savons que x ∈ X qui est l’ensemble des séquences que peut émettre le transmetteur. Si le canal est AWGN, alors chaque élément de n suit une loi normale centrée et indépendante des autres éléments.
+Prenons une séquence possible xi. On calcule alors une prédiction du signal de sortie y ̃i = H · xi. La vraisemblance de y est égale au produit des vraisemblances de chaque
+échantillon :
+()∏()
+fY |X y|x =
+fY [k]|X y[k]|x (2.22)
+k
+Nous verrons dans le chapitre correspondant comment on peut résoudre ce problème d’estimation, qui est loin d’être trivial. Encore aujourd’hui, la recherche d’algorithmes faisant un compromis entre complexité de calcul et efficacité, occupe les ingénieurs ou les chercheurs.
+2.8.2 Applications de l’estimation
+La théorie de l’estimation est utilisée dès lors que l’on cherche à estimer un paramètre : estimation de la fréquence porteuse, de l’amplitude du signal, du niveau de bruit, etc...
+Estimation du bruit de récepteur
+Dans de nombreuses systèmes radio, le récepteur est en mesure d’estimer le niveau de bruit (amplitude ou puissance). Le récepteur écoute le canal radio, vérifie qu’aucun signal utile n’est présent (détection) et effectue une estimation de puissance de bruit. Ce bruit peut intégrer le bruit du récepteur mais également les interférences provenant d’autres systèmes. On fait classiquement l’hypothèse que ce bruit est gaussien. Il suffit alors de dérouler les techniques d’estimation vues précédemment pour obtenir un estimateur de bruit. On peut montrer que dans le cas idéal gaussien, l’estimateur ML est optimal et retourne simplement Pbruit = E [|Y [k]|2].
+Estimation du niveau de signal
+Le received signal strength indicator, indicateur de puissance de signal reçu (RSSI) est une mesure faite par certains équipements radio, en particulier le Wifi, pour déterminer la puissance du bruit du signal utile. Il s’effectue en général à partir de l’étude du préambule, qui est une séquence connue. L’estimation de puissance est basée sur la corrélation avec le signal connu, voir l’exercice 2.19.
+Estimation des coefficients de canal
+Nous avons donné ci-dessus l’exemple de l’égalisation comme application de la détection. Pour pouvoir mettre en oeuvre cet égalisation, le récepteur doit connaitre le canal, c’est à dire les coefficients de la matrice H. Ces coefficients sont estimés à partir de l’analyse de signaux pilotes, dont nous détaillerons le fonctionnement. La théorie de l’estimation est essentielle pour choisir la longueur de ces signaux pilotes.
+Prendre des signaux pilotes longs permet d’améliorer les performances, mais occupe plus de bande passante, réduisant d’autant la bande passante utile. Au contraire, prendre des signaux pilotes courts optimise la bande passante, mais dégrade les performances. La théorie de l’estimation est l’outil idéal pour optimiser ces choix.
+51
+
+2.9. SYNTHÈSE DU CHAPITRE CHAPITRE 2. ESTIMATION-DÉTECTION
+ Estimation des propriétés statistiques de canal
+Prenons un cas plus simple décrit par :
+y[k] = h · x[k] + n[k], (2.23)
+où h est un simple coefficient scalaire. Malheureusement, ce coefficient de canal varie lentement au cours du temps, et nous souhaitons estimer les propriétés statistique de cette variable. A-t-on un canal gaussien (coefficient statique) ? ou un canal de Rice (voir chapitre 4)? La connaissance des paramètres statistiques du canal est très utile pour optimiser les émetteurs et récepteurs.
+Pour cela, nous pouvons nous baser encore une fois sur l’estimation de paramètres statistiques tels que vus dans ce chapitre.
+2.9 Synthèse du chapitre
+Nous avons introduit dans ce chapitre les notions fondamentales de la théorie de la détection et de la théorie de l’estimation. Ce chapitre ne donne qu’un petit aperçu de la richesse de ces outils théoriques, abondamment utilisés dans tous les domaines de l’ingénierie. De nombreux problèmes sont encore ouverts, en particulier pour l’étude de systèmes à grande échelle ou de systèmes dynamiques. Les performances de ces outils dépendent beaucoup de la qualité de la modélisation du problème, et de nombreux travaux scientifiques consistent à améliorer, pour différentes applications, les modèles. Il ne faut pas oublier que ces problèmes sont résolument multi-objectifs et que l’amélioration d’un algorithme peut consister à réduire sa complexité, améliorer sa robustesse, augmenter ses performances en termes d’erreur.
+Nous exploiterons ce formalisme dans les chapitres suivants de ce cours.
+On peut résumer les éléments essentiels de ce cours 1. Principes de la théorie de la détection :
+— Risque de Bayes.
+— Rapport de vraisemblance et test d’hypothèse. — Log vraisemblance.
+— Courbes ROC.
+— Estimateurs ML, MSE, MAP.
+2. Principes de la théorie de l’estimation : — Fonctions de coût.
+— Estimateurs optimaux.
+— Inégalités de Cramer-Rao.
+Enfin, au travers des développements proposés et des exemples discutés nous avons développé les savoir-faire suivants :
+1. Formulerunproblèmededétectionoud’estimationdansledomainedescommunications numériques.
+2. Evaluer les performances en termes de probabilité d’erreur.
+52
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.10. EXERCICES
+ 2.10 Exercices
+2.10.1 Exercices portant sur la théorie de la détection
+ Exercice 2.13 : Test binaire de position en canal gaussien
+ Soit V [, ] avec k ∈ [1; N], une séquence iid de loi normale N (0, σ2). On considère le test d’hypothèse suivant :
+H0 : Y[k]=m0+V[k] H1 : Y[k]=m1+V[k]
+pour 1 ≤ k ≤ N, où on supposera que m1 > m0. L’observation est un vecteur aléatoirenotéY =[Y[1],Y[2],...,Y[N]]t.
+Les coût d’erreur sont donnés par c01 et c10 et les probabilités a priori des deux évènements sont p0 et p1.
+A- Détecteur Bayésien :
+On veut déterminer pour un vecteur y observé, quel est l’évènement qui minimise le risque de Bayes.
+1. Calculez l’expression des densités de probabilité fY |E (y|ei).
+2. Calculez la fonction du rapport de vraisemblance.
+3. Démontrez en utilisant le LRT que la décision optimale au sens de Bayes se
+ramène au test :
+H1
+S ≷ γ, H0
+où S = N1 ∑Nk=1 Y [k], et où vous déterminerez la valeur de γ.
+4. Déterminez les tests à effectuer pour choisir l’estimateur ML puis l’estimateur
+MAP.
+B- Courbes ROC et tests de Neyman-Pearson :
+On prendra pour simplifier m0 = 0, et m1 = ρ ; ρ caractérise donc la distance entre les 2 évènements. Ceci n’est pas restrictif car dans le cas général, il suffirait de modifier le signal reçu en : Y − m0.
+1. Reformulez le test d’hypothèse avec ces notations.
+2. Calculez les probabilités de détection et de fausse alarme. Vous utiliserez la
+fonction Q(x) et la distance d = N1/2ρ. σ
+3. Exprimez pd en fonction de pfa.
+4. Tracez sous Matlab les courbes ROC pour différentes valeur de d.
+5. Vérifiez leurs propriétés : continuité, concavité.
+53
+
+2.10. EXERCICES CHAPITRE 2. ESTIMATION-DÉTECTION
+  Exercice 2.14 : Test de variance
+ On observe un signal iid de loi normale sur 1 ≤ k ≤ N, avec 2 hypothèses concernant
+sa variance :
+H1 : Y[k]∼N 0,σ12
+pour 1 ≤ k ≤ N, où on supposera que σ12 > σ02. L’observation est un vecteur aléatoire
+notéY =[Y[1],Y[2],...,Y[N]]t.
+A- Détecteur Bayésien :
+On veut déterminer pour un vecteur y observé, quel est l’évènement qui minimise le risque de Bayes.
+1. Calculez l’expression des densités de probabilité fY |E (y|ei).
+2. Calculez la fonction du rapport de vraisemblance.
+3. Démontrez en utilisant le LRT, que la décision optimale au sens de Bayes se
+ramène au test :
+H1
+S ≷ γ, H0
+H0 : Y[k]∼N(0,σ2) ( 0)
+où S = N1 ∑Nk=1 Y [k]2, et où vous déterminerez la valeur de γ.
+4. Déterminez les tests à effectuer pour choisir l’estimateur ML puis l’estimateur
+MAP.
+B- Courbes ROC et tests de Neyman-Pearson :
+On se place dans le cas où le nombre d’observation est N = 2. 1. Montrez que le LRT peut s’écrire
+2 2 H1 T:=Y[1] +Y[2] ≷κ,
+H0
+où vous expliciterez κ.
+2. Calculez les probabilités de détection et de fausse alarme.
+3. Exprimez pd en fonction de pfa.
+4. Tracez sous Matlab les courbes ROC pour différentes valeur de r = σ02/σ12.
+5. Bonus : Comment ces résultats se généralisent-ils au cas où N > 2. Tracez l’évolution de la courbe ROC en fonction du nombre de mesures.
+54
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.10. EXERCICES
+  Exercice 2.15 : Test Poisson
+ On observe un signal iid sur N+, distribué selon une loi de Poisson, avec 2 hypothèses : H0 : PY |E (y = n|e0) = λn0 exp(−λ0)
+n!
+H1 : PY |E (y = n|e1) = λn1 exp(−λ1)
+n! pour1≤k≤N,oùonsupposeraqueλ1 >λ0.LevecteurobservéestnotéY =
+[Y [1], Y [2], . . . , Y [N ]]t .
+A- Détecteur Bayésien :
+On veut déterminer pour un vecteur Y observé, quel est l’évènement qui minimise le risque de Bayes.
+1. Calculez l’expression des densités de probabilité PY |E (n|ei).
+2. Calculez la fonction du rapport de vraisemblance.
+3. Démontrez en utilisant le LRT, que la décision optimale selon le critère de vraisemblance se ramène au test :
+H1
+S ≷ γ, H0
+où S = ∑Nk=1 Y [k], et où vous déterminerez la valeur de γ.
+(2.24)
+B- Courbes ROC et tests de Neyman-Pearson :
+On se place dans le cas où le nombre d’observation est N = 1, par soucis de simplification.
+1. Montrez que le LRT peut s’écrire
+H1
+Y ≷ γ, H0
+où vous expliciterez γ.
+2. Calculez les probabilités de détection et de fausse alarme, en fonction d’un seuil
+entier κ = ⌊γ⌋.
+3. Placez sous Matlab les points (pd(κ),pfa(κ)) pour différentes valeurs de n et
+pour différents couples (λ1, λ2). Par exemple, λ1 = 0.5, λ2 = 5.
+4. Comment peut-on tracer entièrement la courbe ROC ? Mettez en place un test
+avec randomisation. Et tracez le résultat.
+5. Bonus : comment se généralisent ces résultats si N > 1 ?
+55
+
+2.10. EXERCICES CHAPITRE 2. ESTIMATION-DÉTECTION
+  Exercice 2.16 : Canal binaire
+ Le canal binaire modélise la situation où un digit (0 ou 1) doit être transmis à travers un canal de communication bruité. On note e0 = 0, et e1 = 1 respectivement les états d’entrée du canal, soit E = {0,1}. L’observation est une variable aléatoire Y ∈ Y = {0, 1}. Les erreurs de transmission sont représentées par les probabilités
+56
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.10. EXERCICES
+    conditionnelles suivantes :
+PY |E (y = 0|0) = 1 − λ0 PY |E (y = 1|0) = λ0
+PY |E (y = 0|1) = 1 − λ1 PY |E (y = 1|1) = 1 − λ1
+Ce modèle est représenté ci-dessous :
+On cherche quelle est la meilleure décision à prendre en réception. Ce problème est typiquement un problème de détection.
+A- Détecteur Bayésien :
+On veut déterminer pour une observation y, l’évènement qui minimise le risque de Bayes. On choisira bien entendu c01 = c10 = 1 et c00 = c11 = 0.
+1. Calculez l’expression du rapport de vraisemblance Λ(y) pour chaque valeur possible de y.
+2. Déterminez la règle de Bayes, dans le cas où les probabilités à priori sont identiques.
+3. CalculezlerisquedeBayescorrespondantàl’estimateuroptimal.Est-ceéquivalent au ML?
+4. Déterminez la règle de Bayes lorsque λ0 = λ1.
+B- Courbes ROC et tests de Neyman-Pearson :
+Dans ce cas, discret, la randomisation est nécessaire pour déterminer la courbe ROC.
+On rappelle que pour trouver un test de Neyman-Pearson de contrainte Pfa ≤ α,
+H1
+il faut rechercher un test d’hypothèse Λ(y) ≷ η, en adaptant le seuil de façon
+ appropriée.
+Nous nous plaçons dans le cas où
+ce qui permet de vérifier
+λ0 + λ1 < 1, λ1 < 1 − λ1 .
+1 − λ0 λ0
+H0
+  1. A partir des valeurs possibles de Λ(y), calculez en fonction du choix du seuil η, les probabilités de fausse alarme et de détection.
+57
+
+2.10. EXERCICES CHAPITRE 2. ESTIMATION-DÉTECTION
+  2. Dans le plan de représentation des courbes ROC, positionnez les points obtenus en fonctions de η.
+3. Calculez et tracer la courbe ROC en prolongeant ces points par randomisation.
+4. Déterminez alors le test de Neyman-Pearson pour une certaine valeur de α et exprimez en fonction de α les valeurs de seuil à choisir η(α) et de randomisation γ0.
+2.10.2 Exercices portant sur la théorie de l’estimation
+ Exercice 2.17 : Estimateurs optimaux pour lois gaussiennes
+ On réalise un ensemble de N mesures regroupées dans le vecteur Y . Chaque mesure
+n
+1. Ecrivez la loi de vraisemblance fY |A (y|a).
+2. Calculez la loi a posteriori fA|Y (a|y).
+3. Calculez les 3 estimateurs aˆMMSE, aˆMMAE et aˆMAP.
+4. Vérifiez puis justifiez à partir de la forme defA|Y (a|y) pourquoi les 3 estimateurs sont identiques.
+est du type Y [k] = a + N[k] où a est un paramètre inconnu, et les N[k] sont des
+échantillons iidselon une loi Normale N (0,σ2). Le paramètre a est modélisé par une
+variable aléatoire A ∼ N (0, σa2).
+ Exercice 2.18 : Estimation d’une loi de Poisson
+ Une station de base pour l’internet des objets est déployée. Afin de dimensionner la cellule, on observe la fréquence à laquelle des paquets sont émis par les objets communicants. On détermine que le nombre de paquets n émis durant un temps Ts est une variable aléatoire notée N, qui suit une loi de Poisson en fonction d’un paramètre a qui est proportionnel au nombre d’objets dans la cellule et à la probabilité d’appel de chaque noeud durant la période Ts.
+an
+PN |A (n|a) = n! exp(−a)
+La station de base veut estimer a à partir de l’observation n. On suppose que a suit une loi exponentielle unilatérale :
+p(a) = λexp(−λa) si a > 0 0 sinon
+où λ est un paramètre connu.
+1. Déterminez la densité de probabilité a postériori. 2. Calculez l’estimateur MMSE.
+3. Calculez l’estimateur MAP.
+4. Sont-ils identiques ? Discutez.
+(2.25)
+58
+
+CHAPITRE 2. ESTIMATION-DÉTECTION 2.10. EXERCICES
+  Exercice 2.19 : Estimation de l’amplitude d’un signal
+ Considérons le cas d’un signal observé Y [k]. Y[k]=A·sk +N[k],
+où sk est un signal connu, d’amplitude unitaire, A est l’amplitude du signal à estimer, et N[k] est un bruit décrit par sa loi multi-variée N (0,Knn), où Knn est la matrice de covariance du bruit. On suppose que l’amplitude suit une loi normale A ∼ N (μ, σa2).
+1. Exprimez la vraisemblance, les les lois marginales de A et de Y .
+2. Montrez que la loi a posteriori est une loi normale, et donnez l’expression de
+ses paramètres : moyenne et variance.
+3. Calculez l’estimateur MMSE, et ainsi que le risque de Bayes associé.
+4. Les 3 estimateurs MAP, MMAE et MMSE sont identiques. Pourquoi ?
+5. Calculez l’estimateur ML et comparez-le au MAP.
+ Exercice 2.20 : Propriétés des estimateurs
+ Revenez, au choix, sur l’un des exercices (2.17, 2.18, 2.19 ). Pour un ou plusieurs estimateurs :
+1. Posez le calcul du biais et de la variance de ces estimateurs. 2. Effectuez le calcul si il est faisable.
+3. Calculez la borne de Cramer-Rao.
+59
+
+2.10. EXERCICES CHAPITRE 2. ESTIMATION-DÉTECTION
+ 60
+
+Chapitre 3
+Théorie de l’information
+3.1 Introduction
+Dans le chapitre précédent, nous avons introduit les éléments clés de la théorie de la détection et de l’estimation, exploités abondamment dans la conception des protocoles de réseau (en couche PHY, mais pas seulement).
+Avant d’attaquer l’étude des systèmes réels, il nous a semblé important de faire le lien entre la théorie de la détection, et la théorie de l’information, en particulier avec le fameux deuxième théorème de Shannon [10] sur la capacité des systèmes de transmission.
+Vous connaissez l’expression de cette capacité sous la forme :
+C = W · log2(1 + SNR),
+pour un canal AWGN. L’objectif de ce chapitre et de prouver ce théorème et d’en percevoir l’importance et le caractère fondamental. Cette capacité de Shannon peut être vue comme la limite fondamentale des systèmes de transmission, au même titre que la vitesse de la lumière est une limite fondamentale pour la vitesse de déplacement des particules.
+C’est pourquoi la théorie de l’information joue un rôle essentiel dans la conception des systèmes de transmission.
+Nous commencerons par définir précisément le canal de transmission étudié (section3.2), puis nous poursuivrons en rappelant quelques notions fondamentales de théorie de l’information, vues en 3ieme année (section 3.3).
+Ce qui est important dans ce chapitre, c’est de comprendre la démarche mathématique suivie par Claude Shannon et qui a permis de poser les bases d’un nouveau champ scientifique à l’interface entre les mathématiques et la physique. Dans cette partie, nous ne cherchons pas à concevoir un système mais à établir la preuve qu’il existe une limite fondamentale à tout système de communication, qui s’exprime sous la forme d’un débit maximal atteignable. Nous montrerons également que cette limite peut être approchée.
+3.2 Modèle de référence d’un canal de transmission
+Par anticipation sur la modélisation des systèmes qui sera détaillée au chapitre 4, la figure 3.1 représente un système de communication avec ses blocs de traitement principaux . Le canal représenté à droite de la figure par une densité de probabilité conditionnelle,
+61
+
+     3.2. CANAL DE TRANSMISSION CHAPITRE 3. THÉORIE DE L’INFORMATION
+ Where are we ?
+fait référence au modèle de canal analytique en bande de base. Nous en étudierons une
+version simplifiée qui est référencée sous le nom de canal gaussien. Nous traiterons de cas plus sophistiqués dans les chapitres suivants.
+  Digital domain
+Baseband domain
+xe [k]
+fY |X
+ye[k] = xe[k] + ne[k]
+     Encoding
+xd [n]
+Discrete PY |X Memoryless
+Channel (DMC)
+yd [n] Decoding
+Interleaving
+Deinterleaving
+Mapping
+Unmapping
+     Baseband memoryless AWGN
+      Figure 3.1 – Modèles de canaux sans mémoire étudiés dans cette section.
+Ce canal relie le signal échantillonné, à valeurs continues, transmis en bande de base, noté xe[k] et le signal échantillonné, à valeurs continues, reçu en bande de base, noté ye[k]. Les variables soulignées indiquent que l’on travaille ici en complexe.
+Le signal reçu est synchronisé, compensé en phase et en amplitude, et le canal est supposé idéal à bruit additif gaussien, de telle sorte que l’on peut écrire :
+ye[k] = xe[k] + ne[k], (3.1)
+où n [k] sont des échantillons de bruit gaussien, iid. Ainsi chaque échantillon est distribué e ( 2)
+selon une loi normale complexe N 0, σ .
+Il faut bien noter quel la sortie y [k] ne dépend que de xe[k], et non des autres entrées.
+e()
+On peut également le décrire par ses probabilités : fY |X ye[k]|xe[k] , autrement dit par la
+probabilité d’observer un symbole ye[k] lorsque l’on émet le symbole xe[k]. Cette densité de probabilité dépend directement et uniquement de la densité de probabilité du bruit. Nous retrouvons les notations vues dans le chapitre précédent et l’équivalence avec un problème de détection saute aux yeux.
+Considérons un signal de n symboles émis. Le signal d’entrée est un vecteur aléatoire, notéXn =[X[1],X[2],...,X[n]],etlesignaldesortieestnotéYn =[Y[1],Y[2],...,Y[n]]. Ainsi pour ce modèle, on a
+n n ∏n fY n|Xn (y |x ) =
+k=1
+Cette équivalence découle du modèle gaussien iid, où les réalisations sont indépendantes entre échantillons. En théorie de l’information, ce modèle est appelé gaussian memoryless channel, canal gaussien sans mémoire (GMC).
+Bien que ce modèle soit particulièrement simple, le calcul de sa capacité, c’est à dire du débit maximal d’information, n’est pas trivial. Bien entendu, depuis les travaux de
+62
+fY |X (y[k]|x[k]) . (3.2)
+
+CHAPITRE 3. THÉORIE DE L’INFORMATION 3.3. RAPPELS
+ Shannon, de nombreux cas plus complexes ont été étudiés (canaux avec évanouissements, non stationnaires, MIMO, etc...), dont nous retrouverons certains au cours des chapitres suivants.
+Mais avant d’étudier ce canal, plus précisément, nous allons étudier le cas du canal discrete memoryless channel, canal discret sans mémoire (DMC), c’est à dire un modèle où les entrées et sorties prennent leurs valeurs dans des espaces discrets. Typiquement, sur la figure 3.1, nous allons nous placer en amont de la modulation numérique et de l’entrelaceur (interleaving). Rappelons que la modulation numérique transforme un symbole discret en un symbole complexe codé dans le plan I − Q (in phase, quadrature). Le but de l’entrelaceur est de mieux répartir les erreurs et de réduire les corrélations possibles entre symboles successifs. Il n’introduit pas de codage, mais il permet de faire mieux coller le canal physique au modèle théorique du canal DMC.
+Le signal d’entrée est un mot binaire (ou M-aire si on travaille directement dans un alphabet de plus grande dimension) de longueur n, et le signal de sortie est un mot binaire (ou M-aire) de longueur n également. Le canal correspondant, discret et sans mémoire, est caractérisé par l’ensemble des probabilités conditionnelles, d’observer yj sachant que l’on a émis xi et notée PY|X (yj|xi). Sous les hypothèses d’indépendance, nous pouvons écrire
+( n n ) ∏n PY n|Xn yi |xj ) =
+k=1
+Si les symboles sont binaires, le canal correspondant est simplement le canal canal binaire symmétrique –binary symmetric channel– (BSC), que vous avez déjà étudié en cours de CMN. Ce canal est étudié à la section 3.4, puis nous passerons au canal gaussien dans la section 3.5.
+3.3 Rappels de théorie de l’information
+Avant d’étudier ce canaux, nous donnons quelques rappels de théorie de l’information (asymptotique). Nous ne reviendrons pas sur toutes les définitions et propriétés vues en 3ieme année, mais nous rappelons les quelques éléments nécessaires à la compréhension du chapitre.
+Pour une étude approfondie de la théorie de l’information, nous suggérons le livre de Thomas et Cover [1], mais qui va bien au-delà du cours.
+3.3.1 Entropie
+PY |X (yi[k]|xj[k]). (3.3)
+ Définition 3.1 : Entropie d’une source
+ L’entropie d’une variable aléatoire est définie par la relation suivante :
+∑
+k
+Si la fonction log utilisée est en base 2, le résultat est en bits. Si on prend le logarithme néperien, on obtient un résultat en nats.
+H(A) := −
+PA (ak) log (PA (ak)) .
+63
+
+3.3. RAPPELS CHAPITRE 3. THÉORIE DE L’INFORMATION
+ Cette entropie représente directement le nombre de bits minimal nécessaire pour coder l’information d’une telle source. Notez bien le caractère aléatoire de la source.
+On rappellera que l’entropie est maximale, pour un domaine de définition donnée A, si la distribution est uniforme, autrement dit, si tous les symboles sont équiprobables.
+Cette fonction d’entropie possède quelques propriétés intéressantes, que nous énonçons ici. L’entropie conjointe de deux variables aléatoires peut s’exprimer à partir de l’entropie conditionnelle :
+H(A, B) = H(A) + H(B|A), = H(B) + H(A|B).
+Si ces variables aléatoires sont conditionnées par une 3ieme variable, on obtient : H(A, B|C) = H(A|C) + H(B|A, C).
+(3.4)
+(3.5) où (A,B|C) s’interprète comme A et B conditionnés à C, alors que (B|A,C) s’interprète
+comme B conditionné à (A et C).
+Rappelons également que le conditionnement d’une variable aléatoire réduit toujours
+l’entropie :
+3.3.2 Information mutuelle
+H(A|B) ≤ H(A). (3.6)
+ Exercice 3.1 : Entropie
+ Quelques exercices sur l’entropie
+1. Quelle est l’entropie au sens théorie de l’information d’un jet de dés non pipé ?
+2. Quelle est l’entropie au sens théorie de l’information d’un double jet de dés non pipé ?
+3. On effectue un jeu de pile ou face, à plusieurs tours, et on arrête lorsque l’on obtient face. On note X la variable aléatoire représentant le nombre de tirages réalisés. Quelle est l’entropie de X ?
+4. soit X une variable aléatoire à valeurs discrètes (nombre fini). Pour chaque cas ci-dessous déterminez la relation entre H(X) et H(Y ) :
+— Y =exp(X) — Y =cos(X)
+ Définition 3.2 : Information mutuelle
+ L’information mutuelle entre deux variables aléatoires discrètes A et B est définie
+par
+∑ [ PA,B(a,b) ]
+I(A;B)=
+PA,B(a,b)·log PA(a)·PB(b) .
+ a∈A,b∈B
+L’information mutuelle est une mesure de l’information commune entre les 2 variables Aet B, et qui est calculée à partir d’une mesure de la différence entre la distribution conjointe et les distributions marginales de ces variables aléatoires.
+64
+
+CHAPITRE 3. THÉORIE DE L’INFORMATION 3.3. RAPPELS
+ On peut montrer la relation suivante, qui est illustrée à la figure 3.2 :
+Figure 3.2 – Information mutuelle, entropie et équivoque. Exercice 3.2 : Exercices sur l’information mutuelle
+1. Donnez des exemples concrets mettant en jeu 3 variables aléatoires X, Y et Z, et pour lesquels, soit on a I(X;Y |Z) < I(X;Y ), soit on a I(X;Y |Z) > I(X;Y ).
+2. Soient X1 et X2 deux variables distribuées identiquement, mais non nécessairement indépendantes. On note
+ Propriété 3.1 : Information mutuelle et entropie conditionnelle
+ I(A; B) = H(A) − H(A|B).
+     3.3.3
+ρ = 1 − H(X2|X1). H(X1)
+— Montrez que ρ = I(X1;X2). H(X1)
+— Montrezque0≤ρ≤1. — Quand a-t-on ρ = 0? — Quand a-t-on ρ = 1?
+Règle de chaînage (Chain rule)
+La règle de chaînage est utilisée dans de nombreux résultats de théorie de l’information et rentre en jeu lorsque l’on manipule plusieurs variables simultanément.
+ Propriété 3.2 : Chain Rule
+ Soit X1, X2, . . . , Xn un ensemble de n variables aléatoires et soit Y une variable aléatoire. On note Xn = [X1, . . . , Xn]t. Alors :
+∑n i=1
+I(Xn; Y ) =
+I(Xi; Y |Xi−1),
+65
+
+3.3. RAPPELS CHAPITRE 3. THÉORIE DE L’INFORMATION
+  où Xi = [X1,...,Xi]t.
+Ce résultat est utilisé pour établir les preuves de capacité dans un canal sans mémoire.
+3.3.4 Théorème de l’inégalité du traitement de l’information, ou Data Processing Inequality
+Définissons tout d’abord ce qu’est une chaîne de Markov pour des v.a.
+ Définition 3.3 : chaîne de Markov
+ On dit que les variables X, Y et Z forment une chaîne de Markov si leur probabilité conjointe vérifie
+PXY Z (x,y,z) = PX (x) · PY |X (y|x) · PZ|Y (z|y). On représente une chaîne de Markov sous la forme
+X → Y → Z.
+Cette définition est bien sûr extensible à N variables. L’élément important est que les variables (X,Y,Z) forment une chaine de Markov si la dépendance statistique entre X et Z n’existe qu’au travers de Y .
+On peut alors établir le théorème suivant :
+Ce théorème donne un résultat fondamental pour la théorie de l’information appliquée aux communications numériques. Supposons que l’on observe Y à la sortie d’un canal de transmission, et que l’on veut estimer X. Et bien tout traitement des données reçues en Y , qu’il soit déterministe ou stochastique ne pourra que réduire l’information mutuelle, autrement dit l’information connue sur X. Ainsi, tout traitement a posteriori des données reçues ne peut que maintenir ou réduire l’information reçue (sauf à exploiter d’autres informations, que l’on appelle side information).
+Beaucoup d’autres résultats importants relatifs à l’information mutuelle ont été établis, voir par exemple [1].
+ Théorème 3.1 : Data Processing Inequality
+ Si X → Y → Z. forme une chaine de Markov, alors I(X; Z) ≤ I(X; Y ).
+ Exercice 3.3 : Exercice de révision
+ Tous ces théorèmes seront utilisés dans les 2 sections suivantes pour démontrer le théorème de la capacité de Shannon.
+1. A titre d’exercice retrouvez dans les preuves l’usage de ces théorèmes et vérifiez qu’ils sont bien applicables.
+66
+
+CHAPITRE 3. THÉORIE DE L’INFORMATION 3.4. CANAL DMC
+ 3.4 Etude du canal DMC
+3.4.1 Définition du canal discret sans mémoire (DMC)
+Nous nous intéressons ici au modèle de canal qui transforme les échantillons xd[k] en échantillons yd[k], i.e.
+PYd |Xd
+xd[k] → yd[k]
+, canal qui est représenté à gauche à la figure 3.1. Nous considérons de plus un canal binaire symétrique, ce qui veut dire que chaque utilisation de canal est codée sur X = {0, 1}.
+L’étude de la capacité de canal consiste à étudier un code long, utilisant n channel uses (on évitera d’utiliser le terme symbole qui peut prêter à confusion, et on préfèrera garder le terme de channel uses, pour ce qui relève de la théorie de l’information). On définit tout d’abord le canal DMC.
+ Définition 3.4 : Canal discret sans mémoire (DMC)
+ Un canal DMC, noté (X,Y,P
+— Un alphabet X = {x1, . . . , xN } des valeurs d’entrée. — Un alphabet Y = {y1,...,yN′} des valeurs de sortie.
+— Une probabilité conditionnelle PY |X où Y et X sont les variables aléatoires associées à un échantillon.
+Y |X
+), est défini par :
+La transmission d’une certaine quantité d’information sur un canal discret sans mémoire se fait sur n channel uses, avec une méthode de transmission définie par :
+ Définition 3.5 : Transmission sur un canal discret sans mémoire
+ Un code (M, n) pour un canal DMC (X , Y, P
+) est défini par les éléments suivants : — une fonction de décodage fdec : Yn → W basée sur la définition d’une partition
+deY :{Di;i∈W},telsque:
+— Di = {yn;fdec(yn) = i} ⊂ Yn, —Di∩Dj=∅; ∀i̸=j,
+— D ic = Y n − D i .
+Le débit de de transmission de ce code est R = log(M). n
+— un ensemble d’indices W = {1,2,...,M},
+— une fonction de codage fenc : W → X n, qui constitue un dictionnaire (codeebook)
+de signaux d’émission xn1 , . . . , xnM ,
+Y |X
+Comme nous l’avons déjà dit, l’objectif de cette section n’est pas de proposer une technique de codage efficace mais de définir les limites théoriques d’une telle technique de transmission.
+Pour cela nous avons déjà défini le débit (noté R pour rate) qui est une métrique importante. L’autre métrique importante est la probabilité d’erreur.
+67
+
+3.4. CANAL DMC CHAPITRE 3. THÉORIE DE L’INFORMATION
+ On note λ(n) la probabilité d’erreur de décodage du mot code wi et qui est donnée i
+par :
+λi =
+L’erreur maximale est notée λ(n) = maxi λ(n).
+(n)∑ nn
+yn∈Yn
+PYn|Xn(y |xi)·1{wˆi=fdec(yn)̸=wi}
+(3.7)
+i
+La probabilité d’erreur est égale à la moyenne des erreurs. Si W suit une loi uniforme,
+alors :
+1 ∑M eMi
+P(n) =
+λ(n). (3.8)
+i=1
+ Définition 3.6 : Code réalisable,
+ Un code (M,n,ε) est réalisable, si il existe un technique de transmission qui permet de transmettre log(M) bits en n channel uses et telle que P(n) ≤ ε. Rappelons que
+le débit associé est égal à R = log(M)/n. Nous avons donc clairement à étudier un compromis entre 3 critères : latence (au travers de n), fiabilité (avec Pe) et débit (avec R) .
+e
+La figure 3.3 représente la modélisation d’un système de transmission dans un canal sans mémoire, avec les différents critères à optimiser.
+Figure 3.3 – Modélisation du canal DMC et des techniques de codage associées.
+3.4.2 Détecteur optimal
+Maintenant que nous avons décrit la formulation mathématique proposée par Claude Shannon [10] pour analyser les performances des systèmes de communication, nous allons l’analyser en partie avec les outils d’estimation/détection vus dans le chapitre précédent.
+Fixons arbitrairement les fonctions d’encodage wi → xni , nous avons donc défini l’espace des évènements (au sens utilisé en théorie de la détection), c’est à dire que l’on peut identifier E ≡ W ≡ Xn.
+ 68
+
+CHAPITRE 3. THÉORIE DE L’INFORMATION 3.4. CANAL DMC
+ Pour maximiser les performances de notre système, il nous faut déterminer le détecteur optimal, c’est à dire définir la bonne décision en réception pour toute observation appartenant à Yn.
+Si :
+— toutesleserreurssontsupposéesavoirlemêmecoût(i.e.estimerCij =cste,∀(i,j);i̸=
+j) et,
+— la source est de distribution uniforme,
+alors nous savons d’après les résultats de théorie de la détection que le choix optimal pour minimiser l’erreur moyenne est l’estimateur ML, autrement dit :
+wˆ = arg max PY |X (y|xi) . (3.9) i∈{1,2,...,M }
+Bien que très simple à écrire, cet estimateur pose quelques difficultés dans le cas général :
+calculer analytiquement la probabilité d’erreur associée est mathématiquement très complexe,
+et mettre en oeuvre ce détecteur directement nécessiterait un nombre d’opérations exponentiellement élevé (il faudrait tester la vraisemblance des 2n mot-codes).
+Le cas du canal AWGN, y = xi + n, est un peu plus gérable. car l’on peut écrire wi = arg mini∈{1,2,...,M} ||y − xi||2. Il faut alors rechercher le mot code le plus proche de l’observation.
+Cependant, optimiser un système de transmission nécessite également de choisir les fonctions d’encodage permettant de maximiser la capacité, et de minimiser les erreurs de transmission. C’est à cette question que Claude Shannon tenta de répondre en jetant les bases de la théorie de l’information.
+Et nous allons esquisser dans la suite les bases de la preuve qui a conduit à l’établissement de cette fameuse borne.
+3.4.3 Enoncé du théorème de capacité
+Maintenant que le problème est posé nous pouvons énoncé le fameux théorème de Shannon pour un canal sans mémoire. Nous n’aborderons pas ici le problème de façon plus général, en particulier pour des canaux à mémoire. Vous pouvez consulter les travaux de S. Verdù dans [11], qui étudie cette même capacité pour un canal quelconque avec ou sans mémoire, et non stationnaire. Ceci sort très largement du cadre de ce cours.
+La première définition que C. Shannon a appelé capacité d’information est basée sur l’information mutuelle.
+Autrement dit, la capacité d’information est égale à la plus grande valeur de l’information mutuelle que l’on peut obtenir en choisissant PX. Attention cependant, l’obtention de ce maximum peut s’avérer parfois difficile pour des canaux un peu exotiques !
+ Définition 3.7 : Capacité d’information
+ La capacité d’information d’un canal discret sans mémoire est définie par :
+C := max I(X; Y ). PX
+69
+
+3.4. CANAL DMC CHAPITRE 3. THÉORIE DE L’INFORMATION
+ Cette définition est essentiellement mathématique et ne revêt pas à ce stade de sens physique exploitable pour la transmission.
+La deuxième définition s’appuie sur les (M, n, ε)-codes définis ci-dessus.
+Pour bien comprendre cette définition, il faut analyser tous les termes dans le détail. L’idée est que comme il est difficile de trouver le meilleur code, pour une valeur de n finie, nous allons regarder le comportement du codage quand n → ∞. Lorsque n croit, il faut que la taille du dictionnaire, M(n), croisse exponentiellement pour préserver le débit. Le but est alors de montrer que si l’on effectue notre codage sur des très grands codes, l’erreur doit tendre vers 0 et la transmission devient sans erreur.
+Il faut bien comprendre que dans cette approche, nous abandonnons toute contrainte de latence et nous privilégions l’objectif de débit et la contrainte de fiabilité.
+Alors que la première définition 3.7 est purement mathématique, cette deuxième définition est purement physique. Il s’agit du plus grand débit que l’on peut obtenir dans un canal, avec une erreur qui tend vers 0 et une latence infinie.
+Il ne nous reste plus qu’à établir que la capacité opérationnelle et la capacité d’information sont égales, ce qui n’est n’est pas trivial.
+L’approche de la théorie de l’information consiste à aborder ce problème en deux étapes. On va d’abord démontrer que pour un canal donné PY |X , un débit réalisable ne peut être supérieur à la capacité d’information I(X;Y). Ce qui nous fournira une borne supérieure. Il restera alors à démontrer qu’il existe une méthode de codage (même un peu artificielle) qui permet d’atteindre I (X ; Y ). Dès lors, la démonstration est complète.
+3.4.4 Converse - Théorème de Fano
+Pour établir cette borne supérieure, nous allons uniquement nous appuyer sur les propriétés de l’entropie et de l’information mutuelle, et sur une inégalité importante que l’on appelle l’inégalité de Fano du nom de son auteur (il a fait cette démonstration en 1942, qui lui a valu plus tard le Claude Shannon award).
+Voilà les grandes lignes de ce résultat qui démontre que la capacité d’information joue le rôle d’une limite stricte au débit d’information dans un canal.
+ Définition 3.8 : Débit réalisable
+ Si il existe une série de codes (M(n),n,ε(n)) telle que M(n) ≥ 2nR, et tel que ε(n) → ∞ quand n → ∞, alors le débit R est dit réalisable.
+ Définition 3.9 : Capacité opérationnelle
+ La capacité opérationnelle d’un canal est définie comme le maximum de tous les débits réalisables.
+70
+
+CHAPITRE 3. THÉORIE DE L’INFORMATION 3.4. CANAL DMC
+ Commençons par établir une première relation entre le débit R et l’information mutuelle. (i)
+(3.10)
+où (i) est établi par définition de l’entropie de la source (équiprobable), qui est égale au nombre de bits codés, soit nR. (ii) est établi par propriété de l’information mutuelle (prop.3.1). Enfin, (iii) découle de la propriété de la chaîne de Markov en considérant W → X n → Y n → Wˆ .
+Nous allons étudier successivement les deux termes restant. 1. Entropie de l’erreur. L’inégalité de Fano stipule que
+H(W|Wˆ)≤1+P(n) ·nR (3.11) e
+Pour ne rien laisser au hasard, prouvons cette inégalité. Nous introduisons tout d’abord une variable aléatoire E, binaire, égale à 1 si il y a erreur de transmission et à 0 sinon.
+nR = H(W)
+(ii) ˆ ˆ
+= H(W|W)+I(W;W) (iii)
+≤ H(W|Wˆ)+I(Xn;Yn)
+Nous pouvons écrire que :
+ˆ(i) ˆ ˆ H(W|W) = H(E,W|W) − H(E|W,W)
+(ii) ˆ
+= H(E,W|W)−0
+(iii) ˆ ˆ = H(E|W) + H(W|E,W) 􏰂 􏰁􏰀 􏰃 􏰂 􏰁􏰀 􏰃
+≤1 ≤Pe log|W|
+(3.12)
+Nous obtenons (i) en utilisant (3.5).
+(ii) est obtenu car H(E|W, Wˆ ) = 0. En effet, si l’on connait W et Wˆ , on connait le mot émis et le mot reçu. On sait donc si il y a erreur ou pas et E est alors certain. Enfin, (iii) est obtenu en utilisant (3.5) encore une fois, mais en permutant les variables.
+Dans la dernière expression, pour le premier terme, on a H(E|Wˆ ) ≤ H(E) car le conditionnement réduit toujours l’entropie. On peut noter, par définition que H(E) = h(Pe) qui est l’entropie d’une variable de Bernouilli. Elle est au maximum égale à 1. Le deuxième terme peut être développé en le conditionnant par les différents états possible de l’erreur :
+H(W|E,Wˆ ) = H(W|E = 0,Wˆ ) · PE(0) + H(W|E = 1,Wˆ ) · PE(1). (3.13)
+Or, H(W|E = 0,Wˆ ) est nul, car si E = 0, il n’y a pas d’erreur, et donc l’équivoque est nulle. D’autre part, PE(1) = Pe, par définition, et H(W|E = 1,Wˆ ) = log|W| = nR, ce qui termine la preuve de l’inégalité de Fano. Notons que ce théorème est très général. Il permet d’établir une relation explicite entre la probabilité d’erreur et l’équivoque, qui est d’ordre mathématique.
+2. Informationmutuelle.Nousutilisonsiciaussilespropriétésclassiquesdel’information 71
+
+3.4. CANAL DMC CHAPITRE 3. THÉORIE DE L’INFORMATION
+ mutuelle :
+ce qui conclue la preuve.
+I(Xn; Y n) =i H(Y n) − H(Y n|Xn)
+ii ∑n = H(Y n) −
+H(Yi|Y1, . . . Yi−1Xn)
+H(Yi|Xi)
+iii
+n
+) −
+i=1 ∑n
+i=1
+(3.14)
+= H(Y
+iv ∑n ≤
+i=1
+H(Yi) −
+∑n i=1
+H(Yi|Xi)
+où (i) provient encore une fois de Prop.3.1. (ii) découle de la règle de chainage (prop.3.2), et (iii) du fait que le canal est sans mémoire et du fait que (Y1, . . . , Yi−1) → Xn → Yi forme une chaine de Markov. La dernière inégalité provient du fait que l’entropie conjointe est inférieure ou égale à la somme des entropies individuelles. Pour finir, on peut regrouper les deux sommes, et on obtient :
+I(Xn; Y n) ≤ nI(X; Y ) ≤ nC. En effet, il découle alors de (3.10) que :
+nR ≤ 1 + P(n)nR + nC. e
+Soit, en divisant par n et en prenant n → ∞,
+R ≤ C,
+(3.15)
+(3.16)
+(3.17) car P (n) → 0 quand n → ∞, par définition du débit atteignable (def.3.8). Ce qui prouve
+e
+que pour être atteignable, un débit doit être inférieur à la capacité d’information C. La capacité opérationnelle est donc inférieure ou égale à la capacité d’information.
+On a donc prouvé que la capacité d’information est une borne supérieure des débits atteignables.
+3.4.5 Achievability - Typicalité
+Le travail d’étude de la borne n’est pas entièrement achevé, car on ne sait pas si cette borne est atteignable ou si elle surestime très largement tout débit réalisable. Pour pouvoir dire que la capacité opérationnelle est égale à la capacité d’information, il faut maintenant prouver que C est atteignable. C’est à dire qu’il existe un code (2nC,n,ε) quelque soit ε > 0 et pour n suffisamment grand .
+La preuve utilisée par C. Shannon repose sur plusieurs éléments : — Les propriétés des séquences typiques.
+— L’entropie encore une fois.
+— La notion de codage aléatoire (random codes).
+Sur la base de ces éléments, il démontre qu’un codage aléatoire permet d’atteindre les bornes. Pour plus de détails je vous invite à lire le chapitre 7 de [1], qui permet d’appréhender complètement cette preuve qui a joué un rôle essentiel dans le design des communications numériques modernes.
+72
+
+CHAPITRE 3. THÉORIE DE L’INFORMATION 3.5. CANAL GAUSSIEN
+ 3.5 Capacité du canal Gaussien
+Dans la section précédente nous avons donné les grandes lignes de la démonstration de C. Shannon pour la capacité des canaux discrets sans mémoire.
+Nous souhaitons maintenant élargir ce résultat au cas du canal AWGN, au plus près du canal physique c’est à dire à partir des symboles émis et reçus en bande de base, tel que représenté à droite de la figure 3.1.
+Le signal transmis échantillonné est construit à partir d’une séquences de symboles xe(1)...,xe(N), à valeurs dans C. Cependant, chaque symbole complexe peut être vu comme la composition de deux symboles réels xI(k) et xQ(k). Ainsi, la transmission de N échantillons complexes, est équivalent à la transmission 2N échantillons réels. Si la démodulation radio-fréquences (RF) est parfaite, et que la phase est corrigée, alors un canal complexe échantillonné sans mémoire est équivalent à un canal réel échantillonné sans mémoire, avec 2 channel uses par échantillon. On parlera par la suite de n utilisations de canal, pour garder les notations usuelles en théorie de l’information.
+Nous considérons donc à partir de là que le canal AWGN est un canal à valeurs réelles, représenté par : ye[k] = xe[k] + ne[k], ou encore décrit par la densité de probabilité conditionnelle :
+1 − (y−x)2
+fY|X(y|x)=√2πσ e 2σn2 . (3.18)
+n
+La question qui nous préoccupe est de savoir quelle est la capacité de ce canal ?
+Pour répondre à cette question, nous allons suivre le même raisonnement que pour le canal discret, mais nous avons besoin pour cela de définir ce qu’est l’entropie différentielle et énoncer quelques propriétés. L’entropie H(X) a été définie pour une variable X à valeurs discrètes. Nous étendons cette définion à une variable X à valeurs dans un espace continu.
+3.5.1 Entropie différentielle
+  Définition 3.10 : Entropie différentielle
+ L’entropie différentielle notée h(X) pour une variable aléatoire continue de densité fX(x) est définie par :
+∫
+u∈X
+h(X) = −
+fX(u)·logfX(u)·du
+73
+
+3.5. CANAL GAUSSIEN CHAPITRE 3. THÉORIE DE L’INFORMATION
+  Exercice 3.4 : exercices sur l’entropie différentielle
+ — A titre d’exemple, nous vous laissons vérifier les propriétés suivantes :
+1. Si fX(x) est une loi uniforme, alors h(X) = log(a).
+2. Si fX (x) est une loi normale centrée N (0, σ2), alors h(X) = 21 log(2πeσ2) bits.
+— Calculez l’entropie différentielle pour les cas suivants :
+1. une variable aléatoire X de densité exponentielle fX (x) = λ · e−λx, x ≥ 0. 2. une variable aléatoire X de densité de Laplace fX (x) = 12 λ · e−λ|x| , x ≥ 0.
+74
+
+CHAPITRE 3. THÉORIE DE L’INFORMATION 3.5. CANAL GAUSSIEN
+  3. une variable aléatoire Z = X + Y , où X et Y sont des variables normales, indépendantes suivant N (μ1, σ12), N (μ2, σ2).
+Nous retiendrons quelques propriétés importantes de l’entropie différentielle. Tout d’abord, notons que la loi normale joue un rôle essentiel. En effet, nous pouvons énoncer le théorème suivant :
+ Théorème 3.2 : Entropie différentielle maximale
+ Soit une variable aléatoire continue X de pdf fX : R → [0, ∞) de variance σ2. Alors l’entropie différentielle h(X) est maximale si et seulement si fx suit une loi normale
+centrée. Dès lors :
+h(X) ≤ 21 log(2πeσ2).
+Ce théorème nous dit qu’ à puissance moyenne fixée (σ2), la loi qui maximise l’entropie est la loi normale centrée. Nous ne le démontrerons pas ici mais vous pourrez en trouver la démonstration dans le chapitre 8 de [1].
+L’entropie différentielle possède les mêmes propriétés que l’entropie. Nous pouvons donc définir l’entropie conditionnelle :
+∫()
+fXY (x, y) log fX|Y (x|y) dxdy.
+Elle vérifie :
+Enfin, la règle de la chaine (chain rule) s’écrit également :
+h(X|Y ) = −
+(3.19)
+(3.20)
+(3.21)
+h(X1,...,XN) =
+h(Xi|X1,X2,...,Xi−1).
+X,Y
+h(X|Y ) = h(X,Y ) − h(Y ). ∑n
+i=1
+Un autre résultat important que nous utiliserons pour les systèmes MIMO est le suivant :
+ Théorème 3.3 : Entropie d’une loi Normale multi-variables
+ Soit X1 . . . , XN un ensemble de variables aléatoires normales de moyenne μ et de matrice de covariance K. Alors
+h(X1, . . . , XN ) = 12 log(2πe)ndet(K).
+75
+
+3.5. CANAL GAUSSIEN CHAPITRE 3. THÉORIE DE L’INFORMATION
+ Pour finir, l’information mutuelle se définie comme pour les variables discrètes, par :
+ Définition 3.11 : Information mutuelle pour les variables continues
+ L’information mutuelle entre deux variables aléatoires continuesX et Y est définie
+par
+∫∫ [fX,Y(x,y)] I(X;Y)= fX,Y (x,y)·log f (x)·P (y) ·dx·dy.
+x∈R y∈R X Y
+ Et on peut démontrer également la relation suivante entre information mutuelle et entropie différentielle :
+I(X;Y) = h(X)−h(X|Y) = h(Y)−h(Y|X). (3.22)
+3.5.2 Converse
+Nous avons maintenant tous les éléments pour étudier la capacité du canal Gaussien sans mémoire.
+Il faut tout d’abord considérer une contrainte d’énergie ou de puissance sur nos symboles. Sans contrainte d’énergie, la capacité serait infinie !
+Nous imposons donc que chaque mot code (x1, . . . xn) vérifie une contrainte de puissance moyenne :
+1 ∑n
+x2i ≤P (3.23) Dès lors la capacité d’information est donnée par :
+n
+i=1
+ Définition 3.12 : Capacité d’information du canal Gaussien
+ La capacité d’information d’un canal Gaussien sans mémoire est définie par :
+C := max I(X;Y) fX ;E[X 2 ]≤P
+1(P) =2log 1+N
+La première ligne est la définition de la capacité d’information. La principale différence avec le cas discret réside dans le fait que l’on contraint le domaine de X à respecter la contrainte de puissance en moyenne. La deuxième ligne est une conséquence de cette définition que nous allons prouver.
+D’après (3.22), nous pouvons écrire que
+I(X;Y) = h(Y)−h(Y|X).
+Et comme Y = X + Z, où Z représente la variable aléatoire de bruit, on a également :
+I(X; Y ) = h(Y ) − h(Z). 76
+
+CHAPITRE 3. THÉORIE DE L’INFORMATION 3.6. OUVERTURE
+ D’après les propriétés de l’entropie différentielle, h(Z) = 12 log(2πeσn2). On note la puissance du bruit N := σn2 . Enfin, d’après le théorème de l’entropie différentielle maximale, h(Y ) est maximal si et seulement si Y suit une loi normale. Sa puissance est égale à la somme de la puissance de X et de celle de Z. Ce qui donne :
+I(X; Y ) ≤ 21 log(2πe(P + N)) − 12 log(2πeN) 1(P)
+2log 1+N
+Il reste à montrer que la capacité opérationnelle est bien bornée par cette capacité
+d’information. Nous suivons les étapes développées dans (3.14) :
+nn∑n ∑n
+I(X ;Y )≤
+i=1
+∑n ≤
+h(Yi)− h(Yi|Xi) i=1
+∑n
+h(Yi) − h(Zi) i=1
+(3.24)
+où Pi est la puissance moyenne de l’échantillon i. Pour arriver au résultat souhaité il faut utiliser le théorème de Jensen :
+()
+Comme la fonction 1 log 1 + Pi est une fonction strictement concave, on peut poursuivre 2N
+le développement ( en appliquant l’inégalité de Jensen avec ak = 1/n) : nnn(P)
+avec P = 1 ∑ Pi. ni
+i=1
+∑n 1 ( P )
+≤ 2log1+Ni i=1
+ Théorème 3.4 : Inégalité de Jensen
+ Soit f(x) une fonction concave. Alors, la fonction vérifie : ∑n a f(x ) (∑n a x )
+k=1k k k=1kk ∑n a ≤f ∑n a .
+  k=1 k k=1 k
+I(X;Y)≤2log1+N ,
+(3.25)
+Ce qui permet de terminer la preuve du converse. De même que pour le canal discret, nous ne développerons pas ici la preuve d’atteignabilité de cette capacité, qui repose sur les mêmes arguments que dans le cas discret, et en particulier sur la notion de séquences typiques.
+3.6 Ouverture : théorie de l’information en réseaux
+Ces résultats de capacité ont été établi dès la fin des années 50 et ont donc guidé les travaux de développement des techniques de codage.
+77
+
+3.7. OUVERTURE CHAPITRE 3. THÉORIE DE L’INFORMATION
+ Grâce au travail de Shannon, il est possible de confronter un code particulier à ces bornes théoriques. Cependant, l’extension de cette approche au contexte des réesaux multi- sauts est particulièrement complexe. Il s’agit d’arriver à exprimer de façon mathématique
+la capacité théorique d’un ensemble de paires émetteurs-récepteurs partageant un environnement radio commun.
+Le problème est relativement bien résolu pour les réseaux filaires, mais le contexte des réseaux radio offre une complexité extrêmement grande. On trouve dans la littérature des résultats de capacité exacts pour des modèles de petite taille (canal à relais constitué d’un émetteur, d’un récepteur et d’un relais), ou des bornes approchées dans des grands réseaux denses. Mais à ce jour la capacité théorique de réseaux radio n’est pas établie exactement.
+3.7 Ouverture : régime non asymptotique
+Les résultats de capacité de Shannon sont dits asymptotiques, car il s’intéresse au débit atteignable quand n → ∞. Ces résultats se sont révélés suffisants dans l’épopée récente des communications, car l’objectif poursuivi par l’industrie était d’atteindre des très haut débits pour des flux constant de type voix ou vidéo.
+Cependant, le contexte de l’Internet des objets apporte de nouvelles perspectives avec l’objectif de transmettre des petits paquets (petites quantités d’information) de façon dispersée dans le réseau. Etablir les bornes théoriques de performance dans ce contexte se révèle être une tâche très ardue à laquelle une partie de la communauté scientifique se consacre actuellement, dans l’espoir de découvrir de nouveaux protocoles ou codage capables de dépasser les performances des protocoles actuels.
+3.8 Synthèse du chapitre
+Nous avons introduit dans ce chapitre les notions fondamentales à la base de la théorie de l’information et en particulier du théorème de Shannon sur la capacité de canal.
+Ces outils mathématiques solides sont la base de nombreux travaux essentiels en ingénierie. Ils permettent de poser de façon rigoureuse de nombreux problèmes auquel peut être confronté un ingénieur. Nous n’avons fait qu’aborder les bases de ces théories, qui restent très largement exploitées dans de nombreux travaux de recherche des plus actuels.
+Les connaissances développées dans ce chapitre sont les suivantes : 1. Principes de la théorie de l’information :
+— Rappels sur l’entropie et l’information mutuelle. — Capacité des canaux DMC.
+— Capacité du canal GMC.
+Enfin, au travers des développements proposés et des exemples discutés nous avons développé les savoir-faire suivants :
+1. Evaluer les performances d’un système en termes de capacité ou de probabilité d’erreur.
+2. Utiliser la théorie de la détection pour définir un récepteur optimal. 78
+
+CHAPITRE 3. THÉORIE DE L’INFORMATION 3.9. EXERCICES
+ 3.9 Exercices
+Exercice 3.5 : Canal à effacement
+Un canal binaire à effacement sans mémoire, est une extension du canal binaire sans mémoire, où nous avons un troisième état en sortie, tel que représenté à la figure suivante
+Capacité du canal à effacement
+1. Déterminez une borne supérieure de la capacité de ce canal dans le cas où il est symétrique. Vous pourrez utiliser l’hypothèse idéale que la source sait quand le canal produit un effacement.
+2. Etendez l’étude au cas asymétrique.
+Canal gaussien avec BPSK On considère maintenant un canal gaussien, utilisé avec une modulation BPSK.
+1. Développezledétecteuroptimalenréceptionlorsquel’ontravailleindépendamment sur chaque symbole.
+2. Calculez la probabilité d’erreur du canal binaire symétrique équivalent.
+3. Calculez la capacité de ce canal et comparez à la capacité du canal gaussien.
+4. Tracez les courbes en fonction du SNR.
+Canal gaussien vs canal à effacement Le démodulateur retourne maintenant 3 états : 0, 1, ou incertain.
+1. Montrez que ce système peut être modélisé pars la succession d’un canal binaire symétrique et d’un canal binaire à effacement.
+2. Calculez la capacité du système. Vous utiliserez les propriétés de l’information mutuelle.
+3. Tracer la courbe de la capacité en fonction du SNR.
+4. Comparez aux courbes précédentes.
+   79
+
+3.9. EXERCICES CHAPITRE 3. THÉORIE DE L’INFORMATION
+  Exercice 3.6 : Perte de capacité du canal Gaussien
+ Soit un système de transmission dans un canal Gaussien, réel, décrit par :
+ye[k] = xe[k] + ne[k]. (3.26)
+1. Quelle est la capacité de ce canal ?
+2. Tracez cette capacité en fonction du signal to noise ratio, rapport signal à bruit
+(SNR) P/N.
+On souhaite utiliser pour ce canal une modulation QPSK, 16-QAM ou 32-QAM.
+3. Tracez les capacités théoriques de ces 3 canaux, en fonction du SNR sur la même figure que celle de la capacité du canal gaussien.
+4. Concluez.
+5. Analysez et justifiez les courbes de la figure ci-jointe.
+ 80
+
+Bibliographie
+[1] Thomas M Cover et Joy A Thomas : Elements of information theory. John Wiley & Sons, 2012.
+[2] David Declercq et André Quinquis : Détection et estimation des signaux. Hermès, 1996.
+[3] Izrail Solomonovich Gradshteyn et Iosif Moiseevich Ryzhik : Table of integrals, series, and products. Academic press, 2014.
+[4] Michel Guglielmi et al. : Signaux aléatoires : modélisation, estimation, détection. Traitement du signal et de limage. Hermes, 2004.
+[5] Bernard C Levy : Principles of signal detection and parameter estimation. Springer Science & Business Media, 2008.
+[6] Jerzy Neyman et Egon Sharpe Pearson : Ix. on the problem of the most efficient tests of statistical hypotheses. Philosophical Transactions of the Royal Society of London. Series A, Containing Papers of a Mathematical or Physical Character, 231(694-706) :289–337, 1933.
+[7] Timothy OShea et Jakob Hoydis : An introduction to deep learning for the physical layer. IEEE Transactions on Cognitive Communications and Networking, 3(4) :563– 575, 2017.
+[8] Bernard Picinbono : Signaux aléatoires. Techniques de l’ingénieur. Informatique industrielle, 1(R7030) :R7030–1, 1993.
+[9] H Vincent Poor : An introduction to signal detection and estimation. Springer Science & Business Media, 2013.
+[10] Claude E. Shannon : A mathematical theory of communication, part i, part ii. Bell Syst. Tech. J., 27 :623–656, 1948.
+[11] Sergio Verdú et al. : A general formula for channel capacity. IEEE Transactions on Information Theory, 40(4) :1147–1157, 1994.
+81

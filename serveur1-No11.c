@@ -252,7 +252,7 @@ int main(int argc, char* argv[]){
           if (mlock(shared_memory_seq, packets_number) == -1){
             printf("erreur mlock\n");
           }
-          printf("num seq après mlock %d\n", *shared_memory_seq);
+          //printf("num seq après mlock %d\n", *shared_memory_seq);
           sprintf(buffer_sequence,"%d",*shared_memory_seq);
 
           //printf("Sequence number (from buffer_sequence) : %s\n",buffer_sequence);

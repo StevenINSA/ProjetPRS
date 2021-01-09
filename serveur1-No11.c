@@ -248,11 +248,11 @@ int main(int argc, char* argv[]){
           //Remise à zéro des buffers
           memset(buffer_segment,0,sizeof(buffer_segment));
           memset(buffer_sequence,0,sizeof(buffer_sequence));
-          printf("num seq avant mlock\n");
+          printf("num seq avant mlock %d\n", *shared_memory_seq);
           if (mlock(shared_memory_seq, packets_number) == -1){
             printf("erreur mlock\n");
           }
-          printf("num seq après mlock\n");
+          printf("num seq après mlock %d\n", *shared_memory_seq);
           sprintf(buffer_sequence,"%d",*shared_memory_seq);
 
           //printf("Sequence number (from buffer_sequence) : %s\n",buffer_sequence);
@@ -262,7 +262,7 @@ int main(int argc, char* argv[]){
 
           memcpy(buffer_segment+6,tableau[(*shared_memory_seq-1)%size_tab],packets_size);
           munlock(shared_memory_seq, packets_number);
-          printf("num seq après munlock\n");
+          printf("num seq après munlock %d\n", *shared_memory_seq);
 
           /*ENVOI PAQUET*/
           packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size

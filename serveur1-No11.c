@@ -347,11 +347,7 @@ int main(int argc, char* argv[]){
                     *last_packet_size = size_file - ((packets_number-1)*packets_size);
                     //printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
 
-                    if (mlock(tableau, size_tab*packets_size) == -1){
-                      printf("erreur mlock tableau fils\n");
-                    }
                     fread(tableau[incr%size_tab], *last_packet_size, 1, file);
-                    munlock(tableau, size_tab*packets_size);
 
                   }
                   else if (ftell(file)!=size_file){
@@ -360,7 +356,6 @@ int main(int argc, char* argv[]){
                       printf("erreur mlock tableau fils\n");
                     }
                     fread(tableau[incr%size_tab], packets_size, 1, file);
-                    munlock(tableau, size_tab*packets_size);
                   }
                   incr++;
                 }

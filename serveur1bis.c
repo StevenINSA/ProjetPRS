@@ -248,8 +248,7 @@ int main(int argc, char* argv[]){
     } else if(idfork!=0){ //si on est le processus père
 */
     /***SALVES DE PAQUETS***/
-    int ack_max = 0;
-    while(ack_max < packets_number){
+    while(shared_memory_seq < packets_number){
       gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
       //while (*shared_memory_fils==1) { //quand fils s'arrête
         //printf("voici la valeur du fils :%d\n",fils);
@@ -293,7 +292,7 @@ int main(int argc, char* argv[]){
       //partie mise en place du timer pour la retransmission
       timeout.tv_usec = 3*srtt.tv_usec; //on initialise une première fois le timeout avec un srtt fixé au début
       timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
-      printf("valeur du timeout en µs : %ld\n", timeout.tv_usec);
+      //printf("valeur du timeout en µs : %ld\n", timeout.tv_usec);
 
       /***RECEPTION DES ACKs***/
       //while (ack_max < packets_number){

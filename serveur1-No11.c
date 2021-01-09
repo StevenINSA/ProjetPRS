@@ -351,51 +351,51 @@ int main(int argc, char* argv[]){
 
             //*count_ack_memory = *count_ack_memory + 1;
             //printf("count ack memory : %d\n", *count_ack_memory);
-            ack_precedent_2 = ack_precedent;
-            ack_precedent=atoi(buffer_sequence);
             /* *** selective acknoledgment *** */
             //*shared_memory_window = ack_precedent+1 + size_window/10; //on a remarqué que le client1 ne perdait qu'un seul paquet. Au lieu d'en retransmettre 100, on n'en retransmet qu'un petit nombre (pas 1 car si le ack se perd on passe en timeout)
             //printf("taille de la fenêtre en ack dupliqué : %d\n", *shared_memory_window);
           }
+          ack_precedent_2 = ack_precedent;
+          ack_precedent=atoi(buffer_sequence);
 
           skip:
             continue;
 
-            /*GESTION BUFFER CIRCULAIRE*/
-            //printf("Position curseur %d\n",ftell(file));
+          /*GESTION BUFFER CIRCULAIRE*/
+          //printf("Position curseur %d\n",ftell(file));
 
-            if(packets_number > size_tab){ //si fichier volumineux, on fait un buffer circulaire
+          if(packets_number > size_tab){ //si fichier volumineux, on fait un buffer circulaire
 
-              if (ftell(file)==size_file){
-                //printf("Le fichier a été lu entièrement. \n");
-              } else {
+            if (ftell(file)==size_file){
+              //printf("Le fichier a été lu entièrement. \n");
+            } else {
 
-                if(atoi(buffer_sequence)>seuil){ //on va remplacer dans le buffer de façon périodique, tous les 2000 acks reçus
-                  seuil=seuil+2000;
-                  //printf("valeur de ftell dans le buffer circulaire : %d\n", ftell(file));
-                  //printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
-                  //printf("valeur de incr : %d\n", incr);
+              if(atoi(buffer_sequence)>seuil){ //on va remplacer dans le buffer de façon périodique, tous les 2000 acks reçus
+                seuil=seuil+2000;
+                //printf("valeur de ftell dans le buffer circulaire : %d\n", ftell(file));
+                //printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
+                //printf("valeur de incr : %d\n", incr);
 
-                  printf("i va de %d à %d ou %d\n", seuil-2000, seuil, packets_number);
-                  for (int i = seuil-2000 ; i < seuil && i < packets_number ; i++){ //pour le dernier tour du buffer, on ne veut pas aller jusqu'à seuil mais seulement jusqu'à la fin du fichier
-                    if (size_file - ftell(file) < packets_size && ftell(file)!=size_file){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
-                      printf("on est au dernier segment\n");
+                printf("i va de %d à %d ou %d\n", seuil-2000, seuil, packets_number);
+                for (int i = seuil-2000 ; i < seuil && i < packets_number ; i++){ //pour le dernier tour du buffer, on ne veut pas aller jusqu'à seuil mais seulement jusqu'à la fin du fichier
+                  if (size_file - ftell(file) < packets_size && ftell(file)!=size_file){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
+                    printf("on est au dernier segment\n");
 
-                      *last_packet_size = size_file - ((packets_number-1)*packets_size);
-                      //printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
+                    *last_packet_size = size_file - ((packets_number-1)*packets_size);
+                    //printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
 
-                      fread(tableau[incr%size_tab], *last_packet_size, 1, file);
+                    fread(tableau[incr%size_tab], *last_packet_size, 1, file);
 
-                    }
-                    else if (ftell(file)!=size_file){
-
-                      fread(tableau[incr%size_tab], packets_size, 1, file);
-                    }
-                    incr++;
                   }
+                  else if (ftell(file)!=size_file){
+
+                    fread(tableau[incr%size_tab], packets_size, 1, file);
+                  }
+                  incr++;
                 }
               }
             }
+          }
 
         } //FDISSET
         else { //si Timeout

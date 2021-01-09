@@ -180,7 +180,7 @@ int main(int argc, char* argv[]){
     for(int i=0;i<size_tab;i++){
 
       if (size_file - ftell(file) < packets_size){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
-        *last_packet_size = size_file - ftell(file);
+        *last_packet_size = size_file - ((packets_number-1)*packets_size); //on a enlevé ftell(file) car causait des bugs dans le buffer circulaire
         printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
         read_blocks = fread(tableau[i],*last_packet_size,1,file);
       }

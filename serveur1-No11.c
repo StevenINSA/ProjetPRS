@@ -323,7 +323,7 @@ int main(int argc, char* argv[]){
 
               if(atoi(buffer_sequence)>seuil){ //on va remplacer dans le buffer de façon périodique, tous les 2000 acks reçus
                 seuil=seuil+2000;
-                printf("valeur de ftell dans le buffer circulaire : %d\n", ftell(file));
+                //printf("valeur de ftell dans le buffer circulaire : %d\n", ftell(file));
                 //printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
                 //printf("valeur de incr : %d\n", incr);
 
@@ -353,7 +353,7 @@ int main(int argc, char* argv[]){
 
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent){
-            printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
+            //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
             timeout.tv_usec = srtt.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;
@@ -379,7 +379,7 @@ int main(int argc, char* argv[]){
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 
           *shared_memory_window = ack_max+1 + size_window;
-          printf("Timeout : retransmission à partir de %d\n",ack_max+1);
+          //printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           //printf("taille de la fenêtre en timeout : %d\n", *shared_memory_window);
 
         }

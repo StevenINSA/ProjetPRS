@@ -327,8 +327,8 @@ int main(int argc, char* argv[]){
                 //printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
                 //printf("valeur de incr : %d\n", incr);
 
-                for (int i = seuil-2000 ; i < seuil || i < packets_number ; i++){ //pour le dernier tour du buffer, on ne veut pas aller jusqu'à seuil mais seulement jusqu'à la fin du fichier
-                  //printf("valeur de incr : %d\n", incr);
+                printf("i va de %d à %d ou %d\n", seuil-2000, seuil, packets_number);
+                for (int i = seuil-2000 ; i < seuil && i < packets_number ; i++){ //pour le dernier tour du buffer, on ne veut pas aller jusqu'à seuil mais seulement jusqu'à la fin du fichier
                   if (size_file - ftell(file) < packets_size){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
                     printf("on est au dernier segment\n");
                     *last_packet_size = size_file - ((packets_number-1)*packets_size);

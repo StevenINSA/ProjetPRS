@@ -329,13 +329,13 @@ int main(int argc, char* argv[]){
 
                 printf("i va de %d à %d ou %d\n", seuil-2000, seuil, packets_number);
                 for (int i = seuil-2000 ; i < seuil && i < packets_number ; i++){ //pour le dernier tour du buffer, on ne veut pas aller jusqu'à seuil mais seulement jusqu'à la fin du fichier
-                  if (size_file - ftell(file) < packets_size){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
+                  if (size_file - ftell(file) < packets_size && ftell(file)!=size_file){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
                     printf("on est au dernier segment\n");
                     *last_packet_size = size_file - ((packets_number-1)*packets_size);
                     //printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
                     fread(tableau[incr%size_tab], *last_packet_size, 1, file);
                   }
-                  else {
+                  else if (ftell(file)!=size_file){
                     fread(tableau[incr%size_tab], packets_size, 1, file);
                   }
                   incr++;

@@ -302,7 +302,7 @@ int main(int argc, char* argv[]){
           array_fils[atoi(buffer_sequence)] = time2.tv_usec + time2.tv_sec*pow(10,6);
           rtt.tv_usec = array_fils[atoi(buffer_sequence)] - array_pere[atoi(buffer_sequence)];
           srtt.tv_usec = alpha*srtt.tv_usec + (1-alpha)*rtt.tv_usec;
-          timeout.tv_usec = 2*srtt.tv_usec; //on attend 3 fois l'estimation avant de déclarer l'ACK comme perdu
+          timeout.tv_usec = srtt.tv_usec; //on attend 3 fois l'estimation avant de déclarer l'ACK comme perdu
           timeout.tv_sec = 0;
 
           /*GESTION FENETRE GLISSANTE*/
@@ -346,20 +346,20 @@ int main(int argc, char* argv[]){
 
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
-            timeout.tv_usec = 2*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
+            timeout.tv_usec = srtt.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;
-            //goto skip;
+            goto skip;
           }
 
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent){
             printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
-            timeout.tv_usec = 2*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
+            timeout.tv_usec = srtt.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;
 
             /* *** selective acknoledgment *** */
-            *shared_memory_window = ack_precedent+1 + size_window; //on a remarqué que le client1 ne perdait qu'un seul paquet. Au lieu d'en retransmettre 100, on n'en retransmet qu'un petit nombre (pas 1 car si le ack se perd on passe en timeout)
+            *shared_memory_window = ack_precedent+1 + size_window/10; //on a remarqué que le client1 ne perdait qu'un seul paquet. Au lieu d'en retransmettre 100, on n'en retransmet qu'un petit nombre (pas 1 car si le ack se perd on passe en timeout)
             //printf("taille de la fenêtre en ack dupliqué : %d\n", *shared_memory_window);
           }
 
@@ -367,8 +367,8 @@ int main(int argc, char* argv[]){
           ack_precedent=atoi(buffer_sequence);
 
 
-          //skip:
-            //continue;
+          skip:
+            continue;
 
         } //FDISSET
         else { //si Timeout

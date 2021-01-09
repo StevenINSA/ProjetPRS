@@ -244,6 +244,7 @@ int main(int argc, char* argv[]){
             printf("erreur mlock\n");
           }
           sprintf(buffer_sequence,"%d",*shared_memory_seq);
+          munlock(shared_memory_seq, packets_number);
           //printf("Sequence number (from buffer_sequence) : %s\n",buffer_sequence);
 
           //Segment auquel on rajoute en-tête
@@ -267,8 +268,6 @@ int main(int argc, char* argv[]){
             printf("sync failed");
           if (msync(tableau, size_tab*packets_size, MS_SYNC) == -1)
             printf("sync tableau failed");
-
-          munlock(shared_memory_seq, packets_number);
 
         }
       } //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
@@ -344,6 +343,7 @@ int main(int argc, char* argv[]){
                 for (int i = seuil-2000 ; i < seuil && i < packets_number ; i++){ //pour le dernier tour du buffer, on ne veut pas aller jusqu'à seuil mais seulement jusqu'à la fin du fichier
                   if (size_file - ftell(file) < packets_size && ftell(file)!=size_file){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
                     printf("on est au dernier segment\n");
+
                     *last_packet_size = size_file - ((packets_number-1)*packets_size);
                     //printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
 
@@ -352,9 +352,6 @@ int main(int argc, char* argv[]){
                   }
                   else if (ftell(file)!=size_file){
 
-                    if (mlock(tableau, size_tab*packets_size) == -1){
-                      printf("erreur mlock tableau fils\n");
-                    }
                     fread(tableau[incr%size_tab], packets_size, 1, file);
                   }
                   incr++;
@@ -374,12 +371,7 @@ int main(int argc, char* argv[]){
           if(atoi(buffer_sequence)==ack_precedent){
             printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
 
-            if (mlock(shared_memory_seq, packets_number) == -1){
-              printf("erreur mlock\n");
-            }
-
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
-            munlock(shared_memory_seq, packets_number);
 
             timeout.tv_usec = 2*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;
@@ -409,11 +401,7 @@ int main(int argc, char* argv[]){
           timeout.tv_usec = 5*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion (évite 2 timeout consécutifs)
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 
-          if (mlock(shared_memory_window, packets_number) == -1){
-            printf("erreur mlock\n");
-          }
           *shared_memory_window = ack_max+1 + size_window; //on remet à jour la fenêtre
-          munlock(shared_memory_window, packets_number);
           //printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           //printf("taille de la fenêtre en timeout : %d\n", *shared_memory_window);
 

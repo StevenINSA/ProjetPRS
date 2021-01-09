@@ -248,11 +248,9 @@ int main(int argc, char* argv[]){
 
           //Segment auquel on rajoute en-tête
           memcpy(buffer_segment,buffer_sequence,6);
-          if (mlock(tableau, size_tab*packets_size) == -1){
-            printf("erreur mlock tableau pere\n");
-          }
+          
           memcpy(buffer_segment+6,tableau[(*shared_memory_seq-1)%size_tab],packets_size);
-          munlock(tableau, size_tab*packets_size);
+
           /*ENVOI PAQUET*/
           packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size
 
@@ -320,11 +318,8 @@ int main(int argc, char* argv[]){
           if (ack_max < atoi(buffer_sequence)){ //si le ack que l'on reçoie est supérieur au ack max stocké, ack max devient ce ack
             ack_max = atoi(buffer_sequence);
 
-            if (mlock(shared_memory_window, packets_number) == -1){
-              printf("erreur mlock\n");
-            }
             *shared_memory_window=ack_max+size_window;  //et on fait glisser la fenêtre
-            munlock(shared_memory_window, packets_number);
+
             //printf("taille de la fenêtre en réception normale : %d\n", *shared_memory_window);
           }
 

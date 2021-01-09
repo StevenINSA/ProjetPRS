@@ -196,7 +196,7 @@ int main(int argc, char* argv[]){
 
     }
 
-    uint8_t *shared_memory_fils = mmap(NULL, 2,          //pour que le parent envoie les fichiers tant que le fils écoute les acks
+    uint8_t *shared_memory_fils = mmap(NULL, sizeof(int),          //pour que le parent envoie les fichiers tant que le fils écoute les acks
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
     *shared_memory_fils = 1;
@@ -440,6 +440,15 @@ int main(int argc, char* argv[]){
     fputs("\n", trace_data);
     fclose(trace_data);
 
+    /* libération des mémoires */
+    munmap(array_fils, packets_number*sizeof(long)+sizeof(long));
+    munmap(array_pere, packets_number*sizeof(long)+sizeof(long));
+    munmap(shared_memory_window, packets_number);
+    munmap(shared_memory_seq, packets_number);
+    munmap(shared_memory_fils, sizeof(int));
+    munmap(last_packet_size, sizeof(int));
+    munmap(tableau, size_tab*packets_size);
+    
     close(data_descriptor);
     break;
     exit(0);

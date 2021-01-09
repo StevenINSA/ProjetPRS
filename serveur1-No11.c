@@ -293,6 +293,7 @@ int main(int argc, char* argv[]){
       int ack_max = 0;
       int ack_precedent=0;
       int ack_precedent_2=0;
+      int ack_precedent_3=0;
       int incr = 0;
       int seuil=2000;
 
@@ -334,14 +335,14 @@ int main(int argc, char* argv[]){
           }
 
           /*GESTION ACKS DUPLIQUES*/
-          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
+          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2 && atoi(buffer_sequence)==ack_precedent_3){
             timeout.tv_usec = 2*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
             timeout.tv_sec = 0;
             goto skip;
           }
 
           /*GESTION ACKS DUPLIQUES*/
-          if(atoi(buffer_sequence)==ack_precedent){
+          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
             //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
 
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
@@ -355,6 +356,7 @@ int main(int argc, char* argv[]){
             //*shared_memory_window = ack_precedent+1 + size_window/10; //on a remarqué que le client1 ne perdait qu'un seul paquet. Au lieu d'en retransmettre 100, on n'en retransmet qu'un petit nombre (pas 1 car si le ack se perd on passe en timeout)
             //printf("taille de la fenêtre en ack dupliqué : %d\n", *shared_memory_window);
           }
+          ack_precedent_3 = ack_precedent_2;
           ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);
 
@@ -393,7 +395,7 @@ int main(int argc, char* argv[]){
               }
             }
           }
-          
+
           skip:
             continue;
 
@@ -458,6 +460,18 @@ int main(int argc, char* argv[]){
     fputs(data_in, trace_data);
     fputs("\n", trace_data);
     fclose(trace_data);
+
+    FILE *trace_congestion;
+    char timeout_in[100];
+    char ack_in[100];
+    sprintf(timeout_in, "%d", count_timeout);
+    sprintf(ack_in, "%d", count_ack);
+
+    trace_congestion = fopen("congestion_serveur1.txt", "a");
+    fputs(timeout_in, trace_congestion);
+    fputs("       ", trace_congestion);
+    fputs(ack_in, trace_congestion);
+    fputs("\n", trace_congestion);
 
     printf("il y a eu %d ack dupliqués, %d timeout\n", count_ack, count_timeout);
 

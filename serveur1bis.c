@@ -269,7 +269,7 @@ int main(int argc, char* argv[]){
           /*ENVOI PAQUET*/
           packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size
 
-          if (atoi(buffer_sequence) == packets_number) //on met à jour la taille du dernier segment à envoyer
+          if (shared_memory_seq == packets_number-1) //on met à jour la taille du dernier segment à envoyer
             packets_size = last_packet_size;
 
           sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);

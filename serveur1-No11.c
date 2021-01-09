@@ -339,7 +339,7 @@ int main(int argc, char* argv[]){
           }
 
           if (atoi(buffer_sequence) == ack_a_recevoir){
-            printf("on a reçu le bon ack : %d", ack_a_recevoir);
+            printf("on a reçu le bon ack : %d\n", ack_a_recevoir);
             if (mlock(shared_memory_seq, packets_number) != 0){
               printf("erreur lock fils \n");
             }

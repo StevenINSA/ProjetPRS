@@ -372,9 +372,6 @@ int main(int argc, char* argv[]){
           int size_seq = recvfrom(data_descriptor, bufferUDP_read_server, sizeof(bufferUDP_read_server), 0, (struct sockaddr *)&client1_addr, &len);
           memcpy(buffer_sequence, bufferUDP_read_server+3, size_seq-3); //+3 car les 3 premières valeurs sont pour le mot ACK
 
-          mlock(signal, sizeof(int));
-          *signal = 0;
-          munlock(signal, sizeof(int));
           /*GESTION RTT*/
           gettimeofday(&time2, NULL);   //on recalcule une timeofday pour faire la différence avec le premier
           array_fils[atoi(buffer_sequence)] = time2.tv_usec + time2.tv_sec*pow(10,6);
@@ -413,11 +410,9 @@ int main(int argc, char* argv[]){
             if (mlock(shared_memory_seq_fils, sizeof(int)) != 0){
               printf("erreur lock fils \n");
             }
-            mlock(signal, sizeof(int));
             *shared_memory_seq_fils=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
             *signal = 1; //on envoie le signal au pere qu'il faut changer de numéro de seq
             //ack_a_recevoir = *shared_memory_seq;
-            munlock(signal, sizeof(int));
             munlock(shared_memory_seq_fils, sizeof(int));
 
             if (msync(shared_memory_seq_fils, packets_number, MS_SYNC) == -1)
@@ -428,6 +423,7 @@ int main(int argc, char* argv[]){
             /* *** selective acknoledgment *** */
             //*shared_memory_window = ack_precedent+1 + size_window/10; //on a remarqué que le client1 ne perdait qu'un seul paquet. Au lieu d'en retransmettre 100, on n'en retransmet qu'un petit nombre (pas 1 car si le ack se perd on passe en timeout)
             //printf("taille de la fenêtre en ack dupliqué : %d\n", *shared_memory_window);
+            *signal = 0;
           }
           ack_precedent_3 = ack_precedent_2;
           ack_precedent_2 = ack_precedent;

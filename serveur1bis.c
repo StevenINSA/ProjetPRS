@@ -252,7 +252,7 @@ int main(int argc, char* argv[]){
       gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
       //while (*shared_memory_fils==1) { //quand fils s'arrête
         //printf("voici la valeur du fils :%d\n",fils);
-        while (shared_memory_seq <= shared_memory_window && shared_memory_seq <= packets_number) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
+        //while (shared_memory_seq <= shared_memory_window && shared_memory_seq <= packets_number) { //si le n° de seq est inférieur à la taille de la fenêtre (et inférieur au nombre de paquet à envoyer), on envoie
 
           //Remise à zéro des buffers
           memset(buffer_segment,0,sizeof(buffer_segment));
@@ -275,15 +275,13 @@ int main(int argc, char* argv[]){
           sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
           gettimeofday(&time1, NULL);
           array_pere[shared_memory_seq] = time1.tv_usec + time1.tv_sec*pow(10,6);
-
-          shared_memory_seq = shared_memory_seq+1;
 /*
           if (msync(shared_memory_seq, packets_number, MS_SYNC) == -1)
             printf("sync failed");
           if (msync(tableau, size_tab*packets_size, MS_SYNC) == -1)
             printf("sync tableau failed");
 */
-        }
+      //  }
       //} //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
       //printf("On est sorti du while du père :%d\n",*shared_memory_fils);
 
@@ -322,8 +320,8 @@ int main(int argc, char* argv[]){
           timeout.tv_usec = 2*srtt.tv_usec; //on attend 3 fois l'estimation avant de déclarer l'ACK comme perdu
           timeout.tv_sec = 0;
 
-          if (atoi(buffer_sequence) == shared_memory_seq-1){
-            shared_memory_window = shared_memory_seq;
+          if (atoi(buffer_sequence) == shared_memory_seq){
+              shared_memory_seq = shared_memory_seq+1;
           } else {
             continue;
           }
@@ -331,7 +329,7 @@ int main(int argc, char* argv[]){
         } //FDISSET
         else { //si Timeout
 
-          shared_memory_seq=shared_memory_seq-1; //retransmission à partir du ACK max reçu
+          shared_memory_seq=shared_memory_seq; //retransmission à partir du ACK max reçu
 
           timeout.tv_usec = 5*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion (évite 2 timeout consécutifs)
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion

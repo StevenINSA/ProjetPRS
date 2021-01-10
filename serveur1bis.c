@@ -248,7 +248,7 @@ int main(int argc, char* argv[]){
           //Remise à zéro des buffers
           memset(buffer_segment,0,sizeof(buffer_segment));
           memset(buffer_sequence,0,sizeof(buffer_sequence));
-          //printf("\nnum seq avant mlock %d\n", *shared_memory_seq);
+          printf("\nnum seq avant mlock %d\n", *shared_memory_seq);
           if (mlock(shared_memory_seq, sizeof(int)) == -1){
             printf("erreur mlock\n");
           }
@@ -268,9 +268,10 @@ int main(int argc, char* argv[]){
           memcpy(buffer_segment,buffer_sequence,6);
           memcpy(buffer_segment+6,tableau[(*shared_memory_seq-1)%size_tab],packets_size);
           //printf("On va chercher dans tableau[%d] pour SEG_%d\n",(*shared_memory_seq-1)%size_tab,*shared_memory_seq);
+
           *shared_memory_seq = *shared_memory_seq+1;
           munlock(shared_memory_seq, sizeof(int));
-          //printf("num seq après munlock %d\n", *shared_memory_seq);
+          printf("num seq après munlock %d\n", *shared_memory_seq);
           sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
 
           gettimeofday(&time1, NULL);
@@ -354,16 +355,18 @@ int main(int argc, char* argv[]){
             //printf("taille de la fenêtre en réception normale : %d\n", *shared_memory_window);
           }
 
-          /*GESTION ACKS DUPLIQUES*/
+          /*GESTION ACKS DUPLIQUES*//*
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2 && atoi(buffer_sequence)==ack_precedent_3){
             goto skip;
-          }
+          }*/
 
           /*GESTION ACKS DUPLIQUES*/
-          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
+          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2 && atoi(buffer_sequence)==ack_precedent_3){
             //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
             mlock(shared_memory_seq, sizeof(int));
+            printf("avant munlock : %d\n", *shared_memory_seq);
             *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
+            printf("avant munlock : %d\n", *shared_memory_seq);
             munlock(shared_memory_seq, sizeof(int));
 
             *count_ack_memory = *count_ack_memory + 1;

@@ -331,16 +331,11 @@ int main(int argc, char* argv[]){
           /*GESTION RTT*/
           gettimeofday(&time2, NULL);   //on recalcule une timeofday pour faire la différence avec le premier
           array_fils[atoi(buffer_sequence)] = time2.tv_usec + time2.tv_sec*pow(10,6);
-          if (mlock(array_pere,packets_number*sizeof(long)+sizeof(long) ) != 0 && mlock(array_fils,packets_number*sizeof(long)+sizeof(long)) ){
-            printf("erreur lock fils \n");
-          }
+
           rtt.tv_usec = array_fils[atoi(buffer_sequence)] - array_pere[atoi(buffer_sequence)];
           if(rtt.tv_usec>20000){
             rtt.tv_usec=20000;
           }
-
-          munlock(array_pere,packets_number*sizeof(long)+sizeof(long));
-          munlock(array_fils,packets_number*sizeof(long)+sizeof(long));
 
           srtt.tv_usec = alpha*srtt.tv_usec + (1-alpha)*rtt.tv_usec;
           timeout.tv_usec = 3*srtt.tv_usec; //on attend 3 fois l'estimation avant de déclarer l'ACK comme perdu
@@ -363,98 +358,80 @@ int main(int argc, char* argv[]){
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
             //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
+            int pid_fils = fork();
+            if(pid_fils==-1){
+              perror("Erreur fork");
+              exit(EXIT_FAILURE);
+            } else if (pid_fils == 0){ //si on est dans le fils
+              if (mlock(shared_memory_seq, packets_number) != 0){
+                printf("erreur lock fils \n");
+              }
+              //*shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
 
-            if (mlock(shared_memory_seq, packets_number) != 0){
-              printf("erreur lock fils \n");
+              sprintf(buffer_sequence,"%d",ack_precedent+1);
+              /*ENVOI PAQUET*/
+              packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size
+
+              if (atoi(buffer_sequence) == packets_number) //on met à jour la taille du dernier segment à envoyer
+                packets_size = *last_packet_size;
+
+              memcpy(buffer_segment,buffer_sequence,6);
+              memcpy(buffer_segment+6,tableau[(ack_precedent+1-1)%size_tab],packets_size);
+
+              sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
+
+              *count_ack_memory = *count_ack_memory + 1;
+              //printf("count ack memory : %d\n", *count_ack_memory);
+              /* *** selective acknoledgment *** */
+              *shared_memory_window = ack_precedent+1 + size_window; //on a remarqué que le client1 ne perdait qu'un seul paquet. Au lieu d'en retransmettre 100, on n'en retransmet qu'un petit nombre (pas 1 car si le ack se perd on passe en timeout)
+              //printf("taille de la fenêtre en ack dupliqué : %d\n", *shared_memory_window);
+
+              if(packets_number > size_tab){ //si fichier volumineux, on fait un buffer circulaire
+
+                if (ftell(file)==size_file){
+                  //printf("Le fichier a été lu entièrement. \n");
+                } else {
+
+                  if(atoi(buffer_sequence)>seuil){ //on va remplacer dans le buffer de façon périodique, tous les 2000 acks reçus
+                    seuil=seuil+2000;
+                    //printf("valeur de ftell dans le buffer circulaire : %d\n", ftell(file));
+                    //printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
+                    //printf("valeur de incr : %d\n", incr);
+                    printf("i va de %d à %d ou %d\n", seuil-2000, seuil, packets_number);
+
+                    for (int i = seuil-2000 ; i < seuil && i < packets_number ; i++){ //pour le dernier tour du buffer, on ne veut pas aller jusqu'à seuil mais seulement jusqu'à la fin du fichier
+                      if (size_file - ftell(file) < packets_size && ftell(file)!=size_file){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
+                        printf("on est au dernier segment\n");
+
+                        *last_packet_size = size_file - ((packets_number-1)*packets_size);
+                        printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
+
+                        fread(tableau[incr%size_tab], *last_packet_size, 1, file);
+
+                      }
+                      else if (ftell(file)!=size_file){
+
+                        fread(tableau[incr%size_tab], packets_size, 1, file);
+
+                      }
+                      incr++;
+                    }
+                  }
+                }
+              }
+
+              exit(0);
+
+            } else if (pid_fils !=0){
+              continue;
             }
-            //*shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
 
-            sprintf(buffer_sequence,"%d",ack_precedent+1);
-            /*ENVOI PAQUET*/
-            packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size
-
-            if (atoi(buffer_sequence) == packets_number) //on met à jour la taille du dernier segment à envoyer
-              packets_size = *last_packet_size;
-
-            //Segment auquel on rajoute en-tête
-            memcpy(buffer_segment,buffer_sequence,6);
-            memcpy(buffer_segment+6,tableau[(ack_precedent+1-1)%size_tab],packets_size);
-            //printf("On va chercher dans tableau[%d] pour SEG_%d\n",(*shared_memory_seq-1)%size_tab,*shared_memory_seq);
-            munlock(shared_memory_seq, packets_number);
-            //printf("num seq après munlock %d\n", *shared_memory_seq);
-
-            gettimeofday(&time1, NULL);
-            if (mlock(array_pere,packets_number*sizeof(long)+sizeof(long)) !=0){
-              printf("erreur mlock\n");
-            }
-            array_pere[*shared_memory_seq] = time1.tv_usec + time1.tv_sec*pow(10,6);
-            munlock(array_pere,packets_number*sizeof(long)+sizeof(long));
-
-            sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
-
-
-            //memset(array_fils[atoi(buffer_sequence)+1], 0, sizeof(long));
-            //memset(array_pere[atoi(buffer_sequence)+1], 0, sizeof(long));
-            array_pere[atoi(buffer_sequence)+1]=0;
-            array_fils[atoi(buffer_sequence)+1]=0;
-
-
-
-            munlock(shared_memory_seq, packets_number);
-
-            if (msync(shared_memory_seq, packets_number, MS_SYNC) == -1)
-              printf("sync failed");
-
-            *count_ack_memory = *count_ack_memory + 1;
-            //printf("count ack memory : %d\n", *count_ack_memory);
-            /* *** selective acknoledgment *** */
-            *shared_memory_window = ack_precedent+1 + size_window/10; //on a remarqué que le client1 ne perdait qu'un seul paquet. Au lieu d'en retransmettre 100, on n'en retransmet qu'un petit nombre (pas 1 car si le ack se perd on passe en timeout)
-            //printf("taille de la fenêtre en ack dupliqué : %d\n", *shared_memory_window);
           }
           ack_precedent_3 = ack_precedent_2;
           ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);
           /*GESTION BUFFER CIRCULAIRE*/
           //printf("Position curseur %d\n",ftell(file));
-
-          if(packets_number > size_tab){ //si fichier volumineux, on fait un buffer circulaire
-
-            if (ftell(file)==size_file){
-              //printf("Le fichier a été lu entièrement. \n");
-            } else {
-
-              if(atoi(buffer_sequence)>seuil){ //on va remplacer dans le buffer de façon périodique, tous les 2000 acks reçus
-                seuil=seuil+2000;
-                //printf("valeur de ftell dans le buffer circulaire : %d\n", ftell(file));
-                //printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
-                //printf("valeur de incr : %d\n", incr);
-                printf("i va de %d à %d ou %d\n", seuil-2000, seuil, packets_number);
-
-                for (int i = seuil-2000 ; i < seuil && i < packets_number ; i++){ //pour le dernier tour du buffer, on ne veut pas aller jusqu'à seuil mais seulement jusqu'à la fin du fichier
-                  if (size_file - ftell(file) < packets_size && ftell(file)!=size_file){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
-                    printf("on est au dernier segment\n");
-
-                    *last_packet_size = size_file - ((packets_number-1)*packets_size);
-                    printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
-
-                    if (mlock(tableau, size_tab*packets_size) != 0){
-                      printf("erreur lock fils \n");
-                    }
-                    fread(tableau[incr%size_tab], *last_packet_size, 1, file);
-                    mlock(tableau, size_tab*packets_size);
-                  }
-                  else if (ftell(file)!=size_file){
-                    if (mlock(tableau, size_tab*packets_size) != 0){
-                      printf("erreur lock fils \n");
-                    }
-                    fread(tableau[incr%size_tab], packets_size, 1, file);
-                    mlock(tableau, size_tab*packets_size);
-                  }
-                  incr++;
-                }
-              }
-            }
-          }
 
           skip:
             continue;

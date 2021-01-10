@@ -343,13 +343,13 @@ int main(int argc, char* argv[]){
             //printf("taille de la fenêtre en réception normale : %d\n", *shared_memory_window);
           }
 
-          /*GESTION ACKS DUPLIQUES*/
+          /*GESTION ACKS DUPLIQUES*//*
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2 && atoi(buffer_sequence)==ack_precedent_3){
             goto skip;
-          }
+          }*/
 
           /*GESTION ACKS DUPLIQUES : SELECTIVE ACKNOLEDGMENT*/
-          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
+          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2 && atoi(buffer_sequence)==ack_precedent_3){
             //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
 
             /*Retransmission segment*/
@@ -424,11 +424,11 @@ int main(int argc, char* argv[]){
         } //FDISSET
         else { //si Timeout
 
-          if (mlock(shared_memory_seq, packets_number) != 0){
-            printf("erreur lock fils \n");
-          }
+          //if (mlock(shared_memory_seq, packets_number) != 0){
+          //  printf("erreur lock fils \n");
+          //}
           *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
-          munlock(shared_memory_seq, packets_number);
+          //munlock(shared_memory_seq, packets_number);
 
           timeout.tv_usec = 5*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion (évite 2 timeout consécutifs)
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion

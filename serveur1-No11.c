@@ -202,12 +202,12 @@ int main(int argc, char* argv[]){
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
     *shared_memory_fils = 1;
 
-    uint16_t *shared_memory_seq = mmap(NULL, packets_number,           //pour que le fils mette à jour le n° de seq que le parent envoie
+    uint32_t *shared_memory_seq = mmap(NULL, packets_number,           //pour que le fils mette à jour le n° de seq que le parent envoie
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
     *shared_memory_seq = 1;
 
-    uint16_t *shared_memory_window = mmap(NULL, packets_number,
+    uint32_t *shared_memory_window = mmap(NULL, packets_number,
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
 
@@ -435,7 +435,7 @@ int main(int argc, char* argv[]){
 
 
           *shared_memory_window = ack_max+1 + size_window; //on remet à jour la fenêtre
-          //printf("Timeout : retransmission à partir de %d\n",ack_max+1);
+          printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           //printf("taille de la fenêtre en timeout : %d\n", *shared_memory_window);
 
           *count_timeout_memory = *count_timeout_memory + 1;

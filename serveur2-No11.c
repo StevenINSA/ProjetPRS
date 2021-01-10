@@ -436,7 +436,7 @@ int main(int argc, char* argv[]){
           size_window = 10; //quand timeout, il y a congestion donc on remet la fenêtre à 1
           *shared_memory_window = ack_max+1 + size_window; //on refait glisser la fenêtre pour essayer de transmettre la suite
 
-          printf("Timeout : retransmission à partir de %d\n",ack_max+1);
+          //printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           //printf("taille de la fenêtre en timeout : %d\n", size_window);
           *count_timeout_memory = *count_timeout_memory + 1;
 

@@ -407,21 +407,18 @@ int main(int argc, char* argv[]){
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
             printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
-            if (mlock(shared_memory_seq_fils, sizeof(int)) != 0){
-              printf("erreur lock fils \n");
-            }
+
             *shared_memory_seq_fils=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
             *signal = 1; //on envoie le signal au pere qu'il faut changer de numéro de seq
             //ack_a_recevoir = *shared_memory_seq;
-            munlock(shared_memory_seq_fils, sizeof(int));
 
             if (msync(shared_memory_seq_fils, packets_number, MS_SYNC) == -1)
               printf("sync failed");
+            *shared_memory_window = ack_precedent+1 + size_window/10; //on a remarqué que le client1 ne perdait qu'un seul paquet. Au lieu d'en retransmettre 100, on n'en retransmet qu'un petit nombre (pas 1 car si le ack se perd on passe en timeout)
 
             *count_ack_memory = *count_ack_memory + 1;
             //printf("count ack memory : %d\n", *count_ack_memory);
             /* *** selective acknoledgment *** */
-            //*shared_memory_window = ack_precedent+1 + size_window/10; //on a remarqué que le client1 ne perdait qu'un seul paquet. Au lieu d'en retransmettre 100, on n'en retransmet qu'un petit nombre (pas 1 car si le ack se perd on passe en timeout)
             //printf("taille de la fenêtre en ack dupliqué : %d\n", *shared_memory_window);
             *signal = 0;
           }

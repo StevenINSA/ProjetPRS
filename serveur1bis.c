@@ -247,8 +247,9 @@ int main(int argc, char* argv[]){
 
     } else if(idfork!=0){ //si on est le processus père
 */
+    int ack_max = 0;
     /***SALVES DE PAQUETS***/
-    while(shared_memory_seq < packets_number){
+    while(ack_max < packets_number){
       gettimeofday(&time_debit_start, NULL); //pour le calcul du débit, on lance le chrono quand on commence la transmission du fichier
       //while (*shared_memory_fils==1) { //quand fils s'arrête
         //printf("voici la valeur du fils :%d\n",fils);
@@ -262,7 +263,7 @@ int main(int argc, char* argv[]){
 
           if (shared_memory_seq == packets_number-1) //on met à jour la taille du dernier segment à envoyer
             packets_size = last_packet_size;
-            
+
           sprintf(buffer_sequence,"%d",shared_memory_seq);
           //printf("Sequence number (from buffer_sequence) : %s\n",buffer_sequence);
 
@@ -324,6 +325,7 @@ int main(int argc, char* argv[]){
 
           if (atoi(buffer_sequence) == shared_memory_seq){
               shared_memory_seq = shared_memory_seq+1;
+              ack_max = atoi(buffer_sequence);
           } else {
             continue;
           }

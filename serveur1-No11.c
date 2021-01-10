@@ -394,7 +394,7 @@ int main(int argc, char* argv[]){
                   //printf("Le fichier a été lu entièrement. \n");
                 } else {
 
-                  if(atoi(buffer_sequence)>seuil){ //on va remplacer dans le buffer de façon périodique, tous les 2000 acks reçus
+                  if(ack_max>seuil){ //on va remplacer dans le buffer de façon périodique, tous les 2000 acks reçus
                     seuil=seuil+2000;
                     //printf("valeur de ftell dans le buffer circulaire : %d\n", ftell(file));
                     //printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
@@ -428,7 +428,7 @@ int main(int argc, char* argv[]){
               continue;
             }
 
-          }
+          
           ack_precedent_3 = ack_precedent_2;
           ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);

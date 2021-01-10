@@ -159,7 +159,7 @@ int main(int argc, char* argv[]){
     int bloc_size = 8000000;
     int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 octets du n° de séquence
     int packets_number = (size_file/packets_size)+1; //le nombre de segments que le serveur devra envoyer au client
-    int size_window = 10;
+    int size_window = 50;
     int size_tab = bloc_size/packets_size; //il faut que la dimension du tableau (collonne*lignes) ne dépasse pas 8 000 000
     printf("taille du tableau : %d\n", size_tab);
     printf("nombre de segments à envoyer : %d\n", packets_number);
@@ -329,11 +329,11 @@ int main(int argc, char* argv[]){
           if (ack_max < atoi(buffer_sequence)){ //si le ack que l'on reçoie est supérieur au ack max stocké, ack max devient ce ack
             ack_max = atoi(buffer_sequence);
 
-            if (size_window*2 < 100) { //on augmente jusqu'à max size_window = 30
+            /*if (size_window*2 < 100) { //on augmente jusqu'à max size_window = 30
               size_window = size_window*2; //si on a une petite taille de fenêtre, on l'augmente de façon exponentielle
             } else if (size_window <= 100){
               size_window += 1;
-            }
+            }*/
 
             *shared_memory_window = ack_max+size_window;  //et on fait glisser la fenêtre
             //printf("taille de la fenêtre en réception normale : %d\n", size_window);
@@ -430,7 +430,7 @@ int main(int argc, char* argv[]){
 
           *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
 
-          timeout.tv_usec = 5*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion (inférieure à serveur1 pour détecter plus de timeout)
+          timeout.tv_usec = 12*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion (inférieure à serveur1 pour détecter plus de timeout)
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 
           size_window = 10; //quand timeout, il y a congestion donc on remet la fenêtre à 1

@@ -497,7 +497,7 @@ int main(int argc, char* argv[]){
 
     trace_congestion = fopen("congestion_serveur1.txt", "a");
     fputs(timeout_in, trace_congestion);
-    fputs("\t\t", trace_congestion);
+    fputs("\t", trace_congestion);
     fputs(ack_in, trace_congestion);
     fputs("\n", trace_congestion);
 

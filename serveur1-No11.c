@@ -395,7 +395,7 @@ int main(int argc, char* argv[]){
             *count_ack_memory = *count_ack_memory + 1;
             //printf("count ack memory : %d\n", *count_ack_memory);
             /* *** selective acknoledgment *** */
-            *shared_memory_window = ack_precedent+1 + size_window/10; //on a remarqué que le client1 ne perdait qu'un seul paquet. Au lieu d'en retransmettre 100, on n'en retransmet qu'un petit nombre (pas 1 car si le ack se perd on passe en timeout)
+            //*shared_memory_window = ack_precedent+1 + size_window/10; //on a remarqué que le client1 ne perdait qu'un seul paquet. Au lieu d'en retransmettre 100, on n'en retransmet qu'un petit nombre (pas 1 car si le ack se perd on passe en timeout)
             //printf("taille de la fenêtre en ack dupliqué : %d\n", *shared_memory_window);
           }
           ack_precedent_3 = ack_precedent_2;
@@ -424,18 +424,18 @@ int main(int argc, char* argv[]){
                     *last_packet_size = size_file - ((packets_number-1)*packets_size);
                     printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
 
-                    if (mlock(tableau, size_tab*packets_size) != 0){
-                      printf("erreur lock fils \n");
-                    }
+                    //if (mlock(tableau, size_tab*packets_size) != 0){
+                    //  printf("erreur lock fils \n");
+                    //}
                     fread(tableau[incr%size_tab], *last_packet_size, 1, file);
-                    mlock(tableau, size_tab*packets_size);
+                    //mlock(tableau, size_tab*packets_size);
                   }
                   else if (ftell(file)!=size_file){
-                    if (mlock(tableau, size_tab*packets_size) != 0){
-                      printf("erreur lock fils \n");
-                    }
+                    //if (mlock(tableau, size_tab*packets_size) != 0){
+                    //  printf("erreur lock fils \n");
+                    //}
                     fread(tableau[incr%size_tab], packets_size, 1, file);
-                    mlock(tableau, size_tab*packets_size);
+                    //mlock(tableau, size_tab*packets_size);
                   }
                   incr++;
                 }
@@ -460,7 +460,7 @@ int main(int argc, char* argv[]){
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 
           *shared_memory_window = ack_max+1 + size_window; //on remet à jour la fenêtre
-          printf("Timeout : retransmission à partir de %d\n",ack_max+1);
+          //printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           //printf("taille de la fenêtre en timeout : %d\n", *shared_memory_window);
           *count_timeout_memory = *count_timeout_memory + 1;
         }

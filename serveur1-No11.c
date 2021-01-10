@@ -248,18 +248,17 @@ int main(int argc, char* argv[]){
           //Remise à zéro des buffers
           memset(buffer_segment,0,sizeof(buffer_segment));
           memset(buffer_sequence,0,sizeof(buffer_sequence));
-          packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size
-
-          if (atoi(buffer_sequence) == packets_number) //on met à jour la taille du dernier segment à envoyer
-            packets_size = *last_packet_size;
-            
           //printf("\nnum seq avant mlock %d\n", *shared_memory_seq);
           if (mlock(shared_memory_seq, packets_number) == -1){
             printf("erreur mlock\n");
           }
           //printf("num seq après mlock %d\n", *shared_memory_seq);
           sprintf(buffer_sequence,"%d",*shared_memory_seq);
+          packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size
 
+          if (atoi(buffer_sequence) == packets_number) //on met à jour la taille du dernier segment à envoyer
+            packets_size = *last_packet_size;
+            
           //printf("Sequence number (from buffer_sequence) : %s\n",buffer_sequence);
 
           //Segment auquel on rajoute en-tête

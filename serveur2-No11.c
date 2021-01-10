@@ -204,6 +204,14 @@ int main(int argc, char* argv[]){
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
 
+    uint8_t *count_timeout_memory = mmap(NULL, sizeof(int),          //pour compter les ack dupliqués et timout
+                                    PROT_READ | PROT_WRITE,
+                                    MAP_SHARED | MAP_ANONYMOUS, -1,0);
+
+    uint8_t *count_ack_memory = mmap(NULL, sizeof(int),          //pour compter les ack dupliqués et timout
+                                    PROT_READ | PROT_WRITE,
+                                    MAP_SHARED | MAP_ANONYMOUS, -1,0);
+
     /*** FORK ***/
     int idfork=fork();
     printf("Fork renvoie la valeur :%d\n",idfork);
@@ -224,34 +232,49 @@ int main(int argc, char* argv[]){
           memset(buffer_segment,0,sizeof(buffer_segment));
           memset(buffer_sequence,0,sizeof(buffer_sequence));
 
+          if (mlock(shared_memory_seq, packets_number) == -1){
+            printf("erreur mlock\n");
+          }
           sprintf(buffer_sequence,"%d",*shared_memory_seq);
-          //printf("Sequence number (from buffer_sequence) : %s\n",buffer_sequence);
+
+          /*CONSTRUCTION PAQUET*/
+          packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size
+
+          if (atoi(buffer_sequence) == packets_number) //on met à jour la taille du dernier segment à envoyer
+            packets_size = *last_packet_size;
 
           //Segment auquel on rajoute en-tête
           memcpy(buffer_segment,buffer_sequence,6);
           memcpy(buffer_segment+6,tableau[(*shared_memory_seq-1)%size_tab],packets_size);
+          munlock(shared_memory_seq, packets_number);
 
-          /*ENVOI PAQUET*/
-          sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
           gettimeofday(&time1, NULL);
+          if (mlock(array_pere,packets_number*sizeof(long)+sizeof(long)) !=0){
+            printf("erreur mlock\n");
+          }
           array_pere[*shared_memory_seq] = time1.tv_usec + time1.tv_sec*pow(10,6);
+          munlock(array_pere,packets_number*sizeof(long)+sizeof(long));
 
-          *shared_memory_seq = *shared_memory_seq+1;
+          /*ENVOI*/
+          sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
+
+          *shared_memory_seq = *shared_memory_seq+1; //incrémentation du n° de séquence
         }
       } //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
       printf("On est sorti du while du père :%d\n",*shared_memory_fils);
 
-    } else if(idfork==0) { //si on est le processus fils
+    } else if(idfork==0) { //si on est le processus fils : gestion des ACKs
 
-      //partie mise en place du timer pour la retransmission
-      timeout.tv_usec = 3*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
+      /*Mise en place du timer pour la retransmission*/
+      timeout.tv_usec = 3*srtt.tv_usec; //on initialise une première fois le timeout avec un srtt fixé au début
       timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
-      printf("valeur du timeout en µs : %ld\n", timeout.tv_usec);
+      printf("Valeur du timeout en µs : %ld\n", timeout.tv_usec);
       //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
 
       int ack_max = 0;
       int ack_precedent=0;
       int ack_precedent_2=0;
+      int ack_precedent_3=0;
       int incr = 0;
       int seuil=2000;
 
@@ -297,42 +320,87 @@ int main(int argc, char* argv[]){
             //printf("taille de la fenêtre en réception normale : %d\n", size_window);
           }
 
-          /*GESTION LECTURE FICHIER*/
-          //printf("Position curseur %d\n",ftell(file));
-
-          if(packets_number > size_tab){ //si fichier volumineux, on fait un buffer circulaire
-            if(atoi(buffer_sequence)>seuil){
-              seuil=seuil+2000;
-              //printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
-              //printf("valeur de incr : %d\n", incr);
-
-              for (int i = 0; i < seuil ; i++){
-                //printf("valeur de incr : %d\n", incr);
-                fread(tableau[incr%size_tab],1494,1,file);
-                incr++;
-              }
-            }
-          }
 
           /*GESTION ACKS DUPLIQUES*/
-          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
-            timeout.tv_usec = 5*srtt.tv_usec;
-            timeout.tv_sec = 0;
+          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2 && atoi(buffer_sequence)==ack_precedent_3){
             goto skip;
           }
 
-          if(atoi(buffer_sequence)==ack_precedent){
+          /*GESTION ACKS DUPLIQUES : SELECTIVE ACKNOLEDGMENT*/
+          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
             //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
-            *shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
-            timeout.tv_usec = 5*srtt.tv_usec; //on sécurise le temps d'attente de retransmission
-            timeout.tv_sec = 0;
-            size_window = 10;   //quand on a de la congestion, on réinitialise une petite taille de fenêtre
-            *shared_memory_window = ack_precedent+1 + size_window;
-            //printf("taille de la fenêtre en ack dupliqué : %d\n", size_window);
+
+            /*Retransmission segment*/
+            sprintf(buffer_sequence,"%d",ack_precedent+1); //on affecte le numéro de séquence à renvoyer
+            packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size
+            if (atoi(buffer_sequence) == packets_number) //on met à jour la taille du dernier segment à envoyer
+              packets_size = *last_packet_size;
+
+            //Segment auquel on rajoute en-tête
+            memcpy(buffer_segment,buffer_sequence,6);
+            memcpy(buffer_segment+6,tableau[(ack_precedent+1-1)%size_tab],packets_size);
+
+            gettimeofday(&time1, NULL);
+            //if (mlock(array_pere,packets_number*sizeof(long)+sizeof(long)) !=0){
+            //  printf("erreur mlock\n");
+            //}
+            array_pere[*shared_memory_seq] = time1.tv_usec + time1.tv_sec*pow(10,6);
+            //munlock(array_pere,packets_number*sizeof(long)+sizeof(long));
+
+            sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
+
+
+            *count_ack_memory = *count_ack_memory + 1;
+            //printf("count ack memory : %d\n", *count_ack_memory);
+
           }
 
+          ack_precedent_3 = ack_precedent_2;
           ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);
+
+
+          /*GESTION BUFFER CIRCULAIRE*/
+          //printf("Position curseur %d\n",ftell(file));
+
+          if(packets_number > size_tab){ //si fichier volumineux, on fait un buffer circulaire
+
+            if (ftell(file)==size_file){
+              //printf("Le fichier a été lu entièrement. \n");
+            } else {
+
+              if(atoi(buffer_sequence)>seuil){ //on va remplacer dans le buffer de façon périodique, tous les 2000 acks reçus
+                seuil=seuil+2000;
+                //printf("valeur de ftell dans le buffer circulaire : %d\n", ftell(file));
+                //printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
+                //printf("valeur de incr : %d\n", incr);
+                printf("i va de %d à %d ou %d\n", seuil-2000, seuil, packets_number);
+
+                for (int i = seuil-2000 ; i < seuil && i < packets_number ; i++){ //pour le dernier tour du buffer, on ne veut pas aller jusqu'à seuil mais seulement jusqu'à la fin du fichier
+                  if (size_file - ftell(file) < packets_size && ftell(file)!=size_file){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
+                    printf("on est au dernier segment\n");
+
+                    *last_packet_size = size_file - ((packets_number-1)*packets_size);
+                    printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
+
+                    //if (mlock(tableau, size_tab*packets_size) != 0){
+                    //  printf("erreur lock fils \n");
+                    //}
+                    fread(tableau[incr%size_tab], *last_packet_size, 1, file);
+                    //mlock(tableau, size_tab*packets_size);
+                  }
+                  else if (ftell(file)!=size_file){
+                    //if (mlock(tableau, size_tab*packets_size) != 0){
+                    //  printf("erreur lock fils \n");
+                    //}
+                    fread(tableau[incr%size_tab], packets_size, 1, file);
+                    //mlock(tableau, size_tab*packets_size);
+                  }
+                  incr++;
+                }
+              }
+            }
+          }
 
 
           skip:
@@ -343,7 +411,7 @@ int main(int argc, char* argv[]){
 
           *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
 
-          timeout.tv_usec = 10*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion (inférieure à serveur1 pour détecter plus de timeout)
+          timeout.tv_usec = 5*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion (inférieure à serveur1 pour détecter plus de timeout)
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 
           size_window = 10; //quand timeout, il y a congestion donc on remet la fenêtre à 1
@@ -351,6 +419,7 @@ int main(int argc, char* argv[]){
 
           printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           //printf("taille de la fenêtre en timeout : %d\n", size_window);
+          *count_timeout_memory = *count_timeout_memory + 1;
 
         }
       }//fin while
@@ -358,8 +427,6 @@ int main(int argc, char* argv[]){
       printf("J'ai reçu le dernier ACK : ACK%d\n",ack_max);
       *shared_memory_fils=0;
       printf("Fin du fils : on ferme le fils\n");
-
-      //kill(0, SIGKILL);
       exit(0);
 
     } //fin fils
@@ -378,6 +445,44 @@ int main(int argc, char* argv[]){
     float debit = ((float)size_file+6*(packets_number)) / time_debit.tv_usec;
     printf("débit lors de la transmission : %f Mo/s\n", debit);
     printf("temps débit en micro sec : %ld\n", time_debit.tv_usec);
+
+    /* libération des mémoires */
+    int count_ack = *count_ack_memory;
+    int count_timeout = *count_timeout_memory;
+
+    munmap(count_ack_memory, sizeof(int));
+    munmap(count_timeout_memory, sizeof(int));
+    munmap(array_fils, packets_number*sizeof(long)+sizeof(long));
+    munmap(array_pere, packets_number*sizeof(long)+sizeof(long));
+    munmap(shared_memory_window, packets_number);
+    munmap(shared_memory_seq, packets_number);
+    munmap(shared_memory_fils, sizeof(int));
+    munmap(last_packet_size, sizeof(int));
+    munmap(tableau, size_tab*packets_size);
+
+    /* *** Stockage dans un fichier *** */
+    FILE *trace_data;
+    char data_in[100];
+    sprintf(data_in, "%f", debit);
+
+    trace_data = fopen("data_serveur1.txt", "a");
+    fputs(data_in, trace_data);
+    fputs("\n", trace_data);
+    fclose(trace_data);
+
+    FILE *trace_congestion;
+    char timeout_in[100];
+    char ack_in[100];
+    sprintf(timeout_in, "%d", count_timeout);
+    sprintf(ack_in, "%d", count_ack);
+
+    trace_congestion = fopen("congestion_serveur1.txt", "a");
+    fputs(timeout_in, trace_congestion);
+    fputs("       ", trace_congestion);
+    fputs(ack_in, trace_congestion);
+    fputs("\n", trace_congestion);
+
+    printf("il y a eu %d ack dupliqués, %d timeout\n", count_ack, count_timeout);
 
     close(data_descriptor);
     break;

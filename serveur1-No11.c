@@ -293,7 +293,6 @@ int main(int argc, char* argv[]){
       int ack_precedent=0;
       int ack_precedent_2=0;
       int ack_precedent_3=0;
-      int ack_precedent_4=0;
       int incr = 0;
       int seuil=2000;
 
@@ -345,12 +344,12 @@ int main(int argc, char* argv[]){
           }
 
           /*GESTION ACKS DUPLIQUES*/
-          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2 && atoi(buffer_sequence)==ack_precedent_3 && atoi(buffer_sequence)==ack_precedent_4){
+          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2 && atoi(buffer_sequence)==ack_precedent_3){
             goto skip;
           }
 
           /*GESTION ACKS DUPLIQUES : SELECTIVE ACKNOLEDGMENT*/
-          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2 && atoi(buffer_sequence)==ack_precedent_3){
+          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
             //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
 
             /*Retransmission segment*/
@@ -377,7 +376,6 @@ int main(int argc, char* argv[]){
             //printf("count ack memory : %d\n", *count_ack_memory);
 
           }
-          ack_precedent_4 = ack_precedent_3;
           ack_precedent_3 = ack_precedent_2;
           ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);

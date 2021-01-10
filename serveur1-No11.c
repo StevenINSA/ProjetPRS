@@ -429,13 +429,13 @@ int main(int argc, char* argv[]){
         } //FDISSET
         else { //si Timeout
 
-          if (mlock(shared_memory_seq, packets_number) != 0){
-            printf("erreur lock fils \n");
-          }
+          //if (mlock(shared_memory_seq, packets_number) != 0){
+          //  printf("erreur lock fils \n");
+          //}
           array_pere[atoi(buffer_sequence)+1]=0;
           array_fils[atoi(buffer_sequence)+1]=0;
           *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
-          munlock(shared_memory_seq, packets_number);
+          //munlock(shared_memory_seq, packets_number);
 
           timeout.tv_usec = 5*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion (évite 2 timeout consécutifs)
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion

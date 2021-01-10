@@ -363,11 +363,11 @@ int main(int argc, char* argv[]){
             memcpy(buffer_segment+6,tableau[(ack_precedent+1-1)%size_tab],packets_size);
 
             gettimeofday(&time1, NULL);
-            //if (mlock(array_pere,packets_number*sizeof(long)+sizeof(long)) !=0){
-            //  printf("erreur mlock\n");
-            //}
+            if (mlock(array_pere,packets_number*sizeof(long)+sizeof(long)) !=0){
+              printf("erreur mlock\n");
+            }
             array_pere[*shared_memory_seq] = time1.tv_usec + time1.tv_sec*pow(10,6);
-            //munlock(array_pere,packets_number*sizeof(long)+sizeof(long));
+            munlock(array_pere,packets_number*sizeof(long)+sizeof(long));
 
             sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
 
@@ -404,18 +404,18 @@ int main(int argc, char* argv[]){
                     *last_packet_size = size_file - ((packets_number-1)*packets_size);
                     printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
 
-                    //if (mlock(tableau, size_tab*packets_size) != 0){
-                    //  printf("erreur lock fils \n");
-                    //}
+                    if (mlock(tableau, size_tab*packets_size) != 0){
+                      printf("erreur lock fils \n");
+                    }
                     fread(tableau[incr%size_tab], *last_packet_size, 1, file);
-                    //mlock(tableau, size_tab*packets_size);
+                    munlock(tableau, size_tab*packets_size);
                   }
                   else if (ftell(file)!=size_file){
-                    //if (mlock(tableau, size_tab*packets_size) != 0){
-                    //  printf("erreur lock fils \n");
-                    //}
+                    if (mlock(tableau, size_tab*packets_size) != 0){
+                      printf("erreur lock fils \n");
+                    }
                     fread(tableau[incr%size_tab], packets_size, 1, file);
-                    //mlock(tableau, size_tab*packets_size);
+                    munlock(tableau, size_tab*packets_size);
                   }
                   incr++;
                 }
@@ -444,7 +444,7 @@ int main(int argc, char* argv[]){
           *shared_memory_window = ack_max+1 + size_window; //on remet à jour la fenêtre
           //printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           //printf("taille de la fenêtre en timeout : %d\n", *shared_memory_window);
-          
+
           *count_timeout_memory = *count_timeout_memory + 1;
         }
       }//fin while

@@ -433,7 +433,7 @@ int main(int argc, char* argv[]){
           timeout.tv_usec = 12*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion (inférieure à serveur1 pour détecter plus de timeout)
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 
-          size_window = 15; //quand timeout, il y a congestion donc on remet la fenêtre à 1
+          size_window = 20; //quand timeout, il y a congestion donc on remet la fenêtre à 1
           *shared_memory_window = ack_max+1 + size_window; //on refait glisser la fenêtre pour essayer de transmettre la suite
 
           //printf("Timeout : retransmission à partir de %d\n",ack_max+1);

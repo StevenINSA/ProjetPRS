@@ -352,6 +352,7 @@ int main(int argc, char* argv[]){
 
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2 && atoi(buffer_sequence)==ack_precedent_3){
+            printf("on passe dans le skip\n");
             goto skip;
           }
 
@@ -393,7 +394,7 @@ int main(int argc, char* argv[]){
               continue;
               }
             }
-              
+
             if(packets_number > size_tab){ //si fichier volumineux, on fait un buffer circulaire
 
               if (ftell(file)==size_file){

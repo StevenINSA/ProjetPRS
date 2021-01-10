@@ -428,29 +428,12 @@ int main(int argc, char* argv[]){
         } //FDISSET
         else { //si Timeout
 
-          /*Retransmission segment*/
-          sprintf(buffer_sequence,"%d",ack_max+1); //on affecte le numéro de séquence à renvoyer
-          packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size
-          if (atoi(buffer_sequence) == packets_number) //on met à jour la taille du dernier segment à envoyer
-            packets_size = *last_packet_size;
-
-          //Segment auquel on rajoute en-tête
-          memcpy(buffer_segment,buffer_sequence,6);
-          memcpy(buffer_segment+6,tableau[(ack_precedent+1-1)%size_tab],packets_size);
-
-          gettimeofday(&time1, NULL);
-          //if (mlock(array_pere,packets_number*sizeof(long)+sizeof(long)) !=0){
-          //  printf("erreur mlock\n");
-          //}
-          array_pere[*shared_memory_seq] = time1.tv_usec + time1.tv_sec*pow(10,6);
-          //munlock(array_pere,packets_number*sizeof(long)+sizeof(long));
-
-          sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
+          *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
 
           timeout.tv_usec = 5*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion (inférieure à serveur1 pour détecter plus de timeout)
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 
-          //size_window = 10; //quand timeout, il y a congestion donc on remet la fenêtre à 1
+          size_window = 10; //quand timeout, il y a congestion donc on remet la fenêtre à 1
           *shared_memory_window = ack_max+1 + size_window; //on refait glisser la fenêtre pour essayer de transmettre la suite
 
           printf("Timeout : retransmission à partir de %d\n",ack_max+1);

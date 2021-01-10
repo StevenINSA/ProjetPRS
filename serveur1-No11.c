@@ -429,26 +429,6 @@ int main(int argc, char* argv[]){
         } //FDISSET
         else { //si Timeout
 
-          /*Retransmission segment*/
-          sprintf(buffer_sequence,"%d",ack_precedent+1); //on affecte le numéro de séquence à renvoyer
-          packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size
-          if (atoi(buffer_sequence) == packets_number) //on met à jour la taille du dernier segment à envoyer
-            packets_size = *last_packet_size;
-
-          //Segment auquel on rajoute en-tête
-          memcpy(buffer_segment,buffer_sequence,6);
-          memcpy(buffer_segment+6,tableau[(ack_precedent+1-1)%size_tab],packets_size);
-
-          gettimeofday(&time1, NULL);
-          //if (mlock(array_pere,packets_number*sizeof(long)+sizeof(long)) !=0){
-          //  printf("erreur mlock\n");
-          //}
-          array_pere[*shared_memory_seq] = time1.tv_usec + time1.tv_sec*pow(10,6);
-          //munlock(array_pere,packets_number*sizeof(long)+sizeof(long));
-
-          sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
-
-          /*
           if (mlock(shared_memory_seq, packets_number) != 0){
             printf("erreur lock fils \n");
           }
@@ -464,7 +444,7 @@ int main(int argc, char* argv[]){
           *shared_memory_window = ack_max+1 + size_window; //on remet à jour la fenêtre
           //printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           //printf("taille de la fenêtre en timeout : %d\n", *shared_memory_window);
-          */
+          
           *count_timeout_memory = *count_timeout_memory + 1;
         }
       }//fin while

@@ -355,14 +355,16 @@ int main(int argc, char* argv[]){
             goto skip;
           }
 
+          int pid_fils = fork();
+          if(pid_fils==-1){
+            perror("Erreur fork");
+            exit(EXIT_FAILURE);
+
+          } else if (pid_fils == 0){ //si on est dans le fils
+
           /*GESTION ACKS DUPLIQUES*/
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
             //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
-            int pid_fils = fork();
-            if(pid_fils==-1){
-              perror("Erreur fork");
-              exit(EXIT_FAILURE);
-            } else if (pid_fils == 0){ //si on est dans le fils
               if (mlock(shared_memory_seq, packets_number) != 0){
                 printf("erreur lock fils \n");
               }
@@ -419,7 +421,7 @@ int main(int argc, char* argv[]){
                   }
                 }
               }
-
+            }
               exit(0);
 
             } else if (pid_fils !=0){

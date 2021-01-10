@@ -320,13 +320,9 @@ int main(int argc, char* argv[]){
           array_pere[*shared_memory_seq_pere] = time1.tv_usec + time1.tv_sec*pow(10,6);
 
           if (*signal == 1){
-            if (mlock(shared_memory_seq_fils, sizeof(int)) == -1){
-              printf("erreur mlock signal\n");
-            }
             printf("\nvaleur du seq fils avant incr : %d\n", *shared_memory_fils);
             *shared_memory_seq_pere = *shared_memory_seq_fils;
             printf("valeur du seq fils après incr : %d\n", *shared_memory_fils);
-            munlock(shared_memory_seq_fils, sizeof(int));
           }else {
             *shared_memory_seq_pere = *shared_memory_seq_pere+1;
           }

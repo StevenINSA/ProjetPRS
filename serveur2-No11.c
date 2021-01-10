@@ -154,23 +154,43 @@ int main(int argc, char* argv[]){
 
     printf("taille du fichier en octet : %d\n", size_file);
     fseek(file, 0, SEEK_SET);          //on replace le curseur au début;
-    int bloc_size = 6000000;
-    int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 du n° de séquence
-    int packets_number = (size_file/packets_size)+1;
-    int size_window=10;
-    int size_tab = bloc_size/packets_size;
-    printf("nombre de segments dans le tableau : %d\n", size_tab);
+
+
+    int bloc_size = 8000000;
+    int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 octets du n° de séquence
+    int packets_number = (size_file/packets_size)+1; //le nombre de segments que le serveur devra envoyer au client
+    int size_window = 10;
+    int size_tab = bloc_size/packets_size; //il faut que la dimension du tableau (collonne*lignes) ne dépasse pas 8 000 000
+    printf("taille du tableau : %d\n", size_tab);
+    printf("nombre de segments à envoyer : %d\n", packets_number);
 
     if ((packets_number) < size_tab){  //si le fichier lu est moins grand que le tableau, on n'a pas à tout parcourir + pas de gestion de gros fichier à faire
       printf("c'est un petit fichier ! nombre de segments à envoyer : %d taille du tableau : %d\n", packets_number, size_tab);
       size_tab = packets_number;
+      printf("nouvelle taille du buffer : %d\n", size_tab);
     }
 
-    char (*tableau)[1494]=(char (*)[packets_size]) mmap(NULL, size_tab*packets_size,PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1,0);
+    char (*tableau)[1494]=(char (*)[packets_size]) mmap(NULL, size_tab*packets_size,
+                                    PROT_READ | PROT_WRITE,
+                                    MAP_SHARED | MAP_ANONYMOUS, -1,0);
 
+    uint16_t *last_packet_size = mmap(NULL, sizeof(int),
+                                    PROT_READ | PROT_WRITE,
+                                    MAP_SHARED | MAP_ANONYMOUS, -1,0);
+    *last_packet_size = packets_size; //valeur par défaut au cas où le dernier paquet fasse une taille de 1494
+    int read_blocks;
 
+    // on charge les premiers segments dans le buffer d'envoi
     for(int i=0;i<size_tab;i++){
-      int read_blocks = fread(tableau[i],1494,1,file);
+
+      if (size_file - ftell(file) < packets_size){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
+        *last_packet_size = size_file - ((packets_number-1)*packets_size); //on a enlevé ftell(file) car causait des bugs dans le buffer circulaire
+        printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
+        read_blocks = fread(tableau[i],*last_packet_size,1,file);
+      }
+      else {
+        read_blocks = fread(tableau[i],packets_size,1,file);
+      }
 
       if(read_blocks!=1){
         perror("erreur lecture fichier");
@@ -179,8 +199,7 @@ int main(int argc, char* argv[]){
 
     }
 
-
-    uint8_t *shared_memory_fils = mmap(NULL, 2,          //pour que le parent envoie les fichiers tant que le fils écoute les acks
+    uint8_t *shared_memory_fils = mmap(NULL, sizeof(int),          //pour que le parent envoie les fichiers tant que le fils écoute les acks
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
     *shared_memory_fils = 1;

@@ -377,6 +377,7 @@ int main(int argc, char* argv[]){
             //printf("count ack memory : %d\n", *count_ack_memory);
 
           }
+          ack_precedent_4 = ack_precedent_3;
           ack_precedent_3 = ack_precedent_2;
           ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);

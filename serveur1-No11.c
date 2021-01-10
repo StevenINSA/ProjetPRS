@@ -293,6 +293,7 @@ int main(int argc, char* argv[]){
       int ack_precedent=0;
       int ack_precedent_2=0;
       int ack_precedent_3=0;
+      int ack_precedent_4=0;
       int incr = 0;
       int seuil=2000;
 
@@ -343,10 +344,10 @@ int main(int argc, char* argv[]){
             //printf("taille de la fenêtre en réception normale : %d\n", *shared_memory_window);
           }
 
-          /*GESTION ACKS DUPLIQUES*//*
-          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2 && atoi(buffer_sequence)==ack_precedent_3){
+          /*GESTION ACKS DUPLIQUES*/
+          if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2 && atoi(buffer_sequence)==ack_precedent_3 && atoi(buffer_sequence)==ack_precedent_4){
             goto skip;
-          }*/
+          }
 
           /*GESTION ACKS DUPLIQUES : SELECTIVE ACKNOLEDGMENT*/
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2 && atoi(buffer_sequence)==ack_precedent_3){

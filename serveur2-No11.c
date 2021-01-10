@@ -322,7 +322,7 @@ int main(int argc, char* argv[]){
           array_fils[atoi(buffer_sequence)] = time2.tv_usec + time2.tv_sec*pow(10,6);
           rtt.tv_usec = array_fils[atoi(buffer_sequence)] - array_pere[atoi(buffer_sequence)];
           srtt.tv_usec = alpha*srtt.tv_usec + (1-alpha)*rtt.tv_usec;
-          timeout.tv_usec = 5*srtt.tv_usec; //on attend 3 fois l'estimation avant de déclarer l'ACK comme perdu
+          timeout.tv_usec = 10*srtt.tv_usec; //on attend 3 fois l'estimation avant de déclarer l'ACK comme perdu
           timeout.tv_sec = 0;
 
           /*GESTION FENETRE GLISSANTE*/

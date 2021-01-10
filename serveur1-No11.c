@@ -331,7 +331,7 @@ int main(int argc, char* argv[]){
           munlock(array_fils,packets_number*sizeof(long)+sizeof(long));
 
           srtt.tv_usec = alpha*srtt.tv_usec + (1-alpha)*rtt.tv_usec;
-          timeout.tv_usec = 3*srtt.tv_usec; //on attend 3 fois l'estimation avant de déclarer l'ACK comme perdu
+          timeout.tv_usec = srtt.tv_usec; //on attend 3 fois l'estimation avant de déclarer l'ACK comme perdu
           timeout.tv_sec = 0;
           //printf("valeur du RTT %ld, SRTT, %ld pour le segment %d\n",rtt.tv_usec,srtt.tv_usec,atoi(buffer_sequence) );
           /*GESTION FENETRE GLISSANTE*/

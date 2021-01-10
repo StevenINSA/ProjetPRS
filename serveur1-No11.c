@@ -364,15 +364,11 @@ int main(int argc, char* argv[]){
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
             //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
 
-            if (mlock(shared_memory_seq, packets_number) != 0){
-              printf("erreur lock fils \n");
-            }
             //*shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
 
-            sprintf(buffer_sequence,"%d",ack_precedent+1);
-            /*ENVOI PAQUET*/
+            /*Retransmission segment*/
+            sprintf(buffer_sequence,"%d",ack_precedent+1); //on affecte le numéro de séquence à renvoyer
             packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size
-
             if (atoi(buffer_sequence) == packets_number) //on met à jour la taille du dernier segment à envoyer
               packets_size = *last_packet_size;
 
@@ -380,30 +376,21 @@ int main(int argc, char* argv[]){
             memcpy(buffer_segment,buffer_sequence,6);
             memcpy(buffer_segment+6,tableau[(ack_precedent+1-1)%size_tab],packets_size);
             //printf("On va chercher dans tableau[%d] pour SEG_%d\n",(*shared_memory_seq-1)%size_tab,*shared_memory_seq);
-            munlock(shared_memory_seq, packets_number);
-            //printf("num seq après munlock %d\n", *shared_memory_seq);
 
             gettimeofday(&time1, NULL);
-            if (mlock(array_pere,packets_number*sizeof(long)+sizeof(long)) !=0){
-              printf("erreur mlock\n");
-            }
+            //if (mlock(array_pere,packets_number*sizeof(long)+sizeof(long)) !=0){
+            //  printf("erreur mlock\n");
+            //}
             array_pere[*shared_memory_seq] = time1.tv_usec + time1.tv_sec*pow(10,6);
-            munlock(array_pere,packets_number*sizeof(long)+sizeof(long));
+            //munlock(array_pere,packets_number*sizeof(long)+sizeof(long));
 
             sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
 
 
             //memset(array_fils[atoi(buffer_sequence)+1], 0, sizeof(long));
             //memset(array_pere[atoi(buffer_sequence)+1], 0, sizeof(long));
-            array_pere[atoi(buffer_sequence)+1]=0;
-            array_fils[atoi(buffer_sequence)+1]=0;
-
-
-
-            munlock(shared_memory_seq, packets_number);
-
-            if (msync(shared_memory_seq, packets_number, MS_SYNC) == -1)
-              printf("sync failed");
+            //array_pere[atoi(buffer_sequence)+1]=0;
+            //array_fils[atoi(buffer_sequence)+1]=0;
 
             *count_ack_memory = *count_ack_memory + 1;
             //printf("count ack memory : %d\n", *count_ack_memory);

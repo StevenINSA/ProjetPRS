@@ -248,6 +248,11 @@ int main(int argc, char* argv[]){
           //Remise à zéro des buffers
           memset(buffer_segment,0,sizeof(buffer_segment));
           memset(buffer_sequence,0,sizeof(buffer_sequence));
+          packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size
+
+          if (atoi(buffer_sequence) == packets_number) //on met à jour la taille du dernier segment à envoyer
+            packets_size = *last_packet_size;
+            
           //printf("\nnum seq avant mlock %d\n", *shared_memory_seq);
           if (mlock(shared_memory_seq, packets_number) == -1){
             printf("erreur mlock\n");
@@ -265,10 +270,6 @@ int main(int argc, char* argv[]){
           //printf("num seq après munlock %d\n", *shared_memory_seq);
 
           /*ENVOI PAQUET*/
-          packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size
-
-          if (atoi(buffer_sequence) == packets_number) //on met à jour la taille du dernier segment à envoyer
-            packets_size = *last_packet_size;
 
           sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
           gettimeofday(&time1, NULL);

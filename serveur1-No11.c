@@ -248,17 +248,13 @@ int main(int argc, char* argv[]){
           //Remise à zéro des buffers
           memset(buffer_segment,0,sizeof(buffer_segment));
           memset(buffer_sequence,0,sizeof(buffer_sequence));
-          //printf("\nnum seq avant mlock %d\n", *shared_memory_seq);
+
           if (mlock(shared_memory_seq, packets_number) == -1){
             printf("erreur mlock\n");
           }
-          //printf("num seq après mlock %d\n", *shared_memory_seq);
           sprintf(buffer_sequence,"%d",*shared_memory_seq);
 
-          //printf("Sequence number (from buffer_sequence) : %s\n",buffer_sequence);
-
-
-          /*ENVOI PAQUET*/
+          /*CONSTRUCTION PAQUET*/
           packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size
 
           if (atoi(buffer_sequence) == packets_number) //on met à jour la taille du dernier segment à envoyer
@@ -267,9 +263,7 @@ int main(int argc, char* argv[]){
           //Segment auquel on rajoute en-tête
           memcpy(buffer_segment,buffer_sequence,6);
           memcpy(buffer_segment+6,tableau[(*shared_memory_seq-1)%size_tab],packets_size);
-          //printf("On va chercher dans tableau[%d] pour SEG_%d\n",(*shared_memory_seq-1)%size_tab,*shared_memory_seq);
           munlock(shared_memory_seq, packets_number);
-          //printf("num seq après munlock %d\n", *shared_memory_seq);
 
           gettimeofday(&time1, NULL);
           if (mlock(array_pere,packets_number*sizeof(long)+sizeof(long)) !=0){
@@ -278,33 +272,27 @@ int main(int argc, char* argv[]){
           array_pere[*shared_memory_seq] = time1.tv_usec + time1.tv_sec*pow(10,6);
           munlock(array_pere,packets_number*sizeof(long)+sizeof(long));
 
+          /*ENVOI*/
           sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
 
-
-          *shared_memory_seq = *shared_memory_seq+1;
-
-          if (msync(shared_memory_seq, packets_number, MS_SYNC) == -1)
-            printf("sync failed");
-          if (msync(tableau, size_tab*packets_size, MS_SYNC) == -1)
-            printf("sync tableau failed");
+          *shared_memory_seq = *shared_memory_seq+1; //incrémentation du n° de séquence
 
         }
       } //gettimeofday(&time1, NULL); //on place la valeur de gettimeofday dans un timer dans le but de récupurer le rtt plus tard
       printf("On est sorti du while du père :%d\n",*shared_memory_fils);
 
-    } else if(idfork==0) { //si on est le processus fils
+    } else if(idfork==0) { //si on est le processus fils : gestion des ACKs
 
-      //partie mise en place du timer pour la retransmission
+      /*Mise en place du timer pour la retransmission*/
       timeout.tv_usec = 3*srtt.tv_usec; //on initialise une première fois le timeout avec un srtt fixé au début
       timeout.tv_sec = 0; //bien remettre tv_sec à 0 sinon il prend des valeurs et fausse le timeout
-      printf("valeur du timeout en µs : %ld\n", timeout.tv_usec);
+      printf("Valeur du timeout en µs : %ld\n", timeout.tv_usec);
       //il faut refixer les valeurs de timout à chaque boucle car lors d'un timout, timeout sera fixé à 0. Timeout sera calculé en fct du rtt
 
       int ack_max = 0;
       int ack_precedent=0;
       int ack_precedent_2=0;
       int ack_precedent_3=0;
-      int ack_a_recevoir = 0;
       int incr = 0;
       int seuil=2000;
 
@@ -360,11 +348,9 @@ int main(int argc, char* argv[]){
             goto skip;
           }
 
-          /*GESTION ACKS DUPLIQUES*/
+          /*GESTION ACKS DUPLIQUES : SELECTIVE ACKNOLEDGMENT*/
           if(atoi(buffer_sequence)==ack_precedent && atoi(buffer_sequence)==ack_precedent_2){
             //printf("Ack duppliqué : retransmission à partir de %d\n",ack_precedent+1);
-
-            //*shared_memory_seq=ack_precedent+1; //on renvoit à partir du ack dupliqué, nous avons vu que il n'y avait jamais que 2 acks dupliqués
 
             /*Retransmission segment*/
             sprintf(buffer_sequence,"%d",ack_precedent+1); //on affecte le numéro de séquence à renvoyer
@@ -375,7 +361,6 @@ int main(int argc, char* argv[]){
             //Segment auquel on rajoute en-tête
             memcpy(buffer_segment,buffer_sequence,6);
             memcpy(buffer_segment+6,tableau[(ack_precedent+1-1)%size_tab],packets_size);
-            //printf("On va chercher dans tableau[%d] pour SEG_%d\n",(*shared_memory_seq-1)%size_tab,*shared_memory_seq);
 
             gettimeofday(&time1, NULL);
             //if (mlock(array_pere,packets_number*sizeof(long)+sizeof(long)) !=0){
@@ -387,20 +372,15 @@ int main(int argc, char* argv[]){
             sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
 
 
-            //memset(array_fils[atoi(buffer_sequence)+1], 0, sizeof(long));
-            //memset(array_pere[atoi(buffer_sequence)+1], 0, sizeof(long));
-            //array_pere[atoi(buffer_sequence)+1]=0;
-            //array_fils[atoi(buffer_sequence)+1]=0;
-
             *count_ack_memory = *count_ack_memory + 1;
             //printf("count ack memory : %d\n", *count_ack_memory);
-            /* *** selective acknoledgment *** */
-            //*shared_memory_window = ack_precedent+1 + size_window/10; //on a remarqué que le client1 ne perdait qu'un seul paquet. Au lieu d'en retransmettre 100, on n'en retransmet qu'un petit nombre (pas 1 car si le ack se perd on passe en timeout)
-            //printf("taille de la fenêtre en ack dupliqué : %d\n", *shared_memory_window);
+
           }
           ack_precedent_3 = ack_precedent_2;
           ack_precedent_2 = ack_precedent;
           ack_precedent=atoi(buffer_sequence);
+
+
           /*GESTION BUFFER CIRCULAIRE*/
           //printf("Position curseur %d\n",ftell(file));
 
@@ -448,6 +428,27 @@ int main(int argc, char* argv[]){
 
         } //FDISSET
         else { //si Timeout
+
+          /*Retransmission segment*/
+          sprintf(buffer_sequence,"%d",ack_precedent+1); //on affecte le numéro de séquence à renvoyer
+          packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size
+          if (atoi(buffer_sequence) == packets_number) //on met à jour la taille du dernier segment à envoyer
+            packets_size = *last_packet_size;
+
+          //Segment auquel on rajoute en-tête
+          memcpy(buffer_segment,buffer_sequence,6);
+          memcpy(buffer_segment+6,tableau[(ack_precedent+1-1)%size_tab],packets_size);
+
+          gettimeofday(&time1, NULL);
+          //if (mlock(array_pere,packets_number*sizeof(long)+sizeof(long)) !=0){
+          //  printf("erreur mlock\n");
+          //}
+          array_pere[*shared_memory_seq] = time1.tv_usec + time1.tv_sec*pow(10,6);
+          //munlock(array_pere,packets_number*sizeof(long)+sizeof(long));
+
+          sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
+
+          /*
           if (mlock(shared_memory_seq, packets_number) != 0){
             printf("erreur lock fils \n");
           }
@@ -459,9 +460,11 @@ int main(int argc, char* argv[]){
           timeout.tv_usec = 5*srtt.tv_usec; //on sécurise le temps d'attente de retransmission car il y a congestion (évite 2 timeout consécutifs)
           timeout.tv_sec = 0; //lors d'un timeout, on augmente le rtt car congestion
 
+
           *shared_memory_window = ack_max+1 + size_window; //on remet à jour la fenêtre
           //printf("Timeout : retransmission à partir de %d\n",ack_max+1);
           //printf("taille de la fenêtre en timeout : %d\n", *shared_memory_window);
+          */
           *count_timeout_memory = *count_timeout_memory + 1;
         }
       }//fin while
@@ -469,7 +472,6 @@ int main(int argc, char* argv[]){
       printf("J'ai reçu le dernier ACK : ACK%d\n",ack_max);
       *shared_memory_fils=0;
       printf("Fin du fils : on ferme le fils\n");
-      //kill(0, SIGKILL);
       exit(0);
 
     } //fin fils

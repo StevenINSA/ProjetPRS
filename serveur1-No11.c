@@ -404,18 +404,13 @@ int main(int argc, char* argv[]){
                     *last_packet_size = size_file - ((packets_number-1)*packets_size);
                     printf("taille du dernier bloc à lire : %d\n", *last_packet_size);
 
-                    if (mlock(tableau, size_tab*packets_size) != 0){
-                      printf("erreur lock fils \n");
-                    }
                     fread(tableau[incr%size_tab], *last_packet_size, 1, file);
-                    munlock(tableau, size_tab*packets_size);
+
                   }
                   else if (ftell(file)!=size_file){
-                    if (mlock(tableau, size_tab*packets_size) != 0){
-                      printf("erreur lock fils \n");
-                    }
+
                     fread(tableau[incr%size_tab], packets_size, 1, file);
-                    munlock(tableau, size_tab*packets_size);
+
                   }
                   incr++;
                 }
@@ -432,8 +427,6 @@ int main(int argc, char* argv[]){
           //if (mlock(shared_memory_seq, packets_number) != 0){
           //  printf("erreur lock fils \n");
           //}
-          array_pere[atoi(buffer_sequence)+1]=0;
-          array_fils[atoi(buffer_sequence)+1]=0;
           *shared_memory_seq=ack_max+1; //retransmission à partir du ACK max reçu
           //munlock(shared_memory_seq, packets_number);
 

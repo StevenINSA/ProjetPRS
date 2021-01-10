@@ -258,8 +258,14 @@ int main(int argc, char* argv[]){
           memset(buffer_segment,0,sizeof(buffer_segment));
           memset(buffer_sequence,0,sizeof(buffer_sequence));
 
+          packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size
+
+          if (shared_memory_seq == packets_number-1) //on met à jour la taille du dernier segment à envoyer
+            packets_size = last_packet_size;
+            
           sprintf(buffer_sequence,"%d",shared_memory_seq);
           //printf("Sequence number (from buffer_sequence) : %s\n",buffer_sequence);
+
 
           //Segment auquel on rajoute en-tête
           memcpy(buffer_segment,buffer_sequence,6);
@@ -267,10 +273,6 @@ int main(int argc, char* argv[]){
           memcpy(buffer_segment+6,tableau[(shared_memory_seq-1)%size_tab],packets_size);
 
           /*ENVOI PAQUET*/
-          packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size
-
-          if (shared_memory_seq == packets_number-1) //on met à jour la taille du dernier segment à envoyer
-            packets_size = last_packet_size;
 
           sendto(data_descriptor,buffer_segment,packets_size+6,0,(struct sockaddr *)&client1_addr,len);
           gettimeofday(&time1, NULL);

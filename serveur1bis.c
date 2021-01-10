@@ -261,7 +261,7 @@ int main(int argc, char* argv[]){
 
           packets_size = 1494; //si une retransmission a lieu alors que l'on a envoyé le dernier segment, il faut réinitialiser packets_size
 
-          if (shared_memory_seq == packets_number-1) //on met à jour la taille du dernier segment à envoyer
+          if (shared_memory_seq == packets_number) //on met à jour la taille du dernier segment à envoyer
             packets_size = last_packet_size;
 
           sprintf(buffer_sequence,"%d",shared_memory_seq);

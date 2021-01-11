@@ -192,7 +192,7 @@ int main(int argc, char* argv[]){
             int bloc_size = 8000000;
             int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 octets du n° de séquence
             int packets_number = (size_file/packets_size)+1; //le nombre de segments que le serveur devra envoyer au client
-            int size_window = 100;
+            int size_window = 70;
             int size_tab = bloc_size/packets_size; //il faut que la dimension du tableau (collonne*lignes) ne dépasse pas 8 000 000
             printf("taille du tableau : %d\n", size_tab);
             printf("nombre de segments à envoyer : %d\n", packets_number);
@@ -237,12 +237,12 @@ int main(int argc, char* argv[]){
                                             MAP_SHARED | MAP_ANONYMOUS, -1,0);
             *shared_memory_fils = 1;
 
-            uint16_t *shared_memory_seq = mmap(NULL, packets_number,           //pour que le fils mette à jour le n° de seq que le parent envoie
+            uint32_t *shared_memory_seq = mmap(NULL, packets_number,           //pour que le fils mette à jour le n° de seq que le parent envoie
                                             PROT_READ | PROT_WRITE,
                                             MAP_SHARED | MAP_ANONYMOUS, -1,0);
             *shared_memory_seq = 1;
 
-            uint16_t *shared_memory_window = mmap(NULL, packets_number,
+            uint32_t *shared_memory_window = mmap(NULL, packets_number,
                                             PROT_READ | PROT_WRITE,
                                             MAP_SHARED | MAP_ANONYMOUS, -1,0);
 

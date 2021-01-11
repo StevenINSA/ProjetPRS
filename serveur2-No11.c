@@ -72,7 +72,7 @@ int main(int argc, char* argv[]){
   rtt.tv_usec = 50000;           //on fixe au début un rtt de 50ms (à definir)
   srtt.tv_usec = rtt.tv_usec;
   srtt.tv_sec = 0;
-  float alpha = 0.6;
+  float alpha = 0.8;
 
   while(1){
     printf("Boucle while n°1.\n");
@@ -159,7 +159,7 @@ int main(int argc, char* argv[]){
     int bloc_size = 8000000;
     int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 octets du n° de séquence
     int packets_number = (size_file/packets_size)+1; //le nombre de segments que le serveur devra envoyer au client
-    int size_window = 20;
+    int size_window = 10;
     int size_tab = bloc_size/packets_size; //il faut que la dimension du tableau (collonne*lignes) ne dépasse pas 8 000 000
     printf("taille du tableau : %d\n", size_tab);
     printf("nombre de segments à envoyer : %d\n", packets_number);
@@ -204,12 +204,12 @@ int main(int argc, char* argv[]){
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
     *shared_memory_fils = 1;
 
-    uint16_t *shared_memory_seq = mmap(NULL, packets_number,           //pour que le fils mette à jour le n° de seq que le parent envoie
+    uint32_t *shared_memory_seq = mmap(NULL, packets_number,           //pour que le fils mette à jour le n° de seq que le parent envoie
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
     *shared_memory_seq = 1;
 
-    uint16_t *shared_memory_window = mmap(NULL, packets_number,
+    uint32_t *shared_memory_window = mmap(NULL, packets_number,
                                     PROT_READ | PROT_WRITE,
                                     MAP_SHARED | MAP_ANONYMOUS, -1,0);
 
@@ -339,7 +339,7 @@ int main(int argc, char* argv[]){
           if (ack_max < atoi(buffer_sequence)){ //si le ack que l'on reçoie est supérieur au ack max stocké, ack max devient ce ack
             ack_max = atoi(buffer_sequence);
 
-            if (size_window < 30) { //on augmente jusqu'à max size_window = 30
+            if (size_window < 50) { //on augmente jusqu'à max size_window = 30
               size_window = size_window+2; //si on a une petite taille de fenêtre, on l'augmente de façon exponentielle
             } else if (size_window < 100){
               size_window += 1;

@@ -159,7 +159,7 @@ int main(int argc, char* argv[]){
     int bloc_size = 8000000;
     int packets_size = 1494; //pour arriver à une taille de 1500 octets avec les 6 octets du n° de séquence
     int packets_number = (size_file/packets_size)+1; //le nombre de segments que le serveur devra envoyer au client
-    int size_window = 10;
+    int size_window = 20;
     int size_tab = bloc_size/packets_size; //il faut que la dimension du tableau (collonne*lignes) ne dépasse pas 8 000 000
     printf("taille du tableau : %d\n", size_tab);
     printf("nombre de segments à envoyer : %d\n", packets_number);
@@ -318,22 +318,32 @@ int main(int argc, char* argv[]){
           memcpy(buffer_sequence, bufferUDP_read_server+3, size_seq-3); //+3 car les 3 premières valeurs sont pour le mot ACK
 
           /*GESTION RTT*/
-          gettimeofday(&time2, NULL);                                   //on recalcule une timeofday pour faire la différence avec le premier
+          gettimeofday(&time2, NULL);   //on recalcule une timeofday pour faire la différence avec le premier
           array_fils[atoi(buffer_sequence)] = time2.tv_usec + time2.tv_sec*pow(10,6);
+          if (mlock(array_pere,packets_number*sizeof(long)+sizeof(long) ) != 0 && mlock(array_fils,packets_number*sizeof(long)+sizeof(long)) ){
+            printf("erreur lock fils \n");
+          }
           rtt.tv_usec = array_fils[atoi(buffer_sequence)] - array_pere[atoi(buffer_sequence)];
+          if(rtt.tv_usec>20000){
+            rtt.tv_usec=20000;
+          }
+
+          munlock(array_pere,packets_number*sizeof(long)+sizeof(long));
+          munlock(array_fils,packets_number*sizeof(long)+sizeof(long));
+
           srtt.tv_usec = alpha*srtt.tv_usec + (1-alpha)*rtt.tv_usec;
-          timeout.tv_usec = 3*srtt.tv_usec; //on attend 3 fois l'estimation avant de déclarer l'ACK comme perdu
+          timeout.tv_usec = srtt.tv_usec; //on attend 3 fois l'estimation avant de déclarer l'ACK comme perdu
           timeout.tv_sec = 0;
 
           /*GESTION FENETRE GLISSANTE*/
           if (ack_max < atoi(buffer_sequence)){ //si le ack que l'on reçoie est supérieur au ack max stocké, ack max devient ce ack
             ack_max = atoi(buffer_sequence);
 
-            if (size_window < 100) { //on augmente jusqu'à max size_window = 30
-              size_window = size_window+1; //si on a une petite taille de fenêtre, on l'augmente de façon exponentielle
-            } /*else if (size_window <= 100){
+            if (size_window < 30) { //on augmente jusqu'à max size_window = 30
+              size_window = size_window+2; //si on a une petite taille de fenêtre, on l'augmente de façon exponentielle
+            } else if (size_window < 100){
               size_window += 1;
-            }*/
+            }
 
             *shared_memory_window = ack_max+size_window;  //et on fait glisser la fenêtre
             //printf("taille de la fenêtre en réception normale : %d\n", size_window);

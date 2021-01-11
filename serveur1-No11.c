@@ -294,8 +294,7 @@ int main(int argc, char* argv[]){
       int ack_precedent_2=0;
       int ack_precedent_3=0;
       int incr = 0;
-      int seuil=4000;
-      int pas = 4000;
+      int seuil=2000;
 
       /***RECEPTION DES ACKs***/
       while (ack_max < packets_number){
@@ -392,13 +391,13 @@ int main(int argc, char* argv[]){
             } else {
 
               if(atoi(buffer_sequence)>seuil){ //on va remplacer dans le buffer de façon périodique, tous les 2000 acks reçus
-                seuil=seuil+pas;
+                seuil=seuil+2000;
                 //printf("valeur de ftell dans le buffer circulaire : %d\n", ftell(file));
                 //printf("ack vaut : %d -> on rempli le buffer\n", atoi(buffer_sequence));
                 //printf("valeur de incr : %d\n", incr);
-                printf("i va de %d à %d ou %d\n", seuil-pas, seuil, packets_number);
+                printf("i va de %d à %d ou %d\n", seuil-2000, seuil, packets_number);
 
-                for (int i = seuil-pas ; i < seuil && i < packets_number ; i++){ //pour le dernier tour du buffer, on ne veut pas aller jusqu'à seuil mais seulement jusqu'à la fin du fichier
+                for (int i = seuil-2000 ; i < seuil && i < packets_number ; i++){ //pour le dernier tour du buffer, on ne veut pas aller jusqu'à seuil mais seulement jusqu'à la fin du fichier
                   if (size_file - ftell(file) < packets_size && ftell(file)!=size_file){ //si le dernier segment à envoyer est inférieur à packets_size, on met à jour packets_size pour envoyer le bon nombre d'octets
                     printf("on est au dernier segment\n");
 
